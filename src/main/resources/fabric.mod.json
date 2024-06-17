@@ -1,32 +1,32 @@
 {
 	"schemaVersion": 1,
-	"id": "serverresourcepackreload",
+	"id": "do2manager",
 	"version": "${version}",
-	"name": "Minecraft server resourcepack reload",
-	"description": "This mod reloads server resourcepack without the need to restart the entire server!",
+	"name": "Decked Out 2 Manager Mod",
+	"description": "This is a mod to do some cool stuff in DO!",
 	"authors": [
 		"Mat0u5"
 	],
 	"contact": {
 		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/Mat0u5/Minecraft-server.properties-reload"
+		"sources": "https://github.com/Mat0u5/DO2-manager"
 	},
 	"license": "MIT",
-	"icon": "assets/serverresourcepackreload/icon.png",
+	"icon": "assets/do2manager/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"net.mat0u5.serverresourcepackreload.Main"
+			"net.mat0u5.do2manager.Main"
 		],
 		"client": [
-			"net.mat0u5.serverresourcepackreload.MainClient"
+			"net.mat0u5.do2manager.MainClient"
 		],
 		"fabric-datagen": [
-			"net.mat0u5.serverresourcepackreload.MainDataGenerator"
+			"net.mat0u5.do2manager.MainDataGenerator"
 		]
 	},
 	"mixins": [
-		"serverresourcepackreload.mixins.json"
+		"do2manager.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.14.21",

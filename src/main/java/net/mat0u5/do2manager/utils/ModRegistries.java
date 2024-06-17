@@ -1,8 +1,8 @@
-package net.mat0u5.serverresourcepackreload.utils;
+package net.mat0u5.do2manager.utils;
 
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
-import net.mat0u5.serverresourcepackreload.command.Resourcepack;
-import net.mat0u5.serverresourcepackreload.events.Events;
+import net.mat0u5.do2manager.command.Command;
+import net.mat0u5.do2manager.events.Events;
 
 public class ModRegistries {
     public static void registerModStuff() {
@@ -10,7 +10,7 @@ public class ModRegistries {
         registerEvents();
     }
     private static void registerCommands() {
-        CommandRegistrationCallback.EVENT.register(Resourcepack::register);
+        CommandRegistrationCallback.EVENT.register(Command::register);
     }
     private static void registerEvents() {
         Events.register();

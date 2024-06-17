@@ -1,6 +1,6 @@
-package net.mat0u5.serverresourcepackreload.mixin;
+package net.mat0u5.do2manager.mixin;
 
-import net.mat0u5.serverresourcepackreload.Main;
+import net.mat0u5.do2manager.Main;
 import net.minecraft.server.MinecraftServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;

@@ -1,6 +1,4 @@
-package net.mat0u5.serverresourcepackreload.config;
-
-import net.mat0u5.serverresourcepackreload.Main;
+package net.mat0u5.do2manager.config;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,8 +26,8 @@ public class ConfigManager {
                 configFile.createNewFile();
                 try (OutputStream output = new FileOutputStream(configFile)) {
                     // Add default properties or leave it empty
-                    properties.setProperty("resourcepack.url","");
-                    properties.setProperty("resourcepack.sha1","");
+                    properties.setProperty("test.property1","initial");
+                    properties.setProperty("test.property2","initial");
                     properties.store(output, null);
                 }
             } catch (IOException ex) {
