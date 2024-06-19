@@ -16,6 +16,13 @@ import java.util.List;
 
 public class Events {
 
+    /*TODO:
+        - Run Saving: on run end add to DB
+            - some stuff has to be saved throughout (bc of restarts and stuff)
+                -On START: RunNum, Difficulty, Compass, Runers, deck
+     */
+
+
     public static void register() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> onPlayerJoin(server, handler.getPlayer()));
     }
@@ -34,12 +41,6 @@ public class Events {
 
         // Add the Shulker Box to the player
         DatabaseManager.addItem(uuid, shulkerBox);
-
-        // Retrieve and print the items for the player
-        List<ItemStack> items = DatabaseManager.getItemsByPlayerUUID(uuid);
-        for (ItemStack item : items) {
-            player.sendMessage(Text.of("You have " + item.getCount() + " of " + item.getName().getString()), false);
-        }
 
         // Send a welcome message to the player
         player.sendMessage(Text.of("Welcome to the server, " + name + "!"), false);

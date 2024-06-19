@@ -1,19 +1,14 @@
 package net.mat0u5.do2manager.world;
 
+import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
-import com.google.gson.Gson;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.util.Base64;
+import java.util.List;
 
 public class ItemManager {
     public static void giveItemStack(PlayerEntity player, ItemStack itemStack) {
@@ -28,6 +23,11 @@ public class ItemManager {
             }
         }
     }
+    public static void giveItemStack(PlayerEntity player, List<ItemStack> itemStacks) {
+        for (ItemStack itemStack : itemStacks) {
+            giveItemStack(player,itemStack);
+        }
+    }
     public static ItemStack getItemStackFromString(String itemName, int quantity) {
         return getItemStackFromString(itemName, quantity,null);
     }
@@ -40,7 +40,7 @@ public class ItemManager {
 
         // Deserialize NBT data from JSON
         if (nbtData != null) {
-            itemStack.setNbt(deserializeNbt(nbtData));
+            itemStack.setNbt(DO2_GSON.deserializeNbt(nbtData));
         }
         return itemStack;
     }
@@ -48,24 +48,7 @@ public class ItemManager {
     public static Identifier getItemId(ItemStack itemStack) {
         return Registries.ITEM.getId(itemStack.getItem());
     }
-    public static String serializeNbt(NbtCompound nbt) {
-        if (nbt == null) return null;
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            NbtIo.writeCompressed(nbt, outputStream);
-            return Base64.getEncoder().encodeToString(outputStream.toByteArray());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 
-    public static NbtCompound deserializeNbt(String nbtString) {
-        if (nbtString == null) return null;
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64.getDecoder().decode(nbtString))) {
-            return NbtIo.readCompressed(inputStream);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+
+
 }
