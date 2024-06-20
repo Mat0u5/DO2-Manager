@@ -178,17 +178,17 @@ public class DatabaseManager {
             e.printStackTrace();
         }
     }
-    public static void addRunDetailed(int runNumber, String cardPlays, ItemStack compass, ItemStack artifact, ItemStack deck, PlayerEntity player, String deathPos, String deathCause) {
+    public static void addRunDetailed(int runNumber, String cardPlays, String compass, String artifact, String deck, String playerInventory, String deathPos, String deathCause) {
         String sql = "INSERT INTO runsDetailed(db_version, run_number, card_plays, compass_item, artifact_item, deck_item, inventory_save, death_pos, death_cause) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, DB_VERSION);
             statement.setInt(2, runNumber);
             statement.setString(3, cardPlays);
-            statement.setString(4, DO2_GSON.serializeItemStack(compass));
-            statement.setString(5, DO2_GSON.serializeItemStack(artifact));
-            statement.setString(6, DO2_GSON.serializeItemStack(deck));
-            statement.setString(7, DO2_GSON.serializePlayerInventory(player));
+            statement.setString(4, compass);
+            statement.setString(5, artifact);
+            statement.setString(6, deck);
+            statement.setString(7, playerInventory);
             statement.setString(8, deathPos);
             statement.setString(9, deathCause);
 

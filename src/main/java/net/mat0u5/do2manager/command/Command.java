@@ -2,22 +2,10 @@ package net.mat0u5.do2manager.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import net.mat0u5.do2manager.Main;
-import net.mat0u5.do2manager.database.DatabaseManager;
-import net.mat0u5.do2manager.world.ItemManager;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
-import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-
-import java.util.List;
-
-import net.minecraft.util.Hand;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -37,6 +25,58 @@ public class Command {
                         .then(literal("runTracking")
                             .then(literal("getInfo")
                                 .executes(context -> ConsoleCommand.database_runTracking_GetInfo(
+                                    context.getSource())
+                                )
+                            )
+                            .then(literal("var_modify")
+                                .then(CommandManager.argument("query", StringArgumentType.string())
+                                    .executes(context -> ConsoleCommand.database_runTracking_modifyVar(
+                                        context.getSource(),
+                                        StringArgumentType.getString(context, "query"))
+                                    )
+                                )
+                            )
+                            .then(literal("var_modify_premade")
+                                .then(literal("timestamp")
+                                    .then(CommandManager.argument("timestampName", StringArgumentType.string())
+                                        .executes(context -> ConsoleCommand.database_runTracking_Timestamp(
+                                            context.getSource(),
+                                            StringArgumentType.getString(context, "query"))
+                                        )
+                                    )
+                                )
+                                .then(literal("compass_item")
+                                    .executes(context -> ConsoleCommand.database_runTracking_ItemCompass(
+                                        context.getSource())
+                                    )
+                                )
+                                .then(literal("deck_item")
+                                    .executes(context -> ConsoleCommand.database_runTracking_ItemDeck(
+                                        context.getSource())
+                                    )
+                                )
+                                .then(literal("save_inv")
+                                    .executes(context -> ConsoleCommand.database_runTracking_ItemInventory(
+                                        context.getSource())
+                                    )
+                                )
+                                .then(literal("players")
+                                    .then(literal("runners")
+                                        .executes(context -> ConsoleCommand.database_runTracking_Players(
+                                            context.getSource(),
+                                    "runners")
+                                        )
+                                    )
+                                    .then(literal("finishers")
+                                        .executes(context -> ConsoleCommand.database_runTracking_Players(
+                                            context.getSource(),
+                                    "finishers")
+                                        )
+                                    )
+                                )
+                            )
+                            .then(literal("save_run_to_db")
+                                .executes(context -> ConsoleCommand.database_runTracking_SaveRun(
                                     context.getSource())
                                 )
                             )

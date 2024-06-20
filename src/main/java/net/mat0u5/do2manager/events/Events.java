@@ -2,9 +2,12 @@ package net.mat0u5.do2manager.events;
 
 
 
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.mat0u5.do2manager.Main;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.mat0u5.do2manager.database.DatabaseManager;
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -12,22 +15,23 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class Events {
 
-    /*TODO:
-        - Run Saving: on run end add to DB
-            - some stuff has to be saved throughout (bc of restarts and stuff)
-                -On START: RunNum, Difficulty, Compass, Runers, deck
-     */
-
-
     public static void register() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> onPlayerJoin(server, handler.getPlayer()));
+        ServerLivingEntityEvents.AFTER_DEATH.register((entity, source) -> {
+            if (entity instanceof ServerPlayerEntity) {
+                onPlayerDeath((ServerPlayerEntity) entity);
+            }
+        });
     }
 
-    private static void onPlayerJoin(MinecraftServer server, ServerPlayerEntity player) { // Add player to the database
+    private static void onPlayerJoin(MinecraftServer server, ServerPlayerEntity player) {
         // Add player to the database
         String uuid = player.getUuidAsString();
         String name = player.getName().getString();
@@ -44,5 +48,8 @@ public class Events {
 
         // Send a welcome message to the player
         player.sendMessage(Text.of("Welcome to the server, " + name + "!"), false);
+    }
+    private static void onPlayerDeath(ServerPlayerEntity player) {
+
     }
 }

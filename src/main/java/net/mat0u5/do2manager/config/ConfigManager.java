@@ -12,6 +12,7 @@ public class ConfigManager {
 
     private Properties properties = new Properties();
     private String filePath;
+    public static final String VALUE_SEPARATOR = "_~~_";
 
     public ConfigManager(String filePath) {
         this.filePath = filePath;
@@ -26,7 +27,10 @@ public class ConfigManager {
                 configFile.createNewFile();
                 try (OutputStream output = new FileOutputStream(configFile)) {
                     // Add default properties or leave it empty
-                    properties.setProperty("runNum","1");
+                    properties.setProperty("currentRun_runners","");
+                    properties.setProperty("currentRun_runType","");
+                    properties.setProperty("currentRun_card_plays","");
+                    properties.setProperty("currentRun_card_plays","");
                     properties.store(output, null);
                 }
             } catch (IOException ex) {

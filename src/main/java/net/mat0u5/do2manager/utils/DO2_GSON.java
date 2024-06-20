@@ -49,7 +49,7 @@ public class DO2_GSON {
         String nbtData = serializeNbt(itemStack.getNbt());
 
         return new SerializedItemStack(
-                Registries.ITEM.getId(itemStack.getItem()).toString(),
+                ItemManager.getItemId(itemStack),
                 itemStack.getCount(),
                 nbtData
         );

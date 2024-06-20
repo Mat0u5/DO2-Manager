@@ -37,4 +37,25 @@ public class OtherUtils {
 
         return readableTime.toString();
     }
+    public static String removeQuotes(String str) {
+        while (str.startsWith("\"") && str.endsWith("\"")) str = str.substring(1,str.length()-1);
+        return str;
+    }
+    public static int findStringPosInString(String str, String find) {
+        int deletedChars = 0;
+        while(!str.startsWith(find) && str.length() != 0) {
+            str = str.substring(1);
+            deletedChars++;
+        }
+        if (str.startsWith(find)) return deletedChars;
+        return -1;
+    }
+    public static int stringToInt(String str) {
+        try {
+            int i = Integer.parseInt(str);
+            return i;
+        }catch (Exception e) {
+            return -1;
+        }
+    }
 }

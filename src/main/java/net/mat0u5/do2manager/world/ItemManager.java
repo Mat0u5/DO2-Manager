@@ -45,8 +45,8 @@ public class ItemManager {
         return itemStack;
     }
 
-    public static Identifier getItemId(ItemStack itemStack) {
-        return Registries.ITEM.getId(itemStack.getItem());
+    public static String getItemId(ItemStack itemStack) {
+        return Registries.ITEM.getId(itemStack.getItem()).toString();
     }
 
 

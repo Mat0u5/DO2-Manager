@@ -2,7 +2,9 @@ package net.mat0u5.do2manager.command;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
+import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.mat0u5.do2manager.world.ItemManager;
+import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -49,14 +51,11 @@ public class TestingCommand {
     public static int executeAddRun(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
-        int runNum = Integer.parseInt(Main.config.getProperty("runNum"));
+        int runNum = RunInfoParser.getRunNum(server);
 
         DatabaseManager.addRun(runNum, "casual",self.getUuidAsString(),null, 32456);
-        DatabaseManager.addRunDetailed(runNum, "card1,card2",new ItemStack(Items.COMPASS, 1), new ItemStack(Items.IRON_NUGGET, 1), self.getStackInHand(Hand.MAIN_HAND), self, "-520 69 420", "ravager hihi");
+        DatabaseManager.addRunDetailed(runNum, "card1,card2",DO2_GSON.serializeItemStack(new ItemStack(Items.COMPASS, 1)), DO2_GSON.serializeItemStack(new ItemStack(Items.IRON_NUGGET, 1)), DO2_GSON.serializeItemStack(self.getStackInHand(Hand.MAIN_HAND)), DO2_GSON.serializePlayerInventory(self), "-520 69 420", "ravager hihi");
         DatabaseManager.addRunSpeedrun(runNum,1,2,3,4,5,6,7,8);
-
-        runNum++;
-        Main.config.setProperty("runNum", String.valueOf(runNum));
 
         self.sendMessage(Text.translatable("§6Command Worked.."));
         return 1;
