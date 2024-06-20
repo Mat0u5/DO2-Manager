@@ -3,7 +3,8 @@
 	"package": "net.mat0u5.do2manager.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-		"ExampleMixin"
+		"PlayerEntityMixin",
+		"ItemEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

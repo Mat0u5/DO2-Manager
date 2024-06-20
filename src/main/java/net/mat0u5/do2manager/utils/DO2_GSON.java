@@ -43,6 +43,7 @@ public class DO2_GSON {
     }
 
     private static SerializedItemStack serializeItemStackCustom(ItemStack itemStack) {
+        if (itemStack == null) return null;
         NbtCompound nbtCompound = new NbtCompound();
         itemStack.writeNbt(nbtCompound);
 
@@ -96,13 +97,11 @@ public class DO2_GSON {
     }
 
     // Deserialize JSON string to player's inventory
-    public static List<ItemStack> deserializePlayerInventory(PlayerEntity player, String json) {
+    public static List<ItemStack> deserializePlayerInventory(String json) {
         List<ItemStack> inv = new ArrayList<ItemStack>();
 
         SerializedItemStack[] serializedItemStacks = GSON.fromJson(json, SerializedItemStack[].class);
 
-        Inventory inventory = player.getInventory();
-        inventory.clear();
 
         for (SerializedItemStack serializedItemStack : serializedItemStacks) {
             ItemStack itemStack = deserializeItemStack(serializedItemStack);

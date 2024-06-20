@@ -28,6 +28,11 @@ public class Command {
                                     context.getSource())
                                 )
                             )
+                            .then(literal("prepareForRun")
+                                .executes(context -> ConsoleCommand.database_runTracking_PrepareForRun(
+                                    context.getSource())
+                                )
+                            )
                             .then(literal("var_modify")
                                 .then(CommandManager.argument("query", StringArgumentType.string())
                                     .executes(context -> ConsoleCommand.database_runTracking_modifyVar(
@@ -41,12 +46,22 @@ public class Command {
                                     .then(CommandManager.argument("timestampName", StringArgumentType.string())
                                         .executes(context -> ConsoleCommand.database_runTracking_Timestamp(
                                             context.getSource(),
-                                            StringArgumentType.getString(context, "query"))
+                                            StringArgumentType.getString(context, "timestampName"))
                                         )
                                     )
                                 )
-                                .then(literal("compass_item")
-                                    .executes(context -> ConsoleCommand.database_runTracking_ItemCompass(
+                                .then(literal("run_number")
+                                    .executes(context -> ConsoleCommand.database_runTracking_RunNumber(
+                                        context.getSource())
+                                    )
+                                )
+                                .then(literal("run_difficulty")
+                                    .executes(context -> ConsoleCommand.database_runTracking_RunDiff(
+                                        context.getSource())
+                                    )
+                                )
+                                .then(literal("compass_or_arti_item")
+                                    .executes(context -> ConsoleCommand.database_runTracking_ItemCompassOrArti(
                                         context.getSource())
                                     )
                                 )
@@ -85,6 +100,11 @@ public class Command {
                 )
 
                 ////////
+                .then(literal("test")
+                    .executes(context -> TestingCommand.executeTest(
+                        context.getSource())
+                    )
+                )
                 .then(literal("getItem")
                     .executes(context -> TestingCommand.executeGetItem(
                         context.getSource())

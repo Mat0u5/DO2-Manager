@@ -54,7 +54,7 @@ public class TestingCommand {
         int runNum = RunInfoParser.getRunNum(server);
 
         DatabaseManager.addRun(runNum, "casual",self.getUuidAsString(),null, 32456);
-        DatabaseManager.addRunDetailed(runNum, "card1,card2",DO2_GSON.serializeItemStack(new ItemStack(Items.COMPASS, 1)), DO2_GSON.serializeItemStack(new ItemStack(Items.IRON_NUGGET, 1)), DO2_GSON.serializeItemStack(self.getStackInHand(Hand.MAIN_HAND)), DO2_GSON.serializePlayerInventory(self), "-520 69 420", "ravager hihi");
+        DatabaseManager.addRunDetailed(runNum, "card1,card2",5, DO2_GSON.serializeItemStack(new ItemStack(Items.COMPASS, 1)), DO2_GSON.serializeItemStack(new ItemStack(Items.IRON_NUGGET, 1)), DO2_GSON.serializeItemStack(self.getStackInHand(Hand.MAIN_HAND)), DO2_GSON.serializePlayerInventory(self), "itemSBOUGHt", "-520 69 420", "ravager hihi");
         DatabaseManager.addRunSpeedrun(runNum,1,2,3,4,5,6,7,8);
 
         self.sendMessage(Text.translatable("§6Command Worked.."));
@@ -64,8 +64,17 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        ItemManager.giveItemStack(self, DatabaseManager.getInvByRunNumber(self,runNum));
+        //ItemManager.giveItemStack(self, DatabaseManager.getInvByRunNumber(self,runNum));
+        ItemStack items = DO2_GSON.deserializeItemStack(Main.config.getProperty("artifact_item"));
+        ItemManager.giveItemStack(self,items);
+        self.sendMessage(Text.translatable("§6Command Worked.."));
+        return 1;
+    }
+    public static int executeTest(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final PlayerEntity self = source.getPlayer();
 
+        System.out.println(RunInfoParser.getDeck(server));
         self.sendMessage(Text.translatable("§6Command Worked.."));
         return 1;
     }

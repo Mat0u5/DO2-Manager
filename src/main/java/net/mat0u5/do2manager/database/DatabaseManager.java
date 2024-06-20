@@ -16,7 +16,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 
 public class DatabaseManager {
-    private static final String DB_VERSION = "v.0.0.1";
+    private static final String DB_VERSION = "v.0.0.2";
 
     private static final String FOLDER_PATH = "./config/"+ Main.MOD_ID;
     private static final String FILE_PATH = FOLDER_PATH+"/"+Main.MOD_ID+".db";
@@ -94,12 +94,14 @@ public class DatabaseManager {
                 "db_version TEXT NOT NULL," +
                 "run_number INTEGER NOT NULL UNIQUE," +
                 "card_plays TEXT," +
+                "difficulty INTEGER," +
                 "compass_item TEXT," +
                 "artifact_item TEXT," +
                 "deck_item TEXT," +
                 "inventory_save TEXT," +
+                "items_bought TEXT," +
                 "death_pos TEXT," +
-                "death_cause TEXT," +
+                "death_message TEXT," +
                 "FOREIGN KEY(run_number) REFERENCES runs(run_number)" +
                 ");";
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -178,19 +180,21 @@ public class DatabaseManager {
             e.printStackTrace();
         }
     }
-    public static void addRunDetailed(int runNumber, String cardPlays, String compass, String artifact, String deck, String playerInventory, String deathPos, String deathCause) {
-        String sql = "INSERT INTO runsDetailed(db_version, run_number, card_plays, compass_item, artifact_item, deck_item, inventory_save, death_pos, death_cause) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    public static void addRunDetailed(int runNumber, String cardPlays, int difficulty, String compass, String artifact, String deck, String playerInventory, String itemsBought, String deathPos, String deathMessage) {
+        String sql = "INSERT INTO runsDetailed(db_version, run_number, card_plays, difficulty, compass_item, artifact_item, deck_item, inventory_save, items_bought, death_pos, death_message) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, DB_VERSION);
             statement.setInt(2, runNumber);
             statement.setString(3, cardPlays);
-            statement.setString(4, compass);
-            statement.setString(5, artifact);
-            statement.setString(6, deck);
-            statement.setString(7, playerInventory);
-            statement.setString(8, deathPos);
-            statement.setString(9, deathCause);
+            statement.setInt(4, difficulty);
+            statement.setString(5, compass);
+            statement.setString(6, artifact);
+            statement.setString(7, deck);
+            statement.setString(8, playerInventory);
+            statement.setString(9, itemsBought);
+            statement.setString(10, deathPos);
+            statement.setString(11, deathMessage);
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -248,7 +252,7 @@ public class DatabaseManager {
             while (resultSet.next()) {
                 String db_version = resultSet.getString("db_version");
                 String inv = resultSet.getString("inventory_save");
-                return DO2_GSON.deserializePlayerInventory(player, inv);
+                return DO2_GSON.deserializePlayerInventory( inv);
             }
         } catch (SQLException e) {
             e.printStackTrace();
