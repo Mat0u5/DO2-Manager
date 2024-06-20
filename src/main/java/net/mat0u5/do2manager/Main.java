@@ -17,6 +17,7 @@ public class Main implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		config = new ConfigManager("./config/"+MOD_ID+".properties");
+		DatabaseManager.checkForDBUpdates();
 		ModRegistries.registerModStuff();
 		LOGGER.info("Initializing DO2-manager...");
 	}

@@ -26,7 +26,7 @@ public class ConfigManager {
                 configFile.createNewFile();
                 try (OutputStream output = new FileOutputStream(configFile)) {
                     // Add default properties or leave it empty
-                    properties.setProperty("runNum","2");
+                    properties.setProperty("runNum","1");
                     properties.store(output, null);
                 }
             } catch (IOException ex) {

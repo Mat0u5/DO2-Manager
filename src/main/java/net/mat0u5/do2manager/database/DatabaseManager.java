@@ -19,7 +19,7 @@ public class DatabaseManager {
     private static final String DB_VERSION = "v.0.0.1";
 
     private static final String FOLDER_PATH = "./config/"+ Main.MOD_ID;
-    private static final String FILE_PATH = FOLDER_PATH+"/mymod.db";
+    private static final String FILE_PATH = FOLDER_PATH+"/"+Main.MOD_ID+".db";
     private static final String URL = "jdbc:sqlite:"+FILE_PATH;
 
     public static void initialize() {
@@ -35,6 +35,14 @@ public class DatabaseManager {
             }
         } catch (SQLException e) {
             e.printStackTrace();
+        }
+    }
+    public static void checkForDBUpdates() {
+        String lastRecordedDBVersion = Main.config.getProperty("db_version");
+        if (DB_VERSION.equalsIgnoreCase(lastRecordedDBVersion)) return;
+        if (lastRecordedDBVersion == null || lastRecordedDBVersion.isEmpty()) {
+            Main.config.setProperty("db_version",DB_VERSION);
+            return;
         }
     }
     private static void createFolderIfNotExists() {

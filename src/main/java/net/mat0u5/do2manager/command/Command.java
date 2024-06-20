@@ -28,78 +28,46 @@ public class Command {
                                 CommandManager.RegistrationEnvironment registrationEnvironment) {
         dispatcher.register(
             literal("decked-out")
-                .executes(context -> Command.execute(context.getSource()))
+                .then(literal("console-only")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .executes(context -> ConsoleCommand.execute(
+                        context.getSource())
+                    )
+                    .then(literal("database")
+                        .then(literal("runTracking")
+                            .then(literal("getInfo")
+                                .executes(context -> ConsoleCommand.database_runTracking_GetInfo(
+                                    context.getSource())
+                                )
+                            )
+                        )
+                    )
+                )
+
+                ////////
                 .then(literal("getItem")
-                    .executes(context -> Command.executeGetItem(context.getSource()))
+                    .executes(context -> TestingCommand.executeGetItem(
+                        context.getSource())
+                    )
                 )
                 .then(literal("setItem")
-                    .executes(context -> Command.executeSetItem(context.getSource()))
+                    .executes(context -> TestingCommand.executeSetItem(
+                        context.getSource())
+                    )
                 )
                 .then(literal("addRun")
-                    .executes(context -> Command.executeAddRun(context.getSource()))
+                    .executes(context -> TestingCommand.executeAddRun(
+                        context.getSource())
+                    )
                 )
                 .then(literal("getInv")
                     .then(CommandManager.argument("runNum", IntegerArgumentType.integer())
-                        .executes(context -> executeGetInv(context.getSource(), IntegerArgumentType.getInteger(context, "runNum")))
+                        .executes(context -> TestingCommand.executeGetInv(
+                            context.getSource(),
+                            IntegerArgumentType.getInteger(context, "runNum"))
+                        )
                     )
                 )
         );
-        //.requires(source -> source.hasPermissionLevel(2))
-    }
-    public static int execute(ServerCommandSource source) {
-        MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
-
-        DatabaseManager.printAllPlayers();
-        try {
-            DatabaseManager.updateTable();
-        }catch (Exception e){}
-        self.sendMessage(Text.translatable("§6Command Worked.."));
-        return -1;
-    }
-    public static int executeGetItem(ServerCommandSource source) {
-        MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
-
-        List<ItemStack> playerItems = DatabaseManager.getItemsByPlayerUUID(self.getUuidAsString());
-        for (ItemStack item : playerItems) {
-            ItemManager.giveItemStack(self,item);
-        }
-
-        self.sendMessage(Text.translatable("§6Command Worked.."));
-        return -1;
-    }
-    public static int executeSetItem(ServerCommandSource source) {
-        MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
-
-        DatabaseManager.addItem(self.getUuidAsString(),self.getStackInHand(Hand.MAIN_HAND));
-
-        self.sendMessage(Text.translatable("§6Command Worked.."));
-        return -1;
-    }
-    public static int executeAddRun(ServerCommandSource source) {
-        MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
-        int runNum = Integer.parseInt(Main.config.getProperty("runNum"));
-
-        DatabaseManager.addRun(runNum, "casual",self.getUuidAsString(),null, 32456);
-        DatabaseManager.addRunDetailed(runNum, "card1,card2",new ItemStack(Items.COMPASS, 1), new ItemStack(Items.IRON_NUGGET, 1), self.getStackInHand(Hand.MAIN_HAND), self, "-520 69 420", "ravager hihi");
-        DatabaseManager.addRunSpeedrun(runNum,1,2,3,4,5,6,7,8);
-
-        runNum++;
-        Main.config.setProperty("runNum", String.valueOf(runNum));
-
-        self.sendMessage(Text.translatable("§6Command Worked.."));
-        return -1;
-    }
-    public static int executeGetInv(ServerCommandSource source, int runNum) {
-        MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
-
-        ItemManager.giveItemStack(self, DatabaseManager.getInvByRunNumber(self,runNum));
-
-        self.sendMessage(Text.translatable("§6Command Worked.."));
-        return -1;
     }
 }
