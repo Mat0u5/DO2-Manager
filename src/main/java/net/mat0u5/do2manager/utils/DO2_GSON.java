@@ -46,19 +46,18 @@ public class DO2_GSON {
         NbtCompound nbtCompound = new NbtCompound();
         itemStack.writeNbt(nbtCompound);
 
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            NbtIo.writeCompressed(nbtCompound, outputStream);
-            String nbtBase64 = Base64.getEncoder().encodeToString(outputStream.toByteArray());
+        String nbtData = serializeNbt(itemStack.getNbt());
 
-            return new SerializedItemStack(
-                    Registries.ITEM.getId(itemStack.getItem()).toString(),
-                    itemStack.getCount(),
-                    nbtBase64
-            );
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
+        return new SerializedItemStack(
+                Registries.ITEM.getId(itemStack.getItem()).toString(),
+                itemStack.getCount(),
+                nbtData
+        );
+    }
+
+    // Serialize ItemStack to JSON string
+    public static String serializeItemStack(ItemStack itemStack) {
+        return GSON.toJson(serializeItemStackCustom(itemStack));
     }
 
     // Deserialize SerializedItemStack to ItemStack
@@ -69,57 +68,16 @@ public class DO2_GSON {
         );
 
         if (serializedItemStack.getNbtData() != null) {
-            try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64.getDecoder().decode(serializedItemStack.getNbtData()))) {
-                NbtCompound nbtCompound = NbtIo.readCompressed(inputStream);
-                itemStack.setNbt(nbtCompound);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            NbtCompound nbtCompound = deserializeNbt(serializedItemStack.getNbtData());
+            itemStack.setNbt(nbtCompound);
         }
 
         return itemStack;
-    }
-
-    // Serialize ItemStack to JSON string
-    public static String serializeItemStack(ItemStack itemStack) {
-        NbtCompound nbtCompound = new NbtCompound();
-        itemStack.writeNbt(nbtCompound);
-
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            NbtIo.writeCompressed(nbtCompound, outputStream);
-            String nbtData = serializeNbt(itemStack.getNbt());
-
-            SerializedItemStack serializedItemStack = new SerializedItemStack(
-                    Registries.ITEM.getId(itemStack.getItem()).toString(),
-                    itemStack.getCount(),
-                    nbtData
-            );
-
-            return GSON.toJson(serializedItemStack);
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
     }
     // Deserialize JSON string to ItemStack
     public static ItemStack deserializeItemStack(String json) {
         SerializedItemStack serializedItemStack = GSON.fromJson(json, SerializedItemStack.class);
-
-        ItemStack itemStack = new ItemStack(
-                Registries.ITEM.get(new Identifier(serializedItemStack.getItemName())),
-                serializedItemStack.getQuantity()
-        );
-
-        if (serializedItemStack.getNbtData() != null) {
-            try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64.getDecoder().decode(serializedItemStack.getNbtData()))) {
-                NbtCompound nbtCompound = NbtIo.readCompressed(inputStream);
-                itemStack.setNbt(nbtCompound);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        return itemStack;
+        return deserializeItemStack(serializedItemStack);
     }
 
     // Serialize player's inventory to a JSON string

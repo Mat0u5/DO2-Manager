@@ -2,6 +2,7 @@ package net.mat0u5.do2manager.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.minecraft.command.CommandRegistryAccess;
@@ -22,7 +23,6 @@ import static net.minecraft.server.command.CommandManager.literal;
 
 
 public class Command {
-    private static int runNum = 1;
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher,
                                 CommandRegistryAccess commandRegistryAccess,
                                 CommandManager.RegistrationEnvironment registrationEnvironment) {
@@ -81,10 +81,15 @@ public class Command {
     public static int executeAddRun(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
+        int runNum = Integer.parseInt(Main.config.getProperty("runNum"));
+
         DatabaseManager.addRun(runNum, "casual",self.getUuidAsString(),null, 32456);
         DatabaseManager.addRunDetailed(runNum, "card1,card2",new ItemStack(Items.COMPASS, 1), new ItemStack(Items.IRON_NUGGET, 1), self.getStackInHand(Hand.MAIN_HAND), self, "-520 69 420", "ravager hihi");
         DatabaseManager.addRunSpeedrun(runNum,1,2,3,4,5,6,7,8);
-        runNum++;//TEMP
+
+        runNum++;
+        Main.config.setProperty("runNum", String.valueOf(runNum));
+
         self.sendMessage(Text.translatable("§6Command Worked.."));
         return -1;
     }
