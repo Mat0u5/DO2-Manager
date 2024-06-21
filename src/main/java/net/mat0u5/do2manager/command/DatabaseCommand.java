@@ -11,7 +11,6 @@ public class DatabaseCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        DatabaseManager.printAllPlayers();
         try {
             DatabaseManager.updateTable();
         }catch (Exception e){}

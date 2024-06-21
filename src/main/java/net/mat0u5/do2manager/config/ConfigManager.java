@@ -1,6 +1,7 @@
 package net.mat0u5.do2manager.config;
 
 import net.mat0u5.do2manager.Main;
+import net.mat0u5.do2manager.database.DatabaseManager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,36 +31,15 @@ public class ConfigManager {
             try {
                 configFile.createNewFile();
                 try (OutputStream output = new FileOutputStream(configFile)) {
-                    // Add default properties or leave it empty
-                    resetRunInfo();
+                    properties.setProperty("current_run","");
+                    properties.setProperty("db_version",DatabaseManager.DB_VERSION);
+
                     properties.store(output, null);
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
         }
-    }
-    public static void resetRunInfo() {
-        Main.config.setProperty("run_type","");
-        Main.config.setProperty("runners","");
-        Main.config.setProperty("finishers","");
-        Main.config.setProperty("card_plays","");
-        Main.config.setProperty("compass_item","");
-        Main.config.setProperty("artifact_item","");
-        Main.config.setProperty("deck_item","");
-        Main.config.setProperty("inventory_save","");
-        Main.config.setProperty("death_pos","");
-        Main.config.setProperty("death_message","");
-        Main.config.setProperty("run_number","");
-        Main.config.setProperty("run_length","");
-        Main.config.setProperty("timestamp_lvl2_entry","");
-        Main.config.setProperty("timestamp_lvl3_entry","");
-        Main.config.setProperty("timestamp_lvl4_entry","");
-        Main.config.setProperty("timestamp_lvl4_exit","");
-        Main.config.setProperty("timestamp_lvl3_exit","");
-        Main.config.setProperty("timestamp_lvl2_exit","");
-        Main.config.setProperty("timestamp_lvl1_exit","");
-        Main.config.setProperty("timestamp_artifact","");
     }
 
     public void loadProperties() {

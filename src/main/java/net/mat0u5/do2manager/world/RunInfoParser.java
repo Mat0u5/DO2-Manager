@@ -1,5 +1,6 @@
 package net.mat0u5.do2manager.world;
 
+import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;

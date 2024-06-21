@@ -4,8 +4,12 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.Text;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -16,6 +20,7 @@ public class Command {
                                 CommandManager.RegistrationEnvironment registrationEnvironment) {
         dispatcher.register(
             literal("decked-out")
+                .requires(source -> source.hasPermissionLevel(2))
                 .then(literal("console-only")
                     .requires(source -> source.hasPermissionLevel(2))
                     .executes(context -> ConsoleCommand.execute(
@@ -42,6 +47,17 @@ public class Command {
                                 )
                             )
                             .then(literal("var_modify_premade")
+                                .then(literal("items")
+                                    .then(CommandManager.argument("functionName", StringArgumentType.string())
+                                        .then(CommandManager.argument("targets", EntityArgumentType.entities())
+                                            .executes(context -> ConsoleCommand.database_runTracking_Items(
+                                                context.getSource(),
+                                                StringArgumentType.getString(context, "functionName"),
+                                                EntityArgumentType.getEntities(context, "targets"))
+                                            )
+                                        )
+                                    )
+                                )
                                 .then(literal("timestamp")
                                     .then(CommandManager.argument("timestampName", StringArgumentType.string())
                                         .executes(context -> ConsoleCommand.database_runTracking_Timestamp(
@@ -57,11 +73,6 @@ public class Command {
                                 )
                                 .then(literal("run_difficulty")
                                     .executes(context -> ConsoleCommand.database_runTracking_RunDiff(
-                                        context.getSource())
-                                    )
-                                )
-                                .then(literal("compass_or_arti_item")
-                                    .executes(context -> ConsoleCommand.database_runTracking_ItemCompassOrArti(
                                         context.getSource())
                                     )
                                 )
@@ -102,16 +113,6 @@ public class Command {
                 ////////
                 .then(literal("test")
                     .executes(context -> TestingCommand.executeTest(
-                        context.getSource())
-                    )
-                )
-                .then(literal("getItem")
-                    .executes(context -> TestingCommand.executeGetItem(
-                        context.getSource())
-                    )
-                )
-                .then(literal("setItem")
-                    .executes(context -> TestingCommand.executeSetItem(
                         context.getSource())
                     )
                 )

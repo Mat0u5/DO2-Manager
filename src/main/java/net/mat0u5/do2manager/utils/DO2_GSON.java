@@ -58,11 +58,13 @@ public class DO2_GSON {
 
     // Serialize ItemStack to JSON string
     public static String serializeItemStack(ItemStack itemStack) {
+        if (itemStack == null) return "";
         return GSON.toJson(serializeItemStackCustom(itemStack));
     }
 
     // Deserialize SerializedItemStack to ItemStack
     private static ItemStack deserializeItemStack(SerializedItemStack serializedItemStack) {
+        if (serializedItemStack == null) return null;
         ItemStack itemStack = new ItemStack(
                 Registries.ITEM.get(new Identifier(serializedItemStack.getItemName())),
                 serializedItemStack.getQuantity()
@@ -81,13 +83,12 @@ public class DO2_GSON {
         return deserializeItemStack(serializedItemStack);
     }
 
-    // Serialize player's inventory to a JSON string
-    public static String serializePlayerInventory(PlayerEntity player) {
+    // Serialize List<ItemStack> to a JSON string
+    public static String serializeListItemStack(List<ItemStack> list) {
+        if (list == null || list.isEmpty()) return "[]";
         List<SerializedItemStack> serializedItemStacks = new ArrayList<>();
 
-        Inventory inventory = player.getInventory();
-        for (int i = 0; i < inventory.size(); i++) {
-            ItemStack itemStack = inventory.getStack(i);
+        for (ItemStack itemStack : list) {
             if (!itemStack.isEmpty()) {
                 serializedItemStacks.add(serializeItemStackCustom(itemStack));
             }
@@ -96,12 +97,12 @@ public class DO2_GSON {
         return GSON.toJson(serializedItemStacks);
     }
 
-    // Deserialize JSON string to player's inventory
-    public static List<ItemStack> deserializePlayerInventory(String json) {
+
+    // Deserialize JSON string to List<ItemStack>
+    public static List<ItemStack> deserializeListItemStack(String json) {
         List<ItemStack> inv = new ArrayList<ItemStack>();
 
         SerializedItemStack[] serializedItemStacks = GSON.fromJson(json, SerializedItemStack[].class);
-
 
         for (SerializedItemStack serializedItemStack : serializedItemStacks) {
             ItemStack itemStack = deserializeItemStack(serializedItemStack);

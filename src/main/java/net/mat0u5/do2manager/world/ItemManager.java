@@ -1,9 +1,11 @@
 package net.mat0u5.do2manager.world;
 
 import net.mat0u5.do2manager.utils.DO2_GSON;
+import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -13,6 +15,7 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +76,6 @@ public class ItemManager {
     }
     private static List<ItemStack> getHopperContents(HopperBlockEntity hopper) {
         List<ItemStack> contents = new ArrayList<>();
-        System.out.println("HopperSize: " + hopper.size());
         for (int i = 0; i < hopper.size(); i++) {
             ItemStack stack = hopper.getStack(i);
             if (!stack.isEmpty()) {
@@ -84,4 +86,47 @@ public class ItemManager {
         return contents;
     }
 
+    public static List<ItemStack> getPlayerInventory(PlayerEntity player) {
+        List<ItemStack> list = new ArrayList<>();
+        Inventory inventory = player.getInventory();
+        for (int i = 0; i < inventory.size(); i++) {
+            ItemStack itemStack = inventory.getStack(i);
+            if (!itemStack.isEmpty()) {
+                list.add(itemStack);
+            }
+        }
+        return list;
+    }
+    public static boolean insertItemIntoBarrel(World world, BlockPos pos, ItemStack stack) {
+        if (!(world.getBlockEntity(pos) instanceof BarrelBlockEntity)) {
+            return false;
+        }
+
+        BarrelBlockEntity barrel = (BarrelBlockEntity) world.getBlockEntity(pos);
+        if (barrel == null) {
+            return false;
+        }
+
+        Inventory inventory = barrel;
+        for (int i = 0; i < inventory.size(); i++) {
+            ItemStack slotStack = inventory.getStack(i);
+            if (slotStack.isEmpty()) {
+                inventory.setStack(i, stack.copy());
+                stack.setCount(0);
+                barrel.markDirty();
+                return true;
+            } else if (ItemStack.canCombine(slotStack, stack)) {
+                int transferAmount = Math.min(inventory.getMaxCountPerStack() - slotStack.getCount(), stack.getCount());
+                slotStack.increment(transferAmount);
+                stack.decrement(transferAmount);
+                if (stack.isEmpty()) {
+                    barrel.markDirty();
+                    return true;
+                }
+            }
+        }
+
+        barrel.markDirty();
+        return false;
+    }
 }

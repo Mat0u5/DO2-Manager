@@ -5,13 +5,19 @@ import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.mat0u5.do2manager.utils.OtherUtils;
+import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static net.mat0u5.do2manager.utils.OtherUtils.stringToInt;
@@ -59,19 +65,12 @@ public class ConsoleCommand {
         if (addVarIndex == (setVarIndex - 1) && addVarIndex != -1) { //Add to a variable value
             String configName = query.substring(0,addVarIndex);
             String configValueAdd = query.substring(addVarIndex+2);
-            String configValueBefore = Main.config.getProperty(configName);
-            if (configValueBefore == null || configValueBefore.isEmpty()) {
-                Main.config.setProperty(configName, configValueAdd);
-            }
-            else {
-                //This aint pretty, look away o_O
-                Main.config.setProperty(configName, configValueBefore+ConfigManager.VALUE_SEPARATOR + configValueAdd);
-            }
+            //TODO
         }
         else {//Set a variable
             String configName = query.substring(0,setVarIndex);
             String configValue = query.substring(setVarIndex+1);
-            Main.config.setProperty(configName, configValue);
+            if (configName.equalsIgnoreCase("run_type")) Main.currentRun.run_type = configValue;
         }
         return 1;
     }
@@ -79,60 +78,34 @@ public class ConsoleCommand {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
-        String run_type = Main.config.getProperty("run_type");//Done with modifyVar
-        String runners = Main.config.getProperty("runners"); //Done with Players
-        String finishers = Main.config.getProperty("finishers"); //Done with Players
-        String card_plays = Main.config.getProperty("card_plays");//Done with modifyVar
-        String compass_item = Main.config.getProperty("compass_item");//Done
-        String artifact_item = Main.config.getProperty("artifact_item");//Done
-        String deck_item = Main.config.getProperty("deck_item");//Done
-        String inventory_save = Main.config.getProperty("inventory_save");//Done
-        String items_bought = Main.config.getProperty("items_bought");
-        String death_pos = Main.config.getProperty("death_pos");//Done
-        String death_cause = Main.config.getProperty("death_message");//Done
-        int difficulty = stringToInt(Main.config.getProperty("difficulty"));//Done
-        int run_number = stringToInt(Main.config.getProperty("run_number"));//Done + rest done
-        int run_length = stringToInt(Main.config.getProperty("run_length"));
-        int timestamp_lvl2_entry = stringToInt(Main.config.getProperty("timestamp_lvl2_entry"));
-        int timestamp_lvl3_entry = stringToInt(Main.config.getProperty("timestamp_lvl3_entry"));
-        int timestamp_lvl4_entry = stringToInt(Main.config.getProperty("timestamp_lvl4_entry"));
-        int timestamp_lvl4_exit = stringToInt(Main.config.getProperty("timestamp_lvl4_exit"));
-        int timestamp_lvl3_exit = stringToInt(Main.config.getProperty("timestamp_lvl3_exit"));
-        int timestamp_lvl2_exit = stringToInt(Main.config.getProperty("timestamp_lvl2_exit"));
-        int timestamp_lvl1_exit = stringToInt(Main.config.getProperty("timestamp_lvl1_exit"));
-        int timestamp_artifact = stringToInt(Main.config.getProperty("timestamp_artifact"));
-
-        DatabaseManager.addRun(run_number, run_type, runners,finishers,run_length);
-        DatabaseManager.addRunDetailed(run_number, card_plays, difficulty, compass_item,artifact_item,deck_item,inventory_save, items_bought,death_pos,death_cause);
-        DatabaseManager.addRunSpeedrun(run_number, timestamp_lvl2_entry,timestamp_lvl3_entry,timestamp_lvl4_entry,timestamp_lvl4_exit,timestamp_lvl3_exit,timestamp_lvl2_exit,timestamp_lvl1_exit,timestamp_artifact);
-        return 1;
-    }
-    public static int database_runTracking_ItemCompassOrArti(ServerCommandSource source) {
-        MinecraftServer server = source.getServer();
-        if (isRanByPlayer(source)) return -1;
-
-        ItemStack compass = RunInfoParser.getRunnersCompass(server);
-        ItemStack artifact = RunInfoParser.getRunnersArtifact(server);
-        if (compass == null && artifact == null) {
-            System.out.println("ERROR_NO_COMPASS_OR_ARTIFACT_FOUND");
+        if (Main.currentRun.run_length == -1 || Main.currentRun.runners.isEmpty() || Main.currentRun.run_number == -1) {
+            Main.resetRunInfo();
             return -1;
         }
-        if (compass != null ) Main.config.setProperty("compass_item", DO2_GSON.serializeItemStack(compass));
-        if (artifact != null ) Main.config.setProperty("artifact_item", DO2_GSON.serializeItemStack(artifact));
+        try {
+            DatabaseManager.addRun(Main.currentRun);
+            DatabaseManager.addRunDetailed(Main.currentRun);
+            DatabaseManager.addRunSpeedrun(Main.currentRun);
+            System.out.println("Run Saved to Database.");
+
+        }catch(Exception e) {
+            System.out.println(e);
+        }
+        Main.resetRunInfo();
         return 1;
     }
     public static int database_runTracking_RunNumber(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
-        Main.config.setProperty("run_number", String.valueOf(RunInfoParser.getRunNum(server)));
+        Main.currentRun.run_number = RunInfoParser.getRunNum(server);
         return 1;
     }
     public static int database_runTracking_RunDiff(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
-        Main.config.setProperty("difficulty", String.valueOf(RunInfoParser.getRunDifficulty(server)));
+        Main.currentRun.difficulty = RunInfoParser.getRunDifficulty(server);
         return 1;
     }
     public static int database_runTracking_ItemDeck(ServerCommandSource source) {
@@ -140,8 +113,7 @@ public class ConsoleCommand {
         if (isRanByPlayer(source)) return -1;
 
         ItemStack deck = RunInfoParser.getDeck(server);
-        System.out.println(deck);
-        if (deck != null) Main.config.setProperty("deck_item", DO2_GSON.serializeItemStack(deck));
+        if (deck != null) Main.currentRun.deck_item = deck;
         return 1;
     }
     public static int database_runTracking_ItemInventory(ServerCommandSource source) {
@@ -149,18 +121,47 @@ public class ConsoleCommand {
         if (isRanByPlayer(source)) return -1;
         List<PlayerEntity> playersList = RunInfoParser.getCurrentAliveRunners(server);
         if (playersList.isEmpty()) {
-            Main.config.setProperty("inventory_save", "");
+            Main.currentRun.inventory_save = null;
             return -1;
         }
-        PlayerEntity player = playersList.get(0);//TODO SUPPORT FOR MULTIPLE PLAYERS
-        Main.config.setProperty("inventory_save", DO2_GSON.serializePlayerInventory(player));
+        List<ItemStack> allRunnersItems = new ArrayList<>();
+        for (PlayerEntity player : playersList) {
+            allRunnersItems.addAll(ItemManager.getPlayerInventory(player));
+        }
+        Main.currentRun.inventory_save = allRunnersItems;
         return 1;
     }
     public static int database_runTracking_Timestamp(ServerCommandSource source, String varName) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
-        Main.config.setProperty(varName, String.valueOf(RunInfoParser.getRunLength(server)));
+        if (varName.contains("run_length")) Main.currentRun.run_length = RunInfoParser.getRunLength(server);
+        if (varName.contains("artifact")) Main.currentRun.timestamp_artifact = RunInfoParser.getRunLength(server);
+        if (varName.contains("lvl2_entry")) Main.currentRun.timestamp_lvl2_entry = RunInfoParser.getRunLength(server);
+        if (varName.contains("lvl3_entry")) Main.currentRun.timestamp_lvl3_entry = RunInfoParser.getRunLength(server);
+        if (varName.contains("lvl4_entry")) Main.currentRun.timestamp_lvl4_entry = RunInfoParser.getRunLength(server);
+        if (varName.contains("lvl4_exit")) Main.currentRun.timestamp_lvl4_exit = RunInfoParser.getRunLength(server);
+        if (varName.contains("lvl3_exit")) Main.currentRun.timestamp_lvl3_exit = RunInfoParser.getRunLength(server);
+        if (varName.contains("lvl2_exit")) Main.currentRun.timestamp_lvl2_exit = RunInfoParser.getRunLength(server);
+        if (varName.contains("lvl1_exit")) Main.currentRun.timestamp_lvl1_exit = RunInfoParser.getRunLength(server);
+        return 1;
+    }
+
+    public static int database_runTracking_Items(ServerCommandSource source, String funName, Collection<? extends Entity> items) {
+        MinecraftServer server = source.getServer();
+        if (isRanByPlayer(source)) return -1;
+        for (Entity item : items) {
+            if (item instanceof ItemEntity) {
+                ItemEntity itemEntity = (ItemEntity) item;
+                ItemStack itemStack = itemEntity.getStack();
+                if (funName.contains("card_plays")) Main.currentRun.card_plays.add(itemStack.copy());
+                if (funName.contains("items_bought")) {
+                    Main.currentRun.items_bought.add(itemStack.copy());
+                    //Add to barrel
+                    ItemManager.insertItemIntoBarrel(server.getOverworld(), new BlockPos(-549, 114, 1976), itemStack);
+                }
+            }
+        }
         return 1;
     }
     public static int database_runTracking_Players(ServerCommandSource source, String varName) {
@@ -171,14 +172,18 @@ public class ConsoleCommand {
         String players = "";
         List<PlayerEntity> playersList = varName.equalsIgnoreCase("runners")?RunInfoParser.getCurrentRunners(server):RunInfoParser.getCurrentAliveRunners(server);
         if (playersList.isEmpty()) {
-            Main.config.setProperty(varName, "");
+            if (varName.equalsIgnoreCase("runners")) Main.currentRun.runners = null;
+            if (varName.equalsIgnoreCase("finishers")) {
+                //Run End
+                Main.currentRun.finishers = null;
+                database_runTracking_SaveRun(source);
+            }
             return -1;
         }
         for (PlayerEntity player : playersList) {
-            players += ConfigManager.VALUE_SEPARATOR+ player.getUuidAsString();
+            if (varName.equalsIgnoreCase("runners")) Main.currentRun.runners.add(player.getUuidAsString());
+            if (varName.equalsIgnoreCase("finishers")) Main.currentRun.finishers.add(player.getUuidAsString());
         }
-        if (players.startsWith(ConfigManager.VALUE_SEPARATOR)) players = players.replaceFirst(ConfigManager.VALUE_SEPARATOR,"");
-        Main.config.setProperty(varName, players);
 
         return 1;
     }
@@ -186,7 +191,7 @@ public class ConsoleCommand {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
-        ConfigManager.resetRunInfo();
+        Main.resetRunInfo();
         return 1;
     }
 }
