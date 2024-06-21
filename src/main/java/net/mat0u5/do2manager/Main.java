@@ -4,7 +4,7 @@ import net.fabricmc.api.ModInitializer;
 
 import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.database.DatabaseManager;
-import net.mat0u5.do2manager.run.DO2Run;
+import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

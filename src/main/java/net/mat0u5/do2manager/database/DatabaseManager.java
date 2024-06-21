@@ -6,15 +6,11 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import net.mat0u5.do2manager.Main;
-import net.mat0u5.do2manager.run.DO2Run;
+import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.DO2_GSON;
-import net.mat0u5.do2manager.world.ItemManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
 
 public class DatabaseManager {
     public static final String DB_VERSION = "v.0.1.0";
