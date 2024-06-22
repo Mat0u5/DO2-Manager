@@ -52,12 +52,16 @@ public class RunInfoParser {
         List<PlayerEntity> runners = getCurrentRunners(server);
         if (runners.isEmpty()) return runners;
         for (PlayerEntity runner : runners) {
-            if (runner.isSpectator() || runner.isCreative() || !isInCitadelRegion(runner)) {
+            if (!isValidRunner(runner)) {
                 runners.remove(runner);
                 if (runners.isEmpty()) return runners;
             }
         }
         return runners;
+    }
+    public static boolean isValidRunner(PlayerEntity runner) {
+        if (runner.isSpectator() || runner.isCreative() || !isInCitadelRegion(runner)) return false;
+        return true;
     }
 
     public static ItemStack getRunnersCompass(MinecraftServer server) {
@@ -83,13 +87,11 @@ public class RunInfoParser {
         if (items == null || items.isEmpty()) {
             items = ItemManager.getHopperItems(server.getOverworld(), stashDeckHopper);
             if (items == null || items.isEmpty()) return null;
-            System.out.println("NOTNORMAL");
         }
 
 
         for (ItemStack item : items) {
             if (ItemManager.getItemId(item).contains("shulker_box")) {
-                System.out.println("Normal_" + item);
                 return item;
             }
         }

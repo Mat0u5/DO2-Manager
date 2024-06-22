@@ -50,7 +50,9 @@ public class Events {
 
         List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(server);
         if (runners.contains(player) && runners.size() == 1) {
-            Main.currentRun.inventory_save = ItemManager.getPlayerInventory(player);
+            if (Main.currentRun.run_number != -1 && Main.currentRun.inventory_save.isEmpty()) {
+                Main.currentRun.inventory_save = ItemManager.getPlayerInventory(player);
+            }
             Main.currentRun.death_pos = player.getPos().toString();
             Main.currentRun.death_message = source.getDeathMessage(player).getString();
         }

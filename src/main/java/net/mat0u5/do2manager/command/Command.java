@@ -111,21 +111,15 @@ public class Command {
                 )
 
                 ////////
-                .then(literal("test")
-                    .executes(context -> TestingCommand.executeTest(
-                        context.getSource())
-                    )
-                )
-                .then(literal("addRun")
-                    .executes(context -> TestingCommand.executeAddRun(
-                        context.getSource())
-                    )
-                )
-                .then(literal("getInv")
+                .then(literal("database-testing")
+                    .requires(source -> source.hasPermissionLevel(2))
                     .then(CommandManager.argument("runNum", IntegerArgumentType.integer())
-                        .executes(context -> TestingCommand.executeGetInv(
-                            context.getSource(),
-                            IntegerArgumentType.getInteger(context, "runNum"))
+                        .then(CommandManager.argument("var_name", StringArgumentType.string())
+                            .executes(context -> DatabaseCommand.executeGetFromDB(
+                                context.getSource(),
+                                IntegerArgumentType.getInteger(context, "runNum"),
+                                StringArgumentType.getString(context, "var_name"))
+                            )
                         )
                     )
                 )

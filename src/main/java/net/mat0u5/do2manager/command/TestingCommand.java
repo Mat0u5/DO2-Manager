@@ -73,9 +73,7 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        System.out.println("CardPlays: " + Main.currentRun.card_plays);
-        System.out.println("ItemsBought: " + Main.currentRun.items_bought);
-        System.out.println("Runners: " + Main.currentRun.runners);
+        System.out.println("Inventory: " + Main.currentRun.inventory_save);
         self.sendMessage(Text.translatable("§6Command Worked.."));
         return 1;
     }

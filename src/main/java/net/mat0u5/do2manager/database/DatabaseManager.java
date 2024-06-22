@@ -13,7 +13,7 @@ import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.DO2_GSON;
 
 public class DatabaseManager {
-    public static final String DB_VERSION = "v.0.1.0";
+    public static final String DB_VERSION = "v.1.0.0";
 
     private static final String FOLDER_PATH = "./config/"+ Main.MOD_ID;
     private static final String FILE_PATH = FOLDER_PATH+"/"+Main.MOD_ID+".db";
@@ -93,6 +93,7 @@ public class DatabaseManager {
                 "timestamp_lvl2_exit INTEGER," +
                 "timestamp_lvl1_exit INTEGER," +
                 "timestamp_artifact INTEGER," +
+                "run_length INTEGER," +
                 "FOREIGN KEY(run_number) REFERENCES runs(run_number)" +
                 ");";
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -151,7 +152,7 @@ public class DatabaseManager {
     }
 
     public static void addRunSpeedrun(DO2Run run) {
-        String sql = "INSERT INTO runsSpeedruns(db_version, run_number, timestamp_lvl2_entry, timestamp_lvl3_entry, timestamp_lvl4_entry, timestamp_lvl4_exit, timestamp_lvl3_exit, timestamp_lvl2_exit, timestamp_lvl1_exit, timestamp_artifact) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO runsSpeedruns(db_version, run_number, timestamp_lvl2_entry, timestamp_lvl3_entry, timestamp_lvl4_entry, timestamp_lvl4_exit, timestamp_lvl3_exit, timestamp_lvl2_exit, timestamp_lvl1_exit, timestamp_artifact, run_length) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, DB_VERSION);
@@ -164,6 +165,7 @@ public class DatabaseManager {
             statement.setInt(8, run.timestamp_lvl2_exit);
             statement.setInt(9, run.timestamp_lvl1_exit);
             statement.setInt(10, run.timestamp_artifact);
+            statement.setInt(11, run.run_length);
 
             statement.executeUpdate();
         } catch (SQLException e) {

@@ -52,7 +52,6 @@ public class ConsoleCommand {
         for (PlayerEntity runner : runners) {
             System.out.println("CMD_OUTPUT: CurrentRunner: " + runner.getEntityName());
         }
-
         return 1;
     }
     public static int database_runTracking_modifyVar(ServerCommandSource source, String query) {
@@ -120,10 +119,7 @@ public class ConsoleCommand {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
         List<PlayerEntity> playersList = RunInfoParser.getCurrentAliveRunners(server);
-        if (playersList.isEmpty()) {
-            Main.currentRun.inventory_save = null;
-            return -1;
-        }
+        if (playersList.isEmpty())  return -1;
         List<ItemStack> allRunnersItems = new ArrayList<>();
         for (PlayerEntity player : playersList) {
             allRunnersItems.addAll(ItemManager.getPlayerInventory(player));
@@ -172,10 +168,10 @@ public class ConsoleCommand {
         String players = "";
         List<PlayerEntity> playersList = varName.equalsIgnoreCase("runners")?RunInfoParser.getCurrentRunners(server):RunInfoParser.getCurrentAliveRunners(server);
         if (playersList.isEmpty()) {
-            if (varName.equalsIgnoreCase("runners")) Main.currentRun.runners = null;
+            if (varName.equalsIgnoreCase("runners")) Main.currentRun.runners = new ArrayList<>();
             if (varName.equalsIgnoreCase("finishers")) {
                 //Run End
-                Main.currentRun.finishers = null;
+                Main.currentRun.finishers = new ArrayList<>();
                 database_runTracking_SaveRun(source);
             }
             return -1;

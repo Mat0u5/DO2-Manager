@@ -92,7 +92,7 @@ public class ItemManager {
         for (int i = 0; i < inventory.size(); i++) {
             ItemStack itemStack = inventory.getStack(i);
             if (!itemStack.isEmpty()) {
-                list.add(itemStack);
+                list.add(itemStack.copy());
             }
         }
         return list;
