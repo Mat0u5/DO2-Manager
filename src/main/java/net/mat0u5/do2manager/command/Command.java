@@ -3,13 +3,11 @@ package net.mat0u5.do2manager.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ItemEntity;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -123,6 +121,14 @@ public class Command {
                         )
                     )
                 )
+                .then(literal("gui")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .executes(context -> {
+                        GuiInventory_Database.openRunInventory(context.getSource().getPlayer(), 1);
+                        return 1;
+                    })
+                )
+
         );
     }
 }

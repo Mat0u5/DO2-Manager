@@ -118,13 +118,14 @@ public class ConsoleCommand {
     public static int database_runTracking_ItemInventory(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
+
         List<PlayerEntity> playersList = RunInfoParser.getCurrentAliveRunners(server);
         if (playersList.isEmpty())  return -1;
         List<ItemStack> allRunnersItems = new ArrayList<>();
         for (PlayerEntity player : playersList) {
             allRunnersItems.addAll(ItemManager.getPlayerInventory(player));
         }
-        Main.currentRun.inventory_save = allRunnersItems;
+        if (Main.currentRun.inventory_save.isEmpty()) Main.currentRun.inventory_save = allRunnersItems;
         return 1;
     }
     public static int database_runTracking_Timestamp(ServerCommandSource source, String varName) {

@@ -3,30 +3,24 @@ package net.mat0u5.do2manager.events;
 
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
-import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.mat0u5.do2manager.Main;
-import net.mat0u5.do2manager.database.DatabaseManager;
-import net.mat0u5.do2manager.utils.DO2_GSON;
+import net.mat0u5.do2manager.gui.GuiInventoryClick;
+import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.screen.ScreenHandler;
+import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Events {
@@ -62,7 +56,7 @@ public class Events {
 
     }
     public static void onPlayerPickupItem(PlayerEntity player, ItemEntity itemEntity) {
-        if (itemEntity.getItemAge() < 40) return;
+        if (itemEntity.cannotPickup()) return;
         invPickupOrDropItem(player,itemEntity.getStack());
     }
 
@@ -77,5 +71,21 @@ public class Events {
         if (RunInfoParser.isDungeonArtifact(itemStack) && Main.currentRun.artifact_item == null) {
             Main.currentRun.artifact_item = itemStack;
         }
+    }
+    public static void onSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci, ScreenHandler handler) {
+        try {
+            if (player instanceof ServerPlayerEntity) {
+                ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
+                if (!handler.isValid(slotId)) return;
+                ItemStack clickedItem = handler.getSlot(slotId).getStack();
+                if (clickedItem == null) return;
+                NbtCompound nbt = clickedItem.getNbt();
+                if (nbt == null) return;
+                if (!nbt.contains("GUI")) return;
+                ci.cancel();
+                String tag = nbt.getString("GUI");
+                if (tag.equalsIgnoreCase("DatabaseGUI")) GuiInventoryClick.onClickDatabaseGUI(slotId,button,actionType,player,ci,handler);
+            }
+        }catch(Exception e) {}
     }
 }
