@@ -123,10 +123,20 @@ public class Command {
                 )
                 .then(literal("gui")
                     .requires(source -> source.hasPermissionLevel(2))
-                    .executes(context -> {
-                        GuiInventory_Database.openRunInventory(context.getSource().getPlayer(), 1);
-                        return 1;
-                    })
+                    .executes(context -> new GuiInventory_Database().openRunInventory(
+                        context.getSource().getPlayer())
+                    )
+                )
+                .then(literal("testing")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .executes(context -> TestingCommand.execute(
+                        context.getSource())
+                    )
+                    .then(literal("test")
+                        .executes(context -> TestingCommand.executeTest(
+                            context.getSource())
+                        )
+                    )
                 )
 
         );

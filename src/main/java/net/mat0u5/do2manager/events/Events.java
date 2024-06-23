@@ -41,6 +41,9 @@ public class Events {
     }
     private static void onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
         MinecraftServer server = player.getServer();
+        if (player.getMainHandStack().getItem() == Items.TOTEM_OF_UNDYING || player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING) {
+            return;
+        }
 
         List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(server);
         if (runners.contains(player) && runners.size() == 1) {

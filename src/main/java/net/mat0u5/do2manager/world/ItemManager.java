@@ -3,6 +3,7 @@ package net.mat0u5.do2manager.world;
 import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.DispenserBlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
@@ -128,5 +129,21 @@ public class ItemManager {
 
         barrel.markDirty();
         return false;
+    }
+    public static List<ItemStack> getDropperItems(ServerWorld world, BlockPos pos) {
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+        List<ItemStack> items = new ArrayList<>();
+
+        if (blockEntity instanceof DispenserBlockEntity) {
+            DispenserBlockEntity dropper = (DispenserBlockEntity) blockEntity;
+            for (int i = 0; i < dropper.size(); i++) {
+                ItemStack stack = dropper.getStack(i);
+                if (!stack.isEmpty()) {
+                    items.add(stack.copy());
+                }
+            }
+        }
+
+        return items;
     }
 }

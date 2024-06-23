@@ -111,6 +111,7 @@ public class ConsoleCommand {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
+        if (Main.currentRun.deck_item != null) return -1;
         ItemStack deck = RunInfoParser.getDeck(server);
         if (deck != null) Main.currentRun.deck_item = deck;
         return 1;
@@ -119,13 +120,15 @@ public class ConsoleCommand {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
+        if (!Main.currentRun.inventory_save.isEmpty()) return -1;
+
         List<PlayerEntity> playersList = RunInfoParser.getCurrentAliveRunners(server);
         if (playersList.isEmpty())  return -1;
         List<ItemStack> allRunnersItems = new ArrayList<>();
         for (PlayerEntity player : playersList) {
             allRunnersItems.addAll(ItemManager.getPlayerInventory(player));
         }
-        if (Main.currentRun.inventory_save.isEmpty()) Main.currentRun.inventory_save = allRunnersItems;
+        Main.currentRun.inventory_save = allRunnersItems;
         return 1;
     }
     public static int database_runTracking_Timestamp(ServerCommandSource source, String varName) {

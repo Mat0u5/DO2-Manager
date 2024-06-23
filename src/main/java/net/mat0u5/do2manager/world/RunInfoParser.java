@@ -82,11 +82,15 @@ public class RunInfoParser {
     }
     public static ItemStack getDeck(MinecraftServer server) {
         BlockPos startGameHopper = new BlockPos(-565, 113, 1980);
+        BlockPos startDropper = new BlockPos(-565, 111, 1980);
         BlockPos stashDeckHopper = new BlockPos(-551, 122, 1971);
         List<ItemStack> items = ItemManager.getHopperItems(server.getOverworld(), startGameHopper);
         if (items == null || items.isEmpty()) {
-            items = ItemManager.getHopperItems(server.getOverworld(), stashDeckHopper);
-            if (items == null || items.isEmpty()) return null;
+            items = ItemManager.getDropperItems(server.getOverworld(),startDropper);
+            if (items == null || items.isEmpty()) {
+                items = ItemManager.getHopperItems(server.getOverworld(), stashDeckHopper);
+                if (items == null || items.isEmpty()) return null;
+            }
         }
 
 

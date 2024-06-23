@@ -4,10 +4,15 @@ import net.fabricmc.api.ModInitializer;
 
 import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.database.DatabaseManager;
+import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
+import net.minecraft.entity.player.PlayerEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Hashtable;
 
 
 public class Main implements ModInitializer {
@@ -15,6 +20,8 @@ public class Main implements ModInitializer {
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static ConfigManager config;
 	public static DO2Run currentRun = new DO2Run();
+	public static HashMap<PlayerEntity, GuiPlayerSpecific> openGuis = new HashMap<>();
+
 
 	@Override
 	public void onInitialize() {

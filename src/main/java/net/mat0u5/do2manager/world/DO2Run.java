@@ -34,6 +34,9 @@ public class DO2Run {
 
     private static final Gson GSON = new Gson();
 
+    public int getRunNum() {
+        return run_number;
+    }
     // Serialize DO2Run object to JSON string
     public String serialize() {
         SerializedDO2Run serializedDO2Run = new SerializedDO2Run(

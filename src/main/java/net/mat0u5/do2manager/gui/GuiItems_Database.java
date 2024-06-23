@@ -25,7 +25,21 @@ public class GuiItems_Database {
     }
 
     public static ItemStack run(DO2Run run) {
-        if (run == null) return createGuiItem(new ItemStack(Items.GREEN_WOOL, 1), "run", "Run Is Null.");
-        return createGuiItem(new ItemStack(Items.GREEN_WOOL, 1), "run", "Success Run");
+        if (run == null) return createGuiItem(new ItemStack(Items.BARRIER, 1), "run", "Run Is Null.");
+        ItemStack itemStack;
+        if (String.join("",run.finishers).isEmpty()) itemStack = new ItemStack(Items.RED_WOOL);
+        else itemStack = new ItemStack(Items.GREEN_WOOL);
+        if (run.run_type.equalsIgnoreCase("testing")) itemStack = new ItemStack(Items.BEDROCK);
+
+        return createGuiItem(itemStack, "run", "Run #" + run.run_number);
+    }
+    public static ItemStack filler() {
+        return createGuiItem(new ItemStack(Items.BLACK_STAINED_GLASS_PANE, 1), "filler", "");
+    }
+    public static ItemStack fillerLight() {
+        return createGuiItem(new ItemStack(Items.LIGHT_GRAY_STAINED_GLASS_PANE, 1), "filler", "");
+    }
+    public static ItemStack filterSuccess() {
+        return createGuiItem(new ItemStack(Items.BLACK_STAINED_GLASS_PANE, 1), "filler", "");
     }
 }

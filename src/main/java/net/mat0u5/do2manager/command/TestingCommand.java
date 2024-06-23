@@ -12,6 +12,8 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
+import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.List;
 
 public class TestingCommand {
@@ -19,10 +21,11 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        try {
-            DatabaseManager.updateTable();
-        }catch (Exception e){}
-        self.sendMessage(Text.translatable("§6Command Worked.."));
+        String old = Main.config.getProperty("testing");
+        if (old == null || old.isEmpty()) Main.config.setProperty("testing","true");
+        else if (old.equalsIgnoreCase("false")) Main.config.setProperty("testing","true");
+        else if  (old.equalsIgnoreCase("true")) Main.config.setProperty("testing","false");
+        self.sendMessage(Text.of("Testing is now: " + Main.config.getProperty("testing")));
         return 1;
     }
     public static int executeAddRun(ServerCommandSource source) {
@@ -72,9 +75,10 @@ public class TestingCommand {
     public static int executeTest(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
-
-        System.out.println("Inventory: " + Main.currentRun.inventory_save);
-        self.sendMessage(Text.translatable("§6Command Worked.."));
+        List<DO2Run> dict = DatabaseManager.getRunsByCriteria(new ArrayList<>());
+        //List.of("runners LIKE \"%56663b0a-5004-4150-90b8-47c3eb230135%\"")
+        System.out.println(dict);
+        System.out.println("Found: " + dict.size());
         return 1;
     }
 }

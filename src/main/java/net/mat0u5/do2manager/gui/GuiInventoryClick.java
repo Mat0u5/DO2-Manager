@@ -1,8 +1,9 @@
 package net.mat0u5.do2manager.gui;
 
+import net.mat0u5.do2manager.Main;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -12,16 +13,18 @@ public class GuiInventoryClick {
     public static void onClickDatabaseGUI(int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci, ScreenHandler handler) {
         ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
         ItemStack clickedItem = handler.getSlot(slotId).getStack();
-        if (clickedItem.getItem() == Items.ARROW) {
-            if (slotId == 45) {
-                GuiInventory_Database.openRunInventory(serverPlayer, 1);
-            } else if (slotId == 47) {
-                GuiInventory_Database.openRunInventory(serverPlayer,2);
-            }
-        }
-        else if (clickedItem.getItem() == Items.OAK_SIGN) {
-        }
-        else if (clickedItem.getItem() == Items.RED_WOOL || clickedItem.getItem() == Items.GREEN_WOOL) {
+        NbtCompound nbt = clickedItem.getNbt();
+        String tag = nbt.getString("GUI_ITEM");
+        System.out.println("TTTESTTT>>> " + tag);
+        if (tag.equalsIgnoreCase("next_page")) {
+            System.out.println("TTTESTTT>><<> " + Main.openGuis.get(player).guiDatabase);
+            System.out.println("TTTESTTT> " + Main.openGuis.get(player).guiDatabase.current_page);
+            Main.openGuis.get(player).guiDatabase.current_page += 1;
+            System.out.println("TTTESTTT> " + Main.openGuis.get(player).guiDatabase.current_page);
+            Main.openGuis.get(player).guiDatabase.addRunItems();
+        } else if (tag.equalsIgnoreCase("previous_page")) {
+            Main.openGuis.get(player).guiDatabase.current_page -= 1;
+            Main.openGuis.get(player).guiDatabase.addRunItems();
         }
     }
 }

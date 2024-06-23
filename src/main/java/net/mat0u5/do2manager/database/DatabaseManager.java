@@ -6,6 +6,9 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Dictionary;
+import java.util.Hashtable;
 import java.util.List;
 
 import net.mat0u5.do2manager.Main;
@@ -230,7 +233,28 @@ public class DatabaseManager {
         }
         return run;
     }
-
+    public static List<DO2Run> getRunsByCriteria(List<String> criteria) {
+        List<DO2Run> runsDictionary = new ArrayList<>();
+        String sql = "SELECT run_number FROM runs WHERE " + String.join(" WHERE ",criteria);
+        if (sql.endsWith(" WHERE ")) {
+            sql = sql.substring(0,sql.length()-7);
+        }
+        System.out.println("SQL: " + sql);
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+            while (resultSet.next()) {
+                int runNumber = resultSet.getInt("run_number");
+                DO2Run run = getRunByRunNumber(runNumber);
+                if (run != null) {
+                    runsDictionary.add(run);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return runsDictionary;
+    }
 
     public static ResultSet runQuery(String sql) {
         try (Connection connection = DriverManager.getConnection(URL);
