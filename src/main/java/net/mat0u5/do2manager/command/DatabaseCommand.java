@@ -2,12 +2,21 @@ package net.mat0u5.do2manager.command;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
+import net.mat0u5.do2manager.utils.OtherUtils;
+import net.mat0u5.do2manager.world.CommandBlockScanner;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
+
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DatabaseCommand {
     public static int executeGetFromDB(ServerCommandSource source, int runNum, String query) {
@@ -46,4 +55,81 @@ public class DatabaseCommand {
 
         return 1;
     }
+    public static int executeCommandBlockSearch(ServerCommandSource source, String query, String searchType) {
+        MinecraftServer server = source.getServer();
+        final PlayerEntity self = source.getPlayer();
+
+        query = OtherUtils.removeQuotes(query);
+        if (query.startsWith("/"))query = query.substring(1);
+
+        String sqlQuery;
+        switch (searchType.toLowerCase()) {
+            case "startswith":
+                sqlQuery = "SELECT * FROM command_blocks WHERE command LIKE ?";
+                query = query + "%";
+                break;
+            case "endswith":
+                sqlQuery = "SELECT * FROM command_blocks WHERE command LIKE ?";
+                query = "%" + query;
+                break;
+            case "contains":
+            default:
+                sqlQuery = "SELECT * FROM command_blocks WHERE command LIKE ?";
+                query = "%" + query + "%";
+                break;
+        }
+
+        try (Connection connection = DriverManager.getConnection(DatabaseManager.URL);
+             PreparedStatement statement = connection.prepareStatement(sqlQuery)) {
+
+            statement.setString(1, query);
+            ResultSet resultSet = statement.executeQuery();
+
+            List<Text> results = new ArrayList<>();
+            boolean containsAtLeastOne = false;
+            while (resultSet.next()) {
+                int x = resultSet.getInt("x");
+                int y = resultSet.getInt("y");
+                int z = resultSet.getInt("z");
+                String type = resultSet.getString("type");
+                String command = resultSet.getString("command");
+                boolean conditional = resultSet.getBoolean("conditional");
+                boolean auto = resultSet.getBoolean("auto");
+                BlockPos pos = new BlockPos(x, y, z);
+                Text positionText = Text.translatable(String.format("§6(%d, %d, %d)", x, y, z))
+                        .styled(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+                                        String.format("/tp @s %d %d %d", x, y, z)))
+                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                        Text.of("Teleport to this position"))));
+                Text finalText = Text.translatable("§a- Pos: ").append(positionText).append(Text.translatable(" §aType: "+type+", Conditional: "+(conditional ? "Yes" : "No")+", Auto: "+(auto ? "Always Active" : "Needs Redstone")+", §bCommand: "+command+"\n"));
+                results.add(finalText);
+                containsAtLeastOne = true;
+            }
+            if (!containsAtLeastOne) {
+                self.sendMessage(Text.of("§c No Command Blocks Found!"), false);
+            }
+            else {
+                self.sendMessage(Text.of("Command Blocks matching the query:"), false);
+                for (Text text : results) {
+                    self.sendMessage(text);
+                }
+            }
+
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return 1;
+    }
+    public static int executeCommandBlockUpdateDatabase(ServerCommandSource source, int fromX, int fromY, int fromZ, int toX, int toY, int toZ) {
+        MinecraftServer server = source.getServer();
+        final PlayerEntity self = source.getPlayer();
+        self.sendMessage(Text.of("Deleting all stored command block data..."));
+        DatabaseManager.deleteAllCommandBlocks();
+        self.sendMessage(Text.of("Started Command Block Search..."));
+        CommandBlockScanner.scanArea(server.getOverworld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
+        return 1;
+    }
+
 }

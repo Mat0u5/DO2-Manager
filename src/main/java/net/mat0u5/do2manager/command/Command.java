@@ -109,15 +109,44 @@ public class Command {
                 )
 
                 ////////
-                .then(literal("database-testing")
+                .then(literal("database")
                     .requires(source -> source.hasPermissionLevel(2))
-                    .then(CommandManager.argument("runNum", IntegerArgumentType.integer())
-                        .then(CommandManager.argument("var_name", StringArgumentType.string())
-                            .executes(context -> DatabaseCommand.executeGetFromDB(
-                                context.getSource(),
-                                IntegerArgumentType.getInteger(context, "runNum"),
-                                StringArgumentType.getString(context, "var_name"))
+                    .then(literal("getRaw")
+                        .then(CommandManager.argument("runNum", IntegerArgumentType.integer())
+                            .then(CommandManager.argument("var_name", StringArgumentType.string())
+                                .executes(context -> DatabaseCommand.executeGetFromDB(
+                                    context.getSource(),
+                                    IntegerArgumentType.getInteger(context, "runNum"),
+                                    StringArgumentType.getString(context, "var_name"))
+                                )
                             )
+                        )
+                    )
+
+                    .then(literal("commandBlockStartScan")
+                        .executes(context -> DatabaseCommand.executeCommandBlockUpdateDatabase(
+                                context.getSource(), -672, 165, 1727,-337, -64, 2291)
+                        )
+                        .then(CommandManager.argument("fromX", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("fromY", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("fromZ", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("toX", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("toY", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("toZ", IntegerArgumentType.integer())
+                            .executes(context -> DatabaseCommand.executeCommandBlockUpdateDatabase(
+                                context.getSource(),
+                                IntegerArgumentType.getInteger(context, "fromX"),
+                                IntegerArgumentType.getInteger(context, "fromY"),
+                                IntegerArgumentType.getInteger(context, "fromZ"),
+                                IntegerArgumentType.getInteger(context, "toX"),
+                                IntegerArgumentType.getInteger(context, "toY"),
+                                IntegerArgumentType.getInteger(context, "toZ"))
+                            )
+                        )
+                        )
+                        )
+                        )
+                        )
                         )
                     )
                 )
@@ -135,6 +164,36 @@ public class Command {
                     .then(literal("test")
                         .executes(context -> TestingCommand.executeTest(
                             context.getSource())
+                        )
+                    )
+                )
+                .then(literal("commandBlockSearch")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .then(literal("containsString")
+                        .then(CommandManager.argument("string", StringArgumentType.string())
+                            .executes(context -> DatabaseCommand.executeCommandBlockSearch(
+                                context.getSource(),
+                                StringArgumentType.getString(context, "string"),
+                                "contains")
+                            )
+                        )
+                    )
+                    .then(literal("startsWithString")
+                        .then(CommandManager.argument("string", StringArgumentType.string())
+                            .executes(context -> DatabaseCommand.executeCommandBlockSearch(
+                                context.getSource(),
+                                StringArgumentType.getString(context, "string"),
+                                "startsWith")
+                            )
+                        )
+                    )
+                    .then(literal("endsWithString")
+                        .then(CommandManager.argument("string", StringArgumentType.string())
+                            .executes(context -> DatabaseCommand.executeCommandBlockSearch(
+                                context.getSource(),
+                                StringArgumentType.getString(context, "string"),
+                                "endsWith")
+                            )
                         )
                     )
                 )

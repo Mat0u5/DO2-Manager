@@ -19,6 +19,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
 
 
     public int openRunInventory(ServerPlayerEntity player) {
+        if (!player.getEntityName().equalsIgnoreCase("Mat0u5")) return -1;
         inventory = new SimpleInventory(INVENTORY_SIZE);
         invId = "runs";
         // Populate the inventory with run data

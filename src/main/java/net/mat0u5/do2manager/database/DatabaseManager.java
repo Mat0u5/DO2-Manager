@@ -16,11 +16,11 @@ import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.DO2_GSON;
 
 public class DatabaseManager {
-    public static final String DB_VERSION = "v.1.0.0";
+    public static final String DB_VERSION = "v.1.0.1";
 
     private static final String FOLDER_PATH = "./config/"+ Main.MOD_ID;
     private static final String FILE_PATH = FOLDER_PATH+"/"+Main.MOD_ID+".db";
-    private static final String URL = "jdbc:sqlite:"+FILE_PATH;
+    public static final String URL = "jdbc:sqlite:"+FILE_PATH;
 
     public static void initialize() {
         createFolderIfNotExists();
@@ -29,6 +29,7 @@ public class DatabaseManager {
                 createRunsTable(connection);
                 createRunsDetailedTable(connection);
                 createRunsSpeedrunsTable(connection);
+                createCommandBlocksTable(connection);
                 System.out.println("Database initialized.");
             }
         } catch (SQLException e) {
@@ -49,7 +50,20 @@ public class DatabaseManager {
             folder.mkdir();
         }
     }
-
+    private static void createCommandBlocksTable(Connection connection) throws SQLException {
+        String sql = "CREATE TABLE IF NOT EXISTS command_blocks (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "x INTEGER NOT NULL," +
+                "y INTEGER NOT NULL," +
+                "z INTEGER NOT NULL," +
+                "type TEXT NOT NULL," +
+                "conditional BOOLEAN NOT NULL," +
+                "auto BOOLEAN NOT NULL," +
+                "command TEXT NOT NULL" +
+                ");";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.executeUpdate();
+    }
     private static void createRunsTable(Connection connection) throws SQLException {
         String sql = "CREATE TABLE IF NOT EXISTS runs (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
@@ -114,6 +128,15 @@ public class DatabaseManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }*/
+    }
+    public static void deleteAllCommandBlocks() {
+        String sql = "DELETE FROM command_blocks";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
     public static void addRun(DO2Run run) {
         String sql = "INSERT INTO runs(db_version, run_number, date, run_type, runners, finishers, run_length) VALUES(?, ?, datetime('now'), ?, ?, ?, ?)";
@@ -254,6 +277,23 @@ public class DatabaseManager {
             e.printStackTrace();
         }
         return runsDictionary;
+    }
+
+    public static void addCommandBlock(int x, int y, int z, String type, boolean conditional, boolean auto, String command) {
+        String sql = "INSERT INTO command_blocks(x, y, z, type, conditional, auto,command) VALUES(?, ?, ?, ?, ?, ?, ?)";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, x);
+            statement.setInt(2, y);
+            statement.setInt(3, z);
+            statement.setString(4, type);
+            statement.setBoolean(5, conditional);
+            statement.setBoolean(6, auto);
+            statement.setString(7, command);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public static ResultSet runQuery(String sql) {
