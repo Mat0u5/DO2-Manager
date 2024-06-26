@@ -149,6 +149,11 @@ public class Command {
                         )
                         )
                     )
+                    .then(literal("functionsStartScan")
+                        .executes(context -> DatabaseCommand.executeFunctionUpdateDatabase(
+                            context.getSource())
+                        )
+                    )
                 )
                 .then(literal("gui")
                     .requires(source -> source.hasPermissionLevel(2))

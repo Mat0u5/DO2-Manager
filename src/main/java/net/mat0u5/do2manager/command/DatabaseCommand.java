@@ -5,6 +5,7 @@ import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.CommandBlockScanner;
 import net.mat0u5.do2manager.world.DO2Run;
+import net.mat0u5.do2manager.world.FunctionScanner;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
@@ -58,9 +59,10 @@ public class DatabaseCommand {
     public static int executeCommandBlockSearch(ServerCommandSource source, String query, String searchType) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
-
         query = OtherUtils.removeQuotes(query);
         if (query.startsWith("/"))query = query.substring(1);
+
+        String origQuery = query + "";
 
         String sqlQuery;
         switch (searchType.toLowerCase()) {
@@ -120,6 +122,13 @@ public class DatabaseCommand {
             e.printStackTrace();
         }
 
+        List<String> functions = FunctionScanner.findFunctionsContaining(origQuery, searchType);
+        if (!functions.isEmpty()) {
+            self.sendMessage(Text.of("Functions matching the query:"), false);
+            for (String text : functions) {
+                self.sendMessage(Text.of("§a -" + text));
+            }
+        }
         return 1;
     }
     public static int executeCommandBlockUpdateDatabase(ServerCommandSource source, int fromX, int fromY, int fromZ, int toX, int toY, int toZ) {
@@ -129,6 +138,16 @@ public class DatabaseCommand {
         DatabaseManager.deleteAllCommandBlocks();
         self.sendMessage(Text.of("Started Command Block Search..."));
         CommandBlockScanner.scanArea(server.getOverworld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
+        return 1;
+    }
+    public static int executeFunctionUpdateDatabase(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final PlayerEntity self = source.getPlayer();
+
+        self.sendMessage(Text.of("Deleting all stored function data..."));
+        DatabaseManager.deleteAllFunctions();
+        self.sendMessage(Text.of("Started Function Search..."));
+        FunctionScanner.scanFunctions();
         return 1;
     }
 

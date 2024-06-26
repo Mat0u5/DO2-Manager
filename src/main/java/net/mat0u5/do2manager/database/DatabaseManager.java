@@ -16,7 +16,7 @@ import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.DO2_GSON;
 
 public class DatabaseManager {
-    public static final String DB_VERSION = "v.1.0.1";
+    public static final String DB_VERSION = "v.1.0.2";
 
     private static final String FOLDER_PATH = "./config/"+ Main.MOD_ID;
     private static final String FILE_PATH = FOLDER_PATH+"/"+Main.MOD_ID+".db";
@@ -30,6 +30,7 @@ public class DatabaseManager {
                 createRunsDetailedTable(connection);
                 createRunsSpeedrunsTable(connection);
                 createCommandBlocksTable(connection);
+                createFunctionsTable(connection);
                 System.out.println("Database initialized.");
             }
         } catch (SQLException e) {
@@ -116,6 +117,16 @@ public class DatabaseManager {
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.executeUpdate();
     }
+    private static void createFunctionsTable(Connection connection) throws SQLException {
+        String sql = "CREATE TABLE IF NOT EXISTS functions (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "file_path TEXT NOT NULL," +
+                "function_name TEXT NOT NULL," +
+                "function_content TEXT NOT NULL" +
+                ");";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.executeUpdate();
+    }
     public static void updateTable() throws SQLException {
         /*
         try (Connection connection = DriverManager.getConnection(URL)) {
@@ -131,6 +142,15 @@ public class DatabaseManager {
     }
     public static void deleteAllCommandBlocks() {
         String sql = "DELETE FROM command_blocks";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void deleteAllFunctions() {
+        String sql = "DELETE FROM functions";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.executeUpdate();
