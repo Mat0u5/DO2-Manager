@@ -38,6 +38,20 @@ public class Events {
     }
 
     private static void onPlayerJoin(MinecraftServer server, ServerPlayerEntity player) {
+        String playerUUID = player.getUuidAsString();
+        if (Main.lastPhaseUpdate.getProperty(playerUUID) == null) {
+            System.out.println("Converting "+player.getEntityName()+"'s Items from phase to casual");
+            ItemManager.phaseToCasualPlayer(player);
+            Main.lastPhaseUpdate.setProperty(playerUUID, String.valueOf(Main.PHASE_UPDATE));
+            System.out.println("Conversion complete.");
+            return;
+        }
+        if (Integer.parseInt(Main.lastPhaseUpdate.getProperty(playerUUID)) < Main.PHASE_UPDATE) {
+            System.out.println("Converting "+player.getEntityName()+"'s Items from phase to casual");
+            ItemManager.phaseToCasualPlayer(player);
+            Main.lastPhaseUpdate.setProperty(playerUUID, String.valueOf(Main.PHASE_UPDATE));
+            System.out.println("Conversion complete.");
+        }
     }
     private static void onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
         MinecraftServer server = player.getServer();

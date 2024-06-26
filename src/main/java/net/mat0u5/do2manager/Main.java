@@ -12,13 +12,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 
 
 public class Main implements ModInitializer {
+	public static final int PHASE_UPDATE = 1;
 	public static final String MOD_ID = "do2manager";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static ConfigManager config;
+	public static ConfigManager lastPhaseUpdate;
 	public static DO2Run currentRun = new DO2Run();
 	public static HashMap<PlayerEntity, GuiPlayerSpecific> openGuis = new HashMap<>();
 
@@ -26,6 +27,7 @@ public class Main implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		config = new ConfigManager("./config/"+MOD_ID+"/"+MOD_ID+".properties");
+		lastPhaseUpdate = new ConfigManager("./config/"+MOD_ID+"/"+MOD_ID+"_phase_inv_update.properties");
 
 		if (config.getProperty("current_run") != null && !config.getProperty("current_run").isEmpty()) loadRunInfoFromConfig();
 		DatabaseManager.checkForDBUpdates();

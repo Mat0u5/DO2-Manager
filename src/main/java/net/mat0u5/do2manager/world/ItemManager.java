@@ -11,12 +11,14 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtList;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -145,5 +147,79 @@ public class ItemManager {
         }
 
         return items;
+    }
+    public static void phaseToCasualPlayer(PlayerEntity player) {
+        phaseToCasualInventory(player.getInventory());
+        phaseToCasualInventory(player.getEnderChestInventory());
+    }
+
+    private static void phaseToCasualInventory(Inventory inventory) {
+        for (int i = 0; i < inventory.size(); i++) {
+            ItemStack itemStack = inventory.getStack(i);
+            if (!itemStack.isEmpty()) {
+                phaseToCasualItemStack(itemStack);
+            }
+        }
+    }
+
+    private static void phaseToCasualItemStack(ItemStack itemStack) {
+        // Check if item has NBT data
+        if (itemStack.hasNbt()) {
+            NbtCompound nbt = itemStack.getNbt();
+            if (nbt != null && nbt.contains("CustomRoleplayData")) {
+                byte roleplayData = nbt.getByte("CustomRoleplayData");
+                if (roleplayData == 2) {
+                    nbt.putByte("CustomRoleplayData", (byte) 1);
+                    itemStack.setNbt(nbt);
+                    clearItemLore(itemStack);
+                    System.out.println("Converted: " + itemStack.getName().getString());
+                }
+            }
+            // Check if item is a Shulker Box and process its contents
+            if (isShulkerBox(itemStack)) {
+                phaseToCasualShulkerBox(itemStack);
+            }
+        }
+    }
+
+    private static void clearItemLore(ItemStack itemStack) {
+        NbtCompound display = itemStack.getSubNbt("display");
+        if (display != null) {
+            display.remove("Lore");
+            if (display.isEmpty()) {
+                itemStack.removeSubNbt("display");
+            } else {
+                itemStack.setSubNbt("display", display);
+            }
+        }
+    }
+
+    public static boolean isShulkerBox(ItemStack itemStack) {
+        return getItemId(itemStack).endsWith("shulker_box");
+    }
+    private static void phaseToCasualShulkerBox(ItemStack shulkerBox) {
+        NbtCompound nbt = shulkerBox.getOrCreateSubNbt("BlockEntityTag");
+        NbtList items = nbt.getList("Items", 10);
+        boolean modified = false;
+
+        for (int i = 0; i < items.size(); i++) {
+            NbtCompound itemTag = items.getCompound(i);
+            ItemStack itemStack = ItemStack.fromNbt(itemTag);
+            phaseToCasualItemStack(itemStack);
+            NbtCompound newItemTag = new NbtCompound();
+            itemStack.writeNbt(newItemTag);
+            newItemTag.putByte("Slot", itemTag.getByte("Slot"));
+            items.set(i, newItemTag);
+
+            if (newItemTag.contains("CustomRoleplayData", 2) && newItemTag.getByte("CustomRoleplayData") == 1) {
+                modified = true;
+            }
+        }
+
+        if (modified) {
+            System.out.println("Converted Shulker Box: " + shulkerBox.getName().getString());
+            nbt.put("Items", items);
+            shulkerBox.setNbt(nbt);
+        }
     }
 }
