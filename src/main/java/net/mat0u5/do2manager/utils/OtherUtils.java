@@ -1,5 +1,13 @@
 package net.mat0u5.do2manager.utils;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
+
 public class OtherUtils {
     public static String convertSecondsToReadableTime(int totalSeconds) {
         int hours = totalSeconds / 3600;
@@ -37,6 +45,45 @@ public class OtherUtils {
 
         return readableTime.toString();
     }
+    public static String convertTicksToClockTime(long ticks) {
+
+        long totalMilliseconds = (ticks * 50);
+        long totalSeconds = totalMilliseconds / 1000;
+        long milliseconds = totalMilliseconds % 1000;
+        long seconds = totalSeconds % 60;
+        long totalMinutes = totalSeconds / 60;
+        long minutes = totalMinutes % 60;
+        long hours = totalMinutes / 60;
+
+        StringBuilder timeString = new StringBuilder();
+
+        if (hours > 0) {
+            timeString.append(hours).append(":");
+        }
+
+        if (minutes > 0 || hours > 0) { // show minutes if there are hours or if minutes are non-zero
+            if (hours > 0 && minutes < 10) {
+                timeString.append("0");
+            }
+            timeString.append(minutes).append(":");
+        }
+
+        if (seconds < 10 && (minutes > 0 || hours > 0)) {
+            timeString.append("0");
+        }
+        timeString.append(seconds);
+
+        if (minutes == 0) {
+            String milis = String.valueOf(milliseconds);
+            while (milis.endsWith("0")) {
+                milis = milis.substring(0,milis.length()-1);
+            }
+            timeString.append(".").append(milis);
+        }
+        String result = timeString.toString();
+        if (result.contains("-")) result = "-" + result.replaceAll("-","");
+        return result;
+    }
     public static String removeQuotes(String str) {
         while (str.startsWith("\"") && str.endsWith("\"")) str = str.substring(1,str.length()-1);
         return str;
@@ -56,6 +103,20 @@ public class OtherUtils {
             return i;
         }catch (Exception e) {
             return -1;
+        }
+    }
+    public static void executeCommand(MinecraftServer server, String command) {
+        CommandDispatcher<ServerCommandSource> dispatcher = server.getCommandManager().getDispatcher();
+        ServerCommandSource commandSource = server.getCommandSource();
+        try {
+            dispatcher.execute(command, commandSource);
+        } catch (CommandSyntaxException e) {
+            server.sendMessage(Text.literal("Failed to execute command: " + e.getMessage()).formatted(Formatting.RED));
+        }
+    }
+    public static void broadcastMessage(MinecraftServer server, Text message) {
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            player.sendMessage(message, false);
         }
     }
 }

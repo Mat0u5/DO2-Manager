@@ -2,6 +2,7 @@ package net.mat0u5.do2manager.world;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.config.ConfigManager;
+import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.minecraft.entity.player.PlayerEntity;
@@ -35,6 +36,20 @@ public class RunInfoParser {
         java.lang.Integer ticks = getRunLength(server);
         if (ticks == null) return "null";
         return OtherUtils.convertSecondsToReadableTime(ticks / 20);
+    }
+    public static DO2Run getFastestPlayerRunMatchingCurrent(PlayerEntity player) {
+        List<DO2Run> allRuns = DatabaseManager.getRunsByCriteria(List.of("runners = \"" + player.getUuidAsString()+"\""));
+        DO2Run fastestRun = null;
+        for (DO2Run run : allRuns) {
+            if (!run.run_type.equalsIgnoreCase("testing") && !run.finishers.isEmpty() && run.difficulty == Main.currentRun.difficulty) {
+                if (fastestRun == null) {
+                    fastestRun = run;
+                    continue;
+                }
+                if (run.run_length <= fastestRun.run_length) fastestRun = run;
+            }
+        }
+        return fastestRun;
     }
     public static List<PlayerEntity> getCurrentRunners(MinecraftServer server) {
         List<PlayerEntity> runners = new ArrayList<>();

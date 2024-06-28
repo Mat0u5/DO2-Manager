@@ -75,10 +75,12 @@ public class TestingCommand {
     public static int executeTest(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
-        List<DO2Run> dict = DatabaseManager.getRunsByCriteria(new ArrayList<>());
-        //List.of("runners LIKE \"%56663b0a-5004-4150-90b8-47c3eb230135%\"")
-        System.out.println(dict);
-        System.out.println("Found: " + dict.size());
+
+        List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(server);
+        if (!runners.isEmpty()) {
+            if (runners.size() == 1) Main.speedrun = RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(server).get(0));
+        }
+
         return 1;
     }
 }

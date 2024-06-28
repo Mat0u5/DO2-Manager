@@ -282,7 +282,6 @@ public class DatabaseManager {
         if (sql.endsWith(" WHERE ")) {
             sql = sql.substring(0,sql.length()-7);
         }
-        System.out.println("SQL: " + sql);
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {

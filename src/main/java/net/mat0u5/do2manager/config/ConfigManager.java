@@ -34,6 +34,7 @@ public class ConfigManager {
                     properties.setProperty("current_run","");
                     properties.setProperty("db_version",DatabaseManager.DB_VERSION);
                     properties.setProperty("testing","false");
+                    properties.setProperty("current_run_is_speedrun","false");
 
                     properties.store(output, null);
                 }

@@ -21,8 +21,8 @@ public class Main implements ModInitializer {
 	public static ConfigManager config;
 	public static ConfigManager lastPhaseUpdate;
 	public static DO2Run currentRun = new DO2Run();
+	public static DO2Run speedrun = new DO2Run();
 	public static HashMap<PlayerEntity, GuiPlayerSpecific> openGuis = new HashMap<>();
-
 
 	@Override
 	public void onInitialize() {
@@ -40,6 +40,8 @@ public class Main implements ModInitializer {
 	public static void resetRunInfo() {
 		currentRun = new DO2Run();
 		config.setProperty("current_run","");
+		config.setProperty("current_run_is_speedrun","false");
+		speedrun = new DO2Run();
 	}
 	public static void saveRunInfoToConfig() {
 		config.setProperty("current_run",currentRun.serialize());

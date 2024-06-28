@@ -18,7 +18,6 @@ public class Command {
                                 CommandManager.RegistrationEnvironment registrationEnvironment) {
         dispatcher.register(
             literal("decked-out")
-                .requires(source -> source.hasPermissionLevel(2))
                 .then(literal("console-only")
                     .requires(source -> source.hasPermissionLevel(2))
                     .executes(context -> ConsoleCommand.execute(
@@ -202,7 +201,19 @@ public class Command {
                         )
                     )
                 )
-
+                .then(literal("mapGuiScale")
+                    .then(CommandManager.argument("guiScale", IntegerArgumentType.integer())
+                        .executes(context -> GuiMapCommand.executeGuiScale(
+                            context.getSource(),
+                            IntegerArgumentType.getInteger(context, "guiScale"))
+                        )
+                    )
+                )
+                .then(literal("speedrunStart")
+                    .executes(context -> OtherCommand.executeSpeedrun(
+                        context.getSource())
+                    )
+                )
         );
     }
 }
