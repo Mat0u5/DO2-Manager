@@ -2,6 +2,7 @@ package net.mat0u5.do2manager.command;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
+import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
@@ -76,10 +77,9 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(server);
-        if (!runners.isEmpty()) {
-            if (runners.size() == 1) Main.speedrun = RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(server).get(0));
-        }
+        //PlayerEntity player = OtherUtils.getPlayerFromUUIDString(server,"983895d7-82b6-4bcb-a8ad-17d93245e0a4");
+        PlayerEntity player2 = OtherUtils.getPlayerFromName(server,"OntiMoose");
+        System.out.println("test2: " + ItemManager.getPlayerInventory(player2));
 
         return 1;
     }

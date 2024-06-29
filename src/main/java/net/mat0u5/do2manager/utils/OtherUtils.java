@@ -1,12 +1,25 @@
 package net.mat0u5.do2manager.utils;
 
+import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.WorldSavePath;
+import net.minecraft.world.GameMode;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Optional;
+import java.util.UUID;
 
 public class OtherUtils {
     public static String convertSecondsToReadableTime(int totalSeconds) {
@@ -117,6 +130,68 @@ public class OtherUtils {
     public static void broadcastMessage(MinecraftServer server, Text message) {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             player.sendMessage(message, false);
+        }
+    }
+    public static PlayerEntity getPlayerFromUUIDString(MinecraftServer server, String uuidString) {
+        UUID uuid;
+        try {
+            uuid = UUID.fromString(uuidString);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid UUID string: " + uuidString);
+            return null;
+        }
+
+        PlayerManager playerManager = server.getPlayerManager();
+        ServerPlayerEntity playerEntity = playerManager.getPlayer(uuid);
+
+        if (playerEntity != null) {
+            return playerEntity; // Player is online
+        } else {
+            GameProfile profile = server.getUserCache().getByUuid(uuid).orElse(null);
+            if (profile != null) {
+                // Load player data from disk
+                File playerDataFile = server.getSavePath(WorldSavePath.PLAYERDATA).resolve(uuid.toString() + ".dat").toFile();
+                if (playerDataFile.exists()) {
+                    try {
+                        NbtCompound playerData = NbtIo.readCompressed(playerDataFile);
+                        ServerWorld world = server.getOverworld();
+                        ServerPlayerEntity offlinePlayerEntity = new ServerPlayerEntity(server, world, profile);
+                        offlinePlayerEntity.readNbt(playerData);
+                        return offlinePlayerEntity;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            System.out.println("Player not found: " + uuidString);
+            return null;
+        }
+    }
+    public static PlayerEntity getPlayerFromName(MinecraftServer server, String playerName) {
+        PlayerManager playerManager = server.getPlayerManager();
+        PlayerEntity playerEntity = playerManager.getPlayer(playerName);
+
+        if (playerEntity != null) {
+            return playerEntity; // Player is online
+        } else {
+            GameProfile profile = server.getUserCache().findByName(playerName).orElse(null);
+            if (profile != null) {
+                UUID uuid = profile.getId();
+                File playerDataFile = server.getSavePath(WorldSavePath.PLAYERDATA).resolve(uuid.toString() + ".dat").toFile();
+                if (playerDataFile.exists()) {
+                    try {
+                        NbtCompound playerData = NbtIo.readCompressed(playerDataFile);
+                        ServerWorld world = server.getOverworld();
+                        PlayerEntity offlinePlayerEntity = new ServerPlayerEntity(server, world, profile);
+                        offlinePlayerEntity.readNbt(playerData);
+                        return offlinePlayerEntity;
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+            System.out.println("Player not found: " + playerName);
+            return null;
         }
     }
 }
