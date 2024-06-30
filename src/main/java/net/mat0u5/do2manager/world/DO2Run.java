@@ -3,6 +3,7 @@ package net.mat0u5.do2manager.world;
 import com.google.gson.Gson;
 import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +24,7 @@ public class DO2Run {
     public int difficulty = -1;
     public int run_number = -1;
     public int run_length = -1;
+    public int embers_counted = -1;
     public int timestamp_lvl2_entry = -1;
     public int timestamp_lvl3_entry = -1;
     public int timestamp_lvl4_entry = -1;
@@ -36,6 +38,12 @@ public class DO2Run {
 
     public int getRunNum() {
         return run_number;
+    }
+    public int getCompassLevel() {
+        if (compass_item == null) return -1;
+        NbtCompound nbt = compass_item.getNbt();
+        if (ItemManager.hasNbtEntry(compass_item, "Level")) return nbt.getInt("Level");
+        return -1;
     }
     // Serialize DO2Run object to JSON string
     public String serialize() {
@@ -54,6 +62,7 @@ public class DO2Run {
                 difficulty,
                 run_number,
                 run_length,
+                embers_counted,
                 timestamp_lvl2_entry,
                 timestamp_lvl3_entry,
                 timestamp_lvl4_entry,
@@ -85,6 +94,7 @@ public class DO2Run {
         do2Run.difficulty = serializedDO2Run.difficulty;
         do2Run.run_number = serializedDO2Run.run_number;
         do2Run.run_length = serializedDO2Run.run_length;
+        do2Run.embers_counted = serializedDO2Run.embers_counted;
         do2Run.timestamp_lvl2_entry = serializedDO2Run.timestamp_lvl2_entry;
         do2Run.timestamp_lvl3_entry = serializedDO2Run.timestamp_lvl3_entry;
         do2Run.timestamp_lvl4_entry = serializedDO2Run.timestamp_lvl4_entry;
@@ -114,6 +124,7 @@ public class DO2Run {
         private final int difficulty;
         private final int run_number;
         private final int run_length;
+        private final int embers_counted;
         private final int timestamp_lvl2_entry;
         private final int timestamp_lvl3_entry;
         private final int timestamp_lvl4_entry;
@@ -123,7 +134,7 @@ public class DO2Run {
         private final int timestamp_lvl1_exit;
         private final int timestamp_artifact;
 
-        public SerializedDO2Run(String run_type, List<String> runners, List<String> finishers, String card_plays, String compass_item, String artifact_item, String deck_item, String inventory_save, String items_bought, String death_pos, String death_message, int difficulty, int run_number, int run_length, int timestamp_lvl2_entry, int timestamp_lvl3_entry, int timestamp_lvl4_entry, int timestamp_lvl4_exit, int timestamp_lvl3_exit, int timestamp_lvl2_exit, int timestamp_lvl1_exit, int timestamp_artifact) {
+        public SerializedDO2Run(String run_type, List<String> runners, List<String> finishers, String card_plays, String compass_item, String artifact_item, String deck_item, String inventory_save, String items_bought, String death_pos, String death_message, int difficulty, int run_number, int run_length, int embers_counted, int timestamp_lvl2_entry, int timestamp_lvl3_entry, int timestamp_lvl4_entry, int timestamp_lvl4_exit, int timestamp_lvl3_exit, int timestamp_lvl2_exit, int timestamp_lvl1_exit, int timestamp_artifact) {
             this.run_type = run_type;
             this.runners = runners;
             this.finishers = finishers;
@@ -138,6 +149,7 @@ public class DO2Run {
             this.difficulty = difficulty;
             this.run_number = run_number;
             this.run_length = run_length;
+            this.embers_counted = embers_counted;
             this.timestamp_lvl2_entry = timestamp_lvl2_entry;
             this.timestamp_lvl3_entry = timestamp_lvl3_entry;
             this.timestamp_lvl4_entry = timestamp_lvl4_entry;

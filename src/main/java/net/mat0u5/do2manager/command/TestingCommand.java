@@ -78,8 +78,12 @@ public class TestingCommand {
         final PlayerEntity self = source.getPlayer();
 
         //PlayerEntity player = OtherUtils.getPlayerFromUUIDString(server,"983895d7-82b6-4bcb-a8ad-17d93245e0a4");
-        PlayerEntity player2 = OtherUtils.getPlayerFromName(server,"OntiMoose");
-        System.out.println("test2: " + ItemManager.getPlayerInventory(player2));
+        //PlayerEntity player2 = OtherUtils.getPlayerFromName(server,"OntiMoose");
+        //System.out.println("test2: " + ItemManager.getPlayerInventory(player2));
+        /*DO2Run runn = new DO2Run();
+        runn.compass_item = self.getMainHandStack().copy();
+        self.sendMessage(Text.of("Compass Level: " + runn.getCompassLevel()));*/
+        self.sendMessage(Text.of("Emberz: " + RunInfoParser.getPlayerEmbers(server)));
 
         return 1;
     }

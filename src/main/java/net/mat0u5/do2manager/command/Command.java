@@ -83,6 +83,11 @@ public class Command {
                                         context.getSource())
                                     )
                                 )
+                                .then(literal("embers_counted")
+                                    .executes(context -> ConsoleCommand.database_runTracking_Embers(
+                                        context.getSource())
+                                    )
+                                )
                                 .then(literal("players")
                                     .then(literal("runners")
                                         .executes(context -> ConsoleCommand.database_runTracking_Players(

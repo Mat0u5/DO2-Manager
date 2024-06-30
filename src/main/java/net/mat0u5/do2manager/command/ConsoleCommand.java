@@ -77,20 +77,7 @@ public class ConsoleCommand {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
-        if (Main.currentRun.run_length == -1 || Main.currentRun.runners.isEmpty() || Main.currentRun.run_number == -1) {
-            Main.resetRunInfo();
-            return -1;
-        }
-        try {
-            DatabaseManager.addRun(Main.currentRun);
-            DatabaseManager.addRunDetailed(Main.currentRun);
-            DatabaseManager.addRunSpeedrun(Main.currentRun);
-            System.out.println("Run Saved to Database.");
-
-        }catch(Exception e) {
-            System.out.println(e);
-        }
-        Main.resetRunInfo();
+        DatabaseManager.saveRun(server);
         return 1;
     }
     public static int database_runTracking_RunNumber(ServerCommandSource source) {
@@ -106,10 +93,6 @@ public class ConsoleCommand {
 
         Main.currentRun.difficulty = RunInfoParser.getRunDifficulty(server);
 
-        List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(server);
-        if (!runners.isEmpty()) {
-            if (runners.size() == 1) Main.speedrun = RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(server).get(0));
-        }
         return 1;
     }
     public static int database_runTracking_ItemDeck(ServerCommandSource source) {
@@ -119,6 +102,13 @@ public class ConsoleCommand {
         if (Main.currentRun.deck_item != null) return -1;
         ItemStack deck = RunInfoParser.getDeck(server);
         if (deck != null) Main.currentRun.deck_item = deck;
+        return 1;
+    }
+    public static int database_runTracking_Embers(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        if (isRanByPlayer(source)) return -1;
+
+        Main.currentRun.embers_counted = RunInfoParser.getPlayerEmbers(server);
         return 1;
     }
     public static int database_runTracking_ItemInventory(ServerCommandSource source) {

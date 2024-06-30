@@ -91,6 +91,7 @@ public class OtherUtils {
             while (milis.endsWith("0")) {
                 milis = milis.substring(0,milis.length()-1);
             }
+            if (milis.isEmpty() && milliseconds==0) milis = "0";
             timeString.append(".").append(milis);
         }
         String result = timeString.toString();

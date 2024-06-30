@@ -6,17 +6,15 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.Hashtable;
-import java.util.List;
+import java.util.*;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.DO2_GSON;
+import net.minecraft.server.MinecraftServer;
 
 public class DatabaseManager {
-    public static final String DB_VERSION = "v.1.0.2";
+    public static final String DB_VERSION = "v.1.0.3";
 
     private static final String FOLDER_PATH = "./config/"+ Main.MOD_ID;
     private static final String FILE_PATH = FOLDER_PATH+"/"+Main.MOD_ID+".db";
@@ -44,6 +42,9 @@ public class DatabaseManager {
             Main.config.setProperty("db_version",DB_VERSION);
             return;
         }
+        try {
+            updateTable();
+        }catch(Exception e) {}
     }
     private static void createFolderIfNotExists() {
         File folder = new File(FOLDER_PATH);
@@ -75,6 +76,7 @@ public class DatabaseManager {
                 "runners TEXT," +
                 "finishers TEXT," +
                 "run_length INTEGER" +
+                "embers_counted INTEGER" +
                 ");";
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.executeUpdate();
@@ -128,17 +130,34 @@ public class DatabaseManager {
         statement.executeUpdate();
     }
     public static void updateTable() throws SQLException {
-        /*
+        String old_db_ver = Main.config.getProperty("db_version");
+        HashMap<List<String>,List<String>> versionUpdates = new HashMap<>();
+
+        versionUpdates.put(List.of("v.1.0.0","v.1.0.1","v.1.0.2"),List.of("v.1.0.3","ALTER TABLE runs ADD embers_counted INTEGER;"));
+
+        //
         try (Connection connection = DriverManager.getConnection(URL)) {
             if (connection != null) {
-                String sql = "ALTER TABLE items ADD db_version TEXT;";
+                String sql = "";
+
+                for (List<String> updateVersion : versionUpdates.keySet()) {
+                    System.out.println(updateVersion);
+                    if (updateVersion.contains(old_db_ver)) {
+                        List<String> val = versionUpdates.get(updateVersion);
+                        System.out.println("Updating database from " + old_db_ver + " to " + val.get(0) + " ("+val.get(1)+")");
+                        old_db_ver = val.get(0);
+                        sql = val.get(1);
+                    }
+                }
+
                 PreparedStatement statement = connection.prepareStatement(sql);
                 statement.executeUpdate();
+                Main.config.setProperty("db_version",old_db_ver);
                 System.out.println("Database updated.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
-        }*/
+        }
     }
     public static void deleteAllCommandBlocks() {
         String sql = "DELETE FROM command_blocks";
@@ -159,7 +178,7 @@ public class DatabaseManager {
         }
     }
     public static void addRun(DO2Run run) {
-        String sql = "INSERT INTO runs(db_version, run_number, date, run_type, runners, finishers, run_length) VALUES(?, ?, datetime('now'), ?, ?, ?, ?)";
+        String sql = "INSERT INTO runs(db_version, run_number, date, run_type, runners, finishers, run_length, embers_counted) VALUES(?, ?, datetime('now'), ?, ?, ?, ?, ?)";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, DB_VERSION);
@@ -168,6 +187,7 @@ public class DatabaseManager {
             statement.setString(4, String.join(",", run.runners));
             statement.setString(5, String.join(",", run.finishers));
             statement.setInt(6, run.run_length);
+            statement.setInt(7, run.embers_counted);
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -237,6 +257,7 @@ public class DatabaseManager {
                 run.runners = List.of(runResultSet.getString("runners").split(","));
                 run.finishers = List.of(runResultSet.getString("finishers").split(","));
                 run.run_length = runResultSet.getInt("run_length");
+                run.embers_counted = runResultSet.getInt("embers_counted");
             }
 
             if (run != null) {
@@ -324,5 +345,21 @@ public class DatabaseManager {
             e.printStackTrace();
             return null;
         }
+    }
+    public static void saveRun(MinecraftServer server) {
+        if (Main.currentRun.run_length == -1 || Main.currentRun.runners.isEmpty() || Main.currentRun.run_number == -1) {
+            Main.resetRunInfo();
+            return;
+        }
+        try {
+            DatabaseManager.addRun(Main.currentRun);
+            DatabaseManager.addRunDetailed(Main.currentRun);
+            DatabaseManager.addRunSpeedrun(Main.currentRun);
+            System.out.println("Run Saved to Database.");
+
+        }catch(Exception e) {
+            System.out.println(e);
+        }
+        Main.resetRunInfo();
     }
 }

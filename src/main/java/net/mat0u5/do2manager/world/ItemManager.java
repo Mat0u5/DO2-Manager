@@ -11,9 +11,11 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
@@ -171,7 +173,7 @@ public class ItemManager {
                 if (roleplayData == 2) {
                     nbt.putByte("CustomRoleplayData", (byte) 1);
                     itemStack.setNbt(nbt);
-                    clearItemLore(itemStack);
+                    clearItemPhaseLore(itemStack);
                     System.out.println("Converted: " + itemStack.getName().getString());
                 }
             }
@@ -182,10 +184,36 @@ public class ItemManager {
         }
     }
 
-    private static void clearItemLore(ItemStack itemStack) {
+    public static void clearItemLore(ItemStack itemStack) {
         NbtCompound display = itemStack.getSubNbt("display");
         if (display != null) {
             display.remove("Lore");
+            if (display.isEmpty()) {
+                itemStack.removeSubNbt("display");
+            } else {
+                itemStack.setSubNbt("display", display);
+            }
+        }
+    }
+    public static void clearItemPhaseLore(ItemStack itemStack) {
+        NbtCompound display = itemStack.getSubNbt("display");
+        if (display != null && display.contains("Lore", NbtElement.LIST_TYPE)) {
+            NbtList loreList = display.getList("Lore", NbtElement.STRING_TYPE);
+            int lastIndex = loreList.size() - 1;
+
+            if (lastIndex >= 0) {
+                String lastLoreLine = loreList.getString(lastIndex);
+                if (lastLoreLine.contains("-= Phase")) {
+                    loreList.remove(lastIndex);
+                }
+            }
+
+            if (loreList.isEmpty()) {
+                display.remove("Lore");
+            } else {
+                display.put("Lore", loreList);
+            }
+
             if (display.isEmpty()) {
                 itemStack.removeSubNbt("display");
             } else {

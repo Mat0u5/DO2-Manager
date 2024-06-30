@@ -32,6 +32,9 @@ public class RunInfoParser {
     public static java.lang.Integer getRunLength(MinecraftServer server) {
         return ScoreboardUtils.getPlayerScore(server,"#Tick","DOM_Timer");
     }
+    public static java.lang.Integer getPlayerEmbers(MinecraftServer server) {
+        return ScoreboardUtils.getPlayerScore(server,"TempPlayerEmbers","OverallEmbers");
+    }
     public static String getFormattedRunLength(MinecraftServer server) {
         java.lang.Integer ticks = getRunLength(server);
         if (ticks == null) return "null";
@@ -41,7 +44,8 @@ public class RunInfoParser {
         List<DO2Run> allRuns = DatabaseManager.getRunsByCriteria(List.of("runners = \"" + player.getUuidAsString()+"\""));
         DO2Run fastestRun = null;
         for (DO2Run run : allRuns) {
-            if (!run.run_type.equalsIgnoreCase("testing") && !run.finishers.isEmpty() && run.difficulty == Main.currentRun.difficulty) {
+            System.out.println("Test: " + run.getCompassLevel() +"_"+ Main.currentRun.getCompassLevel());
+            if (!run.run_type.equalsIgnoreCase("testing") && !run.finishers.isEmpty() && run.getCompassLevel() == Main.currentRun.getCompassLevel() && Main.currentRun.getCompassLevel() != -1) {
                 if (fastestRun == null) {
                     fastestRun = run;
                     continue;
@@ -49,6 +53,7 @@ public class RunInfoParser {
                 if (run.run_length <= fastestRun.run_length) fastestRun = run;
             }
         }
+        System.out.println(fastestRun);
         return fastestRun;
     }
     public static List<PlayerEntity> getCurrentRunners(MinecraftServer server) {
