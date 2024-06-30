@@ -195,4 +195,18 @@ public class OtherUtils {
             return null;
         }
     }
+    public static void restartServer(MinecraftServer server) {
+        System.out.println("A queued restart has triggered...");
+        executeCommand(server,"stop");
+    }
+    public static boolean isServerEmptyOrOnlyTangoCam(MinecraftServer server) {
+        int playerCount = server.getPlayerManager().getPlayerList().size();
+        if (playerCount == 0) {
+            return true;
+        } else if (playerCount == 1) {
+            ServerPlayerEntity player = server.getPlayerManager().getPlayerList().get(0);
+            return "TangoCam".equals(player.getGameProfile().getName());
+        }
+        return false;
+    }
 }

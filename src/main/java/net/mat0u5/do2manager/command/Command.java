@@ -219,6 +219,17 @@ public class Command {
                         context.getSource())
                     )
                 )
+                .then(literal("queueRestart")
+                    .requires(source -> source.hasPermissionLevel(2))
+                    .executes(context -> RestartCommand.queueRestart(
+                        context.getSource(),true)
+                    )
+                    .then(literal("stop")
+                        .executes(context -> RestartCommand.queueRestart(
+                            context.getSource(),false)
+                        )
+                    )
+                )
         );
     }
 }

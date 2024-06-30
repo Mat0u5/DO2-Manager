@@ -3,8 +3,10 @@ package net.mat0u5.do2manager.events;
 
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.mat0u5.do2manager.Main;
+import net.mat0u5.do2manager.command.RestartCommand;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiInventoryClick;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
@@ -27,11 +29,21 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Events {
 
+    private static long lastPlayerLogoutTime = -1;
+    private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
     public static void register() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> onPlayerJoin(server, handler.getPlayer()));
+        ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
+            scheduler.schedule(() -> onPlayerDisconnect(server, handler.getPlayer()), 1, TimeUnit.SECONDS);
+        });
+        ServerTickEvents.END_SERVER_TICK.register(Events::onServerTickEnd);
 
         ServerLivingEntityEvents.ALLOW_DEATH.register((entity, damageSource, amount) -> {
             if (entity instanceof ServerPlayerEntity) {
@@ -39,10 +51,26 @@ public class Events {
             }
             return true;
         });
-
     }
 
+    private static void onServerTickEnd(MinecraftServer server) {
+        if (lastPlayerLogoutTime != -1 && RestartCommand.isRestartQueued() && OtherUtils.isServerEmptyOrOnlyTangoCam(server)) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastPlayerLogoutTime >= TimeUnit.MINUTES.toMillis(3)) {
+                OtherUtils.restartServer(server);
+            }
+        }
+    }
+    private static void onPlayerDisconnect(MinecraftServer server, ServerPlayerEntity player) {
+        if (OtherUtils.isServerEmptyOrOnlyTangoCam(server)) {//Last player disconnects
+            lastPlayerLogoutTime = System.currentTimeMillis();
+        }
+        else {
+            lastPlayerLogoutTime = -1;
+        }
+    }
     private static void onPlayerJoin(MinecraftServer server, ServerPlayerEntity player) {
+        lastPlayerLogoutTime = -1;
         String playerUUID = player.getUuidAsString();
         if (Main.lastPhaseUpdate.getProperty(playerUUID) == null) {
             System.out.println("Converting "+player.getEntityName()+"'s Items from phase to casual");
