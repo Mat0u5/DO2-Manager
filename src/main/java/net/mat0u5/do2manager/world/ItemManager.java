@@ -13,6 +13,7 @@ import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtString;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
@@ -221,7 +222,18 @@ public class ItemManager {
             }
         }
     }
+    public static void addLoreToItemStack(ItemStack itemStack, List<Text> lore) {
+        NbtCompound displayTag = itemStack.getOrCreateSubNbt("display");
+        NbtList loreList = displayTag.getList("Lore", 8); // 8 means it's a string tag type
 
+        // Convert each lore Text to string and add to NBT list
+        for (Text loreLine : lore) {
+            loreList.add(NbtString.of(Text.Serializer.toJson(loreLine)));
+        }
+
+        // Update the display tag with the new lore list
+        displayTag.put("Lore", loreList);
+    }
     public static boolean isShulkerBox(ItemStack itemStack) {
         return getItemId(itemStack).endsWith("shulker_box");
     }

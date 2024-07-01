@@ -13,6 +13,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
+import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.List;
@@ -77,13 +78,20 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        //PlayerEntity player = OtherUtils.getPlayerFromUUIDString(server,"983895d7-82b6-4bcb-a8ad-17d93245e0a4");
-        //PlayerEntity player2 = OtherUtils.getPlayerFromName(server,"OntiMoose");
-        //System.out.println("test2: " + ItemManager.getPlayerInventory(player2));
-        /*DO2Run runn = new DO2Run();
-        runn.compass_item = self.getMainHandStack().copy();
-        self.sendMessage(Text.of("Compass Level: " + runn.getCompassLevel()));*/
-        self.sendMessage(Text.of("Emberz: " + RunInfoParser.getPlayerEmbers(server)));
+        /*List<DO2Run> runsSearch = List.copyOf(Main.allRuns);
+        for (DO2Run run : runsSearch) {
+            //self.sendMessage(Text.of("Test "+run.run_number+"_"+run.embers_counted));
+            List<String> runners = run.runners;
+            if (String.join("",runners).isEmpty()) continue;
+            for (String runner : runners) {
+                if (!Main.allPlayers.containsKey(runner)) {
+                    String name = OtherUtils.fetchPlayerNameFromMojangAPI(OtherUtils.getUUIDFromString(runner));
+                    DatabaseManager.addPlayer(runner,name);
+                }
+            }
+        }
+        System.out.println("Done i guess");*/
+
 
         return 1;
     }

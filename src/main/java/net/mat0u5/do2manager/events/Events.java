@@ -3,6 +3,7 @@ package net.mat0u5.do2manager.events;
 
 
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.mat0u5.do2manager.Main;
@@ -35,10 +36,12 @@ import java.util.concurrent.TimeUnit;
 
 public class Events {
 
+    public static long clickEventCooldown = 00;
     private static long lastPlayerLogoutTime = -1;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     public static void register() {
+        ServerLifecycleEvents.SERVER_STARTING.register((server) -> onServerStart(server));
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> onPlayerJoin(server, handler.getPlayer()));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             scheduler.schedule(() -> onPlayerDisconnect(server, handler.getPlayer()), 1, TimeUnit.SECONDS);
@@ -60,6 +63,7 @@ public class Events {
                 OtherUtils.restartServer(server);
             }
         }
+        if (clickEventCooldown > 0) clickEventCooldown--;
     }
     private static void onPlayerDisconnect(MinecraftServer server, ServerPlayerEntity player) {
         if (OtherUtils.isServerEmptyOrOnlyTangoCam(server)) {//Last player disconnects
@@ -70,6 +74,8 @@ public class Events {
         }
     }
     private static void onPlayerJoin(MinecraftServer server, ServerPlayerEntity player) {
+        DatabaseManager.addPlayer(player.getUuidAsString(),player.getEntityName());
+        DatabaseManager.fetchAllPlayers();
         lastPlayerLogoutTime = -1;
         String playerUUID = player.getUuidAsString();
         if (Main.lastPhaseUpdate.getProperty(playerUUID) == null) {
@@ -144,10 +150,17 @@ public class Events {
                 NbtCompound nbt = clickedItem.getNbt();
                 if (nbt == null) return;
                 if (!nbt.contains("GUI")) return;
-                ci.cancel();
+                if (!nbt.contains("GUI_DontCancelClick")) ci.cancel();
                 String tag = nbt.getString("GUI");
-                if (tag.equalsIgnoreCase("DatabaseGUI")) GuiInventoryClick.onClickDatabaseGUI(slotId,button,actionType,player,ci,handler);
+                if (tag.equalsIgnoreCase("DatabaseGUI") && clickEventCooldown <= 0) {
+                    clickEventCooldown = 4;
+                    GuiInventoryClick.onClickDatabaseGUI(slotId,button,actionType,player,ci,handler);
+                }
             }
         }catch(Exception e) {}
+    }
+    private static void onServerStart(MinecraftServer server) {
+        Main.server = server;
+        System.out.println("MinecraftServer instance captured.");
     }
 }

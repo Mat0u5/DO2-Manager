@@ -1,8 +1,14 @@
 package net.mat0u5.do2manager.utils;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.mat0u5.do2manager.database.DatabaseManager;
+import net.minecraft.block.entity.SignBlockEntity;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.ingame.SignEditScreen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
@@ -18,6 +24,9 @@ import net.minecraft.world.GameMode;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -134,39 +143,39 @@ public class OtherUtils {
         }
     }
     public static PlayerEntity getPlayerFromUUIDString(MinecraftServer server, String uuidString) {
+        return getPlayerFromName(server, DatabaseManager.getPlayerNameFromUUID(uuidString));
+    }
+    public static String fetchPlayerNameFromMojangAPI(UUID uuid) {
+        String urlString = "https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString().replace("-", "");
+        try {
+            URL url = new URL(urlString);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setConnectTimeout(5000);
+            conn.setReadTimeout(5000);
+
+            if (conn.getResponseCode() == 200) {
+                InputStreamReader reader = new InputStreamReader(conn.getInputStream());
+                JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
+                reader.close();
+                return json.get("name").getAsString();
+            } else {
+                System.out.println("Failed to fetch player name, response code: " + conn.getResponseCode());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    public static UUID getUUIDFromString(String uuidString) {
         UUID uuid;
         try {
-            uuid = UUID.fromString(uuidString);
+            uuid = UUID.fromString(uuidString.trim());
         } catch (IllegalArgumentException e) {
             System.out.println("Invalid UUID string: " + uuidString);
             return null;
         }
-
-        PlayerManager playerManager = server.getPlayerManager();
-        ServerPlayerEntity playerEntity = playerManager.getPlayer(uuid);
-
-        if (playerEntity != null) {
-            return playerEntity; // Player is online
-        } else {
-            GameProfile profile = server.getUserCache().getByUuid(uuid).orElse(null);
-            if (profile != null) {
-                // Load player data from disk
-                File playerDataFile = server.getSavePath(WorldSavePath.PLAYERDATA).resolve(uuid.toString() + ".dat").toFile();
-                if (playerDataFile.exists()) {
-                    try {
-                        NbtCompound playerData = NbtIo.readCompressed(playerDataFile);
-                        ServerWorld world = server.getOverworld();
-                        ServerPlayerEntity offlinePlayerEntity = new ServerPlayerEntity(server, world, profile);
-                        offlinePlayerEntity.readNbt(playerData);
-                        return offlinePlayerEntity;
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            System.out.println("Player not found: " + uuidString);
-            return null;
-        }
+        return uuid;
     }
     public static PlayerEntity getPlayerFromName(MinecraftServer server, String playerName) {
         PlayerManager playerManager = server.getPlayerManager();

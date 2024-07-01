@@ -15,16 +15,28 @@ public class GuiInventoryClick {
         ItemStack clickedItem = handler.getSlot(slotId).getStack();
         NbtCompound nbt = clickedItem.getNbt();
         String tag = nbt.getString("GUI_ITEM");
-        System.out.println("TTTESTTT>>> " + tag);
         if (tag.equalsIgnoreCase("next_page")) {
-            System.out.println("TTTESTTT>><<> " + Main.openGuis.get(player).guiDatabase);
-            System.out.println("TTTESTTT> " + Main.openGuis.get(player).guiDatabase.current_page);
             Main.openGuis.get(player).guiDatabase.current_page += 1;
-            System.out.println("TTTESTTT> " + Main.openGuis.get(player).guiDatabase.current_page);
-            Main.openGuis.get(player).guiDatabase.addRunItems();
+            Main.openGuis.get(player).guiDatabase.populateRunInventory();
         } else if (tag.equalsIgnoreCase("previous_page")) {
+            if (Main.openGuis.get(player).guiDatabase.current_page <= 1) return;
             Main.openGuis.get(player).guiDatabase.current_page -= 1;
-            Main.openGuis.get(player).guiDatabase.addRunItems();
+            Main.openGuis.get(player).guiDatabase.populateRunInventory();
+        } else if (tag.equalsIgnoreCase("filter_success")) {
+            Main.openGuis.get(player).guiDatabase.filter_success++;
+            if (Main.openGuis.get(player).guiDatabase.filter_success > 2) Main.openGuis.get(player).guiDatabase.filter_success =0;
+            Main.openGuis.get(player).guiDatabase.updateSearch();
+            Main.openGuis.get(player).guiDatabase.populateRunInventory();
+        } else if (tag.equalsIgnoreCase("filter_difficulty")) {
+            Main.openGuis.get(player).guiDatabase.filter_difficulty++;
+            if (Main.openGuis.get(player).guiDatabase.filter_difficulty > 5) Main.openGuis.get(player).guiDatabase.filter_difficulty =0;
+            Main.openGuis.get(player).guiDatabase.updateSearch();
+            Main.openGuis.get(player).guiDatabase.populateRunInventory();
+        } else if (tag.equalsIgnoreCase("filter_run_type")) {
+            Main.openGuis.get(player).guiDatabase.filter_run_type++;
+            if (Main.openGuis.get(player).guiDatabase.filter_run_type > 2) Main.openGuis.get(player).guiDatabase.filter_run_type =0;
+            Main.openGuis.get(player).guiDatabase.updateSearch();
+            Main.openGuis.get(player).guiDatabase.populateRunInventory();
         }
     }
 }

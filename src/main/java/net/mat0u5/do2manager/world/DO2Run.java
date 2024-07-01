@@ -1,7 +1,11 @@
 package net.mat0u5.do2manager.world;
 
 import com.google.gson.Gson;
+import net.mat0u5.do2manager.Main;
+import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.DO2_GSON;
+import net.mat0u5.do2manager.utils.OtherUtils;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 
@@ -24,7 +28,7 @@ public class DO2Run {
     public int difficulty = -1;
     public int run_number = -1;
     public int run_length = -1;
-    public int embers_counted = -1;
+    public int embers_counted = 0;
     public int timestamp_lvl2_entry = -1;
     public int timestamp_lvl3_entry = -1;
     public int timestamp_lvl4_entry = -1;
@@ -38,6 +42,18 @@ public class DO2Run {
 
     public int getRunNum() {
         return run_number;
+    }
+    public String getRunnersName() {
+        if (runners.isEmpty()) return "";
+        List<String> runnersIGN = new ArrayList<>();
+        for (String uuid : runners) {
+            String player = Main.allPlayers.get(uuid);
+            if (player != null) runnersIGN.add(player);
+        }
+        return String.join(", ",runnersIGN);
+    }
+    public boolean getSuccess() {
+        return !String.join("",finishers).isEmpty();
     }
     public int getCompassLevel() {
         if (compass_item == null) return -1;

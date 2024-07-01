@@ -5,6 +5,7 @@ import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.ItemStack;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
@@ -12,6 +13,8 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 import java.util.*;
+
+import static net.mat0u5.do2manager.Main.allRuns;
 
 public class GuiInventory_Database extends GuiPlayerSpecific {
     private final int INVENTORY_SIZE = 54;
@@ -23,32 +26,48 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         inventory = new SimpleInventory(INVENTORY_SIZE);
         invId = "runs";
         // Populate the inventory with run data
+        runsSearch = List.copyOf(allRuns);
         populateRunInventory();
 
         player.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
             return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, syncId, inv, inventory, INVENTORY_SIZE / 9);
         }, Text.of("Run History")));
-        Main.openGuis.put(player,this);
         guiDatabase = this;
+        current_page = 1;
+        Main.openGuis.put(player,this);
         return 1;
     }
 
     public void populateRunInventory() {
-        updateSearch();
         for (int i = 0; i < 54; i++) {
-            inventory.setStack(i, GuiItems_Database.filler());
+            setIsNotMatching(i, GuiItems_Database.filler());
         }
 
         // Set navigation buttons
-        inventory.setStack(46, GuiItems_Database.page(false)); // Previous page
-        inventory.setStack(50, GuiItems_Database.filterSuccess()); // Search
-        inventory.setStack(52, GuiItems_Database.page(true)); // Next page
         addRunItems();
+        addFiltersNStuff();
     }
-
+    public void addFiltersNStuff() {
+        int totalPages = (int) Math.ceil(runsSearch.size()/21)+1;
+        if (current_page != 1) setOrReplaceNbt(46, GuiItems_Database.page(false,current_page,totalPages)); // Previous page
+        setOrReplaceNbt(48, GuiItems_Database.filterDifficulty(filter_difficulty));
+        setOrReplaceNbt(50, GuiItems_Database.filterSuccess(filter_success));
+        setOrReplaceNbt(51, GuiItems_Database.filterRunType(filter_run_type));
+        if (current_page  < totalPages) setOrReplaceNbt(52, GuiItems_Database.page(true,current_page,totalPages)); // Next page
+    }
+    public void setIsNotMatching(int slot, ItemStack itemStack) {
+        if (!inventory.getStack(slot).getItem().equals(itemStack.getItem())) {
+            inventory.setStack(slot,itemStack);
+        }
+    }
+    public void setOrReplaceNbt(int slot, ItemStack itemStack) {
+        if (!inventory.getStack(slot).getItem().equals(itemStack.getItem())) {
+            inventory.setStack(slot,itemStack);
+        }
+        else inventory.getStack(slot).setNbt(itemStack.getNbt());
+    }
     public void addRunItems() {
-        System.out.println("Adding....." + current_page);
-        int runIndex = (current_page-1)*27;
+        int runIndex = (current_page-1)*21;
         for (int y = 0; y < 6; y++) {
         for (int x = 0; x < 9; x++) {
             int pos = x+y*9;
@@ -64,20 +83,18 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
     }
 
     public void updateSearch() {
-        List<String> currentCriteria = getCurrentCriteria();
-        //if (lastCriteria.equals(currentCriteria) & !(lastCriteria.isEmpty() && runsSearch.isEmpty())) return;
-        lastCriteria = currentCriteria;
-        System.out.println("Searching database for runs matching criteria.");
-        runsSearch = DatabaseManager.getRunsByCriteria(currentCriteria);
-
-        Collections.sort(runsSearch, new Comparator<DO2Run>() {
-            @Override
-            public int compare(DO2Run run1, DO2Run run2) {
-                return Integer.compare(run2.getRunNum(), run1.getRunNum());
-            }
-        });
-    }
-    public List<String> getCurrentCriteria() {
-        return new ArrayList<>();
+        runsSearch = new ArrayList<>();
+        for (DO2Run run : allRuns) {
+            if (filter_success == 1 && String.join("",run.finishers).isEmpty()) continue;
+            if (filter_success == 2 && !String.join("",run.finishers).isEmpty()) continue;
+            if (filter_difficulty == 1 && run.difficulty != 1) continue;
+            if (filter_difficulty == 2 && run.difficulty != 2) continue;
+            if (filter_difficulty == 3 && run.difficulty != 3) continue;
+            if (filter_difficulty == 4 && run.difficulty != 4) continue;
+            if (filter_difficulty == 5 && run.difficulty != 5) continue;
+            if (filter_run_type == 1 && !run.run_type.equalsIgnoreCase("casual")) continue;
+            if (filter_run_type == 2 && !run.run_type.equalsIgnoreCase("phase")) continue;
+            runsSearch.add(run);
+        }
     }
 }

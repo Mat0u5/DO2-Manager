@@ -22,6 +22,36 @@ import java.util.*;
 
 public class RunInfoParser {
     public static final List<Integer> artiModelDataList = Arrays.asList(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57);
+    public static final HashMap<Integer, Integer> artifactWorth = new HashMap<Integer, Integer>() {{
+        put(37, 60);
+        put(36, 54);
+        put(38, 52);
+        put(14, 50);
+        put(44, 48);
+        put(11, 46);
+        put(16, 40);
+        put(39, 38);
+        put(10, 36);
+        put(19, 34);
+        put(15, 32);
+        put(31, 30);
+        put(20, 24);
+        put(41, 23);
+        put(35, 22);
+        put(18, 21);
+        put(40, 20);
+        put(12, 19);
+        put(13, 18);
+        put(32, 14);
+        put(34, 13);
+        put(29, 12);
+        put(28, 11);
+        put(30, 10);
+        put(33, 9);
+        put(17, 8);
+        put(43, 7);
+        put(42, 6);
+    }};
 
     public static java.lang.Integer getRunNum(MinecraftServer server) {
         return ScoreboardUtils.getPlayerScore(server,"TangoCam","TestObj");
@@ -143,5 +173,14 @@ public class RunInfoParser {
         if (!ItemManager.getItemId(itemStack).equalsIgnoreCase("minecraft:iron_nugget")) return false;
         if (!artiModelDataList.contains(ItemManager.getModelData(itemStack))) return false;
         return true;
+    }
+    public static boolean isEmber(ItemStack itemStack) {
+        if (!ItemManager.getItemId(itemStack).equalsIgnoreCase("minecraft:iron_nugget")) return false;
+        return ItemManager.getModelData(itemStack) == 3;
+    }
+    public static int getArtifactWorth(ItemStack itemStack) {
+        if (!isDungeonArtifact(itemStack)) return 0;
+        if (artifactWorth.containsKey(ItemManager.getModelData(itemStack))) return artifactWorth.get(ItemManager.getModelData(itemStack));
+        return 0;
     }
 }

@@ -14,7 +14,7 @@ import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.minecraft.server.MinecraftServer;
 
 public class DatabaseManager {
-    public static final String DB_VERSION = "v.1.0.3";
+    public static final String DB_VERSION = "v.1.0.4";
 
     private static final String FOLDER_PATH = "./config/"+ Main.MOD_ID;
     private static final String FILE_PATH = FOLDER_PATH+"/"+Main.MOD_ID+".db";
@@ -29,6 +29,7 @@ public class DatabaseManager {
                 createRunsSpeedrunsTable(connection);
                 createCommandBlocksTable(connection);
                 createFunctionsTable(connection);
+                createPlayersTable(connection);
                 System.out.println("Database initialized.");
             }
         } catch (SQLException e) {
@@ -51,6 +52,16 @@ public class DatabaseManager {
         if (!folder.exists()) {
             folder.mkdir();
         }
+    }
+    private static void createPlayersTable(Connection connection) throws SQLException {
+        String sql = "CREATE TABLE IF NOT EXISTS players (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "uuid TEXT NOT NULL UNIQUE," +
+                "name TEXT NOT NULL," +
+                "joined_at TEXT NOT NULL" +
+                ");";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.executeUpdate();
     }
     private static void createCommandBlocksTable(Connection connection) throws SQLException {
         String sql = "CREATE TABLE IF NOT EXISTS command_blocks (" +
@@ -134,6 +145,7 @@ public class DatabaseManager {
         HashMap<List<String>,List<String>> versionUpdates = new HashMap<>();
 
         versionUpdates.put(List.of("v.1.0.0","v.1.0.1","v.1.0.2"),List.of("v.1.0.3","ALTER TABLE runs ADD embers_counted INTEGER;"));
+        versionUpdates.put(List.of("v.1.0.3"),List.of("v.1.0.4",""));
 
         //
         try (Connection connection = DriverManager.getConnection(URL)) {
@@ -188,6 +200,19 @@ public class DatabaseManager {
             statement.setString(5, String.join(",", run.finishers));
             statement.setInt(6, run.run_length);
             statement.setInt(7, run.embers_counted);
+
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        Main.reloadAllRuns();
+    }
+    public static void updateEmbersCounted(int run_number, int embers_counted) {
+        String sql = "UPDATE runs SET embers_counted = ? WHERE run_number = ?";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, embers_counted);
+            statement.setInt(2, run_number);
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -361,5 +386,50 @@ public class DatabaseManager {
             System.out.println(e);
         }
         Main.resetRunInfo();
+    }
+
+    public static void addPlayer(String uuid, String name) {
+        String sql = "INSERT OR REPLACE INTO players(uuid, name, joined_at) VALUES(?, ?, datetime('now'))";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, uuid);
+            statement.setString(2, name);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static String getPlayerNameFromUUID(String uuid) {
+        String sql = "SELECT name FROM players WHERE uuid = ?";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, uuid);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("name");
+                } else {
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public static void fetchAllPlayers() {
+        Main.allPlayers.clear();
+        String sql = "SELECT uuid, name FROM players";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                String uuid = resultSet.getString("uuid");
+                String name = resultSet.getString("name");
+                Main.allPlayers.put(uuid, name);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 }
