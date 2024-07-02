@@ -80,7 +80,7 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        FakeSign.openFakeSign((ServerPlayerEntity) self);
+        Main.reloadAllRuns();
 
 
         return 1;

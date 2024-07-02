@@ -19,6 +19,8 @@ import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.WorldSavePath;
@@ -221,5 +223,10 @@ public class OtherUtils {
             return "TangoCam".equals(player.getGameProfile().getName());
         }
         return false;
+    }
+    public static void playGuiClickSound(PlayerEntity player) {
+        if (player != null && player.getWorld() != null) {
+            player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.PLAYERS, 0.5F, 1.0F);
+        }
     }
 }

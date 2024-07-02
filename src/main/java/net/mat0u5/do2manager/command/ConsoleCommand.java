@@ -183,7 +183,9 @@ public class ConsoleCommand {
             if (item instanceof ItemEntity) {
                 ItemEntity itemEntity = (ItemEntity) item;
                 ItemStack itemStack = itemEntity.getStack();
-                if (funName.contains("card_plays")) Main.currentRun.card_plays.add(itemStack.copy());
+                if (funName.contains("card_plays")) {
+                    Main.currentRun.card_plays.add(itemStack.copy());
+                }
                 if (funName.contains("items_bought")) {
                     Main.currentRun.items_bought.add(itemStack.copy());
                     //Add to barrel

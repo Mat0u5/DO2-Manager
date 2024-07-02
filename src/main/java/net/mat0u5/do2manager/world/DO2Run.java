@@ -7,6 +7,7 @@ import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 
 import java.util.ArrayList;
@@ -44,13 +45,36 @@ public class DO2Run {
         return run_number;
     }
     public String getRunnersName() {
-        if (runners.isEmpty()) return "";
+        return getListName(runners);
+    }
+    public String getFinishersName() {
+        return getListName(finishers);
+    }
+    private String getListName(List<String> players) {
+        if (players.isEmpty()) return "";
         List<String> runnersIGN = new ArrayList<>();
-        for (String uuid : runners) {
+        for (String uuid : players) {
             String player = Main.allPlayers.get(uuid);
             if (player != null) runnersIGN.add(player);
         }
         return String.join(", ",runnersIGN);
+    }
+    public ItemStack getRunnerSkull() {
+        ItemStack itemStack = new ItemStack(Items.PLAYER_HEAD, 1);
+        String playerList = String.join(",",runners);
+        if (!playerList.isEmpty()) {
+            if (!playerList.contains(",")) {
+                String playerName = DatabaseManager.getPlayerNameFromUUID(runners.get(0));
+                NbtCompound nbt = itemStack.getOrCreateNbt();
+                nbt.putString("SkullOwner", playerName);
+            }
+            else {
+                itemStack = new ItemStack(Items.CARVED_PUMPKIN, 1);
+                NbtCompound nbt = itemStack.getOrCreateNbt();
+                nbt.putInt("CustomModelData", 46);
+            }
+        }
+        return itemStack;
     }
     public boolean getSuccess() {
         return !String.join("",finishers).isEmpty();

@@ -23,7 +23,7 @@ public class Main implements ModInitializer {
 	public static ConfigManager lastPhaseUpdate;
 	public static DO2Run currentRun = new DO2Run();
 	public static DO2Run speedrun = new DO2Run();
-	public static List<DO2Run> allRuns;
+	public static List<DO2Run> allRuns = new ArrayList<>();
 	public static HashMap<PlayerEntity, GuiPlayerSpecific> openGuis = new HashMap<>();
 	public static HashMap<String, String> allPlayers = new HashMap<>();
 	public static MinecraftServer server;
@@ -38,7 +38,6 @@ public class Main implements ModInitializer {
 		ModRegistries.registerModStuff();
 		LOGGER.info("Initializing DO2-manager...");
 
-		reloadAllRuns();
 		DatabaseManager.fetchAllPlayers();
 		Runtime.getRuntime().addShutdownHook(new Thread(Main::saveRunInfoToConfig));
 	}
@@ -63,5 +62,16 @@ public class Main implements ModInitializer {
 				return Integer.compare(run2.getRunNum(), run1.getRunNum());
 			}
 		});
+		System.out.println("Runs Reloaded.");
+	}
+	public static void addRun(DO2Run run) {
+		allRuns.add(run);
+		Collections.sort(allRuns, new Comparator<DO2Run>() {
+			@Override
+			public int compare(DO2Run run1, DO2Run run2) {
+				return Integer.compare(run2.getRunNum(), run1.getRunNum());
+			}
+		});
+
 	}
 }

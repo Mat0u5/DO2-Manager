@@ -191,6 +191,7 @@ public class DatabaseManager {
         }
     }
     public static void addRun(DO2Run run) {
+        Main.addRun(Main.currentRun);
         String sql = "INSERT INTO runs(db_version, run_number, date, run_type, runners, finishers, run_length, embers_counted) VALUES(?, ?, datetime('now'), ?, ?, ?, ?, ?)";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -206,7 +207,6 @@ public class DatabaseManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        Main.reloadAllRuns();
     }
     public static void updateEmbersCounted(int run_number, int embers_counted) {
         String sql = "UPDATE runs SET embers_counted = ? WHERE run_number = ?";

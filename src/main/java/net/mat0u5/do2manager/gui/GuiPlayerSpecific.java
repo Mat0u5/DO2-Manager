@@ -8,6 +8,7 @@ import java.util.List;
 
 public abstract class GuiPlayerSpecific {
     public int current_page = 1;
+    public int current_page_custom_list = 1;
     public List<DO2Run> runsSearch;
     public SimpleInventory inventory;
     public String invId = "";
@@ -15,6 +16,7 @@ public abstract class GuiPlayerSpecific {
     public int filter_success = 0;
     public int filter_difficulty = 0;
     public int filter_run_type = 0;
+    public boolean showRunsAsHeads = true;
     public List<String> filter_player = new ArrayList<>();
     public List<String> filter_player_uuid = new ArrayList<>();
 }
