@@ -74,7 +74,6 @@ public class RunInfoParser {
         List<DO2Run> allRuns = DatabaseManager.getRunsByCriteria(List.of("runners = \"" + player.getUuidAsString()+"\""));
         DO2Run fastestRun = null;
         for (DO2Run run : allRuns) {
-            System.out.println("Test: " + run.getCompassLevel() +"_"+ Main.currentRun.getCompassLevel());
             if (!run.run_type.equalsIgnoreCase("testing") && !run.finishers.isEmpty() && run.getCompassLevel() == Main.currentRun.getCompassLevel() && Main.currentRun.getCompassLevel() != -1) {
                 if (fastestRun == null) {
                     fastestRun = run;
@@ -83,7 +82,6 @@ public class RunInfoParser {
                 if (run.run_length <= fastestRun.run_length) fastestRun = run;
             }
         }
-        System.out.println(fastestRun);
         return fastestRun;
     }
     public static List<PlayerEntity> getCurrentRunners(MinecraftServer server) {

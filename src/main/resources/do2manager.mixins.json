@@ -5,7 +5,8 @@
 	"mixins": [
 		"PlayerEntityMixin",
 		"ItemEntityMixin",
-		"ScreenHandlerMixin"
+		"ScreenHandlerMixin",
+		"SignBlockEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

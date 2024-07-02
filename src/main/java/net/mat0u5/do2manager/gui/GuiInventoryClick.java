@@ -1,6 +1,7 @@
 package net.mat0u5.do2manager.gui;
 
 import net.mat0u5.do2manager.Main;
+import net.mat0u5.do2manager.world.FakeSign;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -37,6 +38,8 @@ public class GuiInventoryClick {
             if (Main.openGuis.get(player).guiDatabase.filter_run_type > 2) Main.openGuis.get(player).guiDatabase.filter_run_type =0;
             Main.openGuis.get(player).guiDatabase.updateSearch();
             Main.openGuis.get(player).guiDatabase.populateRunInventory();
+        } else if (tag.equalsIgnoreCase("filter_player")) {
+            FakeSign.openFakeSign((ServerPlayerEntity) player);
         }
     }
 }

@@ -416,6 +416,40 @@ public class DatabaseManager {
             return null;
         }
     }
+    public static String getPlayerNameCaseCorrected(String name) {
+        String sql = "SELECT name FROM players WHERE LOWER(name) = ?";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, name.toLowerCase());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("name");
+                } else {
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+    public static String getPlayerUUIDFromName(String name) {
+        String sql = "SELECT uuid FROM players WHERE LOWER(name) = ?";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, name.toLowerCase());
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getString("uuid");
+                } else {
+                    return null;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
     public static void fetchAllPlayers() {
         Main.allPlayers.clear();
         String sql = "SELECT uuid, name FROM players";

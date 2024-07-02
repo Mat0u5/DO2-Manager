@@ -78,4 +78,22 @@ public class GuiItems_Database {
         nbt.putInt("CustomModelData", 6); // Set the custom model data value
         return createGuiItem(itemStack, "filter_run_type", "§aRun Type Filter", List.of(Text.of(""), Text.of((filter_run_type==0?"§8▶ ":"  ")+"§8No filter"), Text.of((filter_run_type==1?"§e▶ ":"  §7")+"Casual"), Text.of((filter_run_type==2?"§b▶ ":"  §7")+"Phase"), Text.of(""), Text.of("§eClick cycle through!")));
     }
+    public static ItemStack filterPlayer(List<String> filter_player) {
+        ItemStack itemStack = new ItemStack(Items.PLAYER_HEAD, 1);
+        String playerList = String.join(", ",filter_player);
+        if (!playerList.isEmpty()) {
+            if (!playerList.contains(", ")) {
+                String playerName = filter_player.get(0);
+                NbtCompound nbt = itemStack.getOrCreateNbt();
+                nbt.putString("SkullOwner", playerName);
+            }
+            else {
+                itemStack = new ItemStack(Items.CARVED_PUMPKIN, 1);
+                NbtCompound nbt = itemStack.getOrCreateNbt();
+                nbt.putInt("CustomModelData", 46);
+            }
+        }
+
+        return createGuiItem(itemStack, "filter_player", "§aPlayer Filter", List.of(Text.of(""), Text.of((filter_player.isEmpty()?"§8▶ No filter":"§f▶ "+playerList)), Text.of("§eClick to filter players!")));
+    }
 }

@@ -4,6 +4,7 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.DO2Run;
+import net.mat0u5.do2manager.world.FakeSign;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.entity.player.PlayerEntity;
@@ -11,6 +12,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 import javax.xml.crypto.Data;
@@ -78,19 +80,7 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        /*List<DO2Run> runsSearch = List.copyOf(Main.allRuns);
-        for (DO2Run run : runsSearch) {
-            //self.sendMessage(Text.of("Test "+run.run_number+"_"+run.embers_counted));
-            List<String> runners = run.runners;
-            if (String.join("",runners).isEmpty()) continue;
-            for (String runner : runners) {
-                if (!Main.allPlayers.containsKey(runner)) {
-                    String name = OtherUtils.fetchPlayerNameFromMojangAPI(OtherUtils.getUUIDFromString(runner));
-                    DatabaseManager.addPlayer(runner,name);
-                }
-            }
-        }
-        System.out.println("Done i guess");*/
+        FakeSign.openFakeSign((ServerPlayerEntity) self);
 
 
         return 1;

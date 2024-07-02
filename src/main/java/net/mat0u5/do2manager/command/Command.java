@@ -164,7 +164,7 @@ public class Command {
                     )
                 )
                 .then(literal("gui")
-                    .requires(source -> source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()))
+                    .requires(source -> source.hasPermissionLevel(2))
                     .executes(context -> new GuiInventory_Database().openRunInventory(
                         context.getSource().getPlayer())
                     )

@@ -22,19 +22,21 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
 
 
     public int openRunInventory(ServerPlayerEntity player) {
-        if (!player.getEntityName().equalsIgnoreCase("Mat0u5")) return -1;
         inventory = new SimpleInventory(INVENTORY_SIZE);
         invId = "runs";
         // Populate the inventory with run data
         runsSearch = List.copyOf(allRuns);
         populateRunInventory();
 
-        player.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
-            return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, syncId, inv, inventory, INVENTORY_SIZE / 9);
-        }, Text.of("Run History")));
+        openRunInventoryNoUpdate(player);
         guiDatabase = this;
         current_page = 1;
         Main.openGuis.put(player,this);
+        return 1;
+    }public int openRunInventoryNoUpdate(ServerPlayerEntity player) {
+        player.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
+            return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, syncId, inv, inventory, INVENTORY_SIZE / 9);
+        }, Text.of("Run History")));
         return 1;
     }
 
@@ -50,6 +52,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
     public void addFiltersNStuff() {
         int totalPages = (int) Math.ceil(runsSearch.size()/21)+1;
         if (current_page != 1) setOrReplaceNbt(46, GuiItems_Database.page(false,current_page,totalPages)); // Previous page
+        setOrReplaceNbt(47, GuiItems_Database.filterPlayer(filter_player));
         setOrReplaceNbt(48, GuiItems_Database.filterDifficulty(filter_difficulty));
         setOrReplaceNbt(50, GuiItems_Database.filterSuccess(filter_success));
         setOrReplaceNbt(51, GuiItems_Database.filterRunType(filter_run_type));
@@ -94,6 +97,13 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
             if (filter_difficulty == 5 && run.difficulty != 5) continue;
             if (filter_run_type == 1 && !run.run_type.equalsIgnoreCase("casual")) continue;
             if (filter_run_type == 2 && !run.run_type.equalsIgnoreCase("phase")) continue;
+            if (!filter_player_uuid.isEmpty()) {
+                List<String> remainingFilters = new ArrayList<>(List.copyOf(filter_player_uuid));
+                remainingFilters.removeAll(run.runners);
+                if (!String.join("",remainingFilters).isEmpty()) continue;
+            }
+
+
             runsSearch.add(run);
         }
     }
