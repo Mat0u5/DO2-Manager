@@ -161,9 +161,10 @@ public class DatabaseManager {
                         sql = val.get(1);
                     }
                 }
-
-                PreparedStatement statement = connection.prepareStatement(sql);
-                statement.executeUpdate();
+                if (!sql.isEmpty()) {
+                    PreparedStatement statement = connection.prepareStatement(sql);
+                    statement.executeUpdate();
+                }
                 Main.config.setProperty("db_version",old_db_ver);
                 System.out.println("Database updated.");
             }
