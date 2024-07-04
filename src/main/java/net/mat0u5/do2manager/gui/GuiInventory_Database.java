@@ -26,7 +26,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         inventory = new SimpleInventory(INVENTORY_SIZE);
         invId = "runs";
         // Populate the inventory with run data
-        if (allRuns == null || allRuns.isEmpty()) Main.reloadAllRuns();
+        if (!Main.reloadedRuns) Main.reloadAllRuns();
         runsSearch = List.copyOf(allRuns);
         populateRunInventory();
 

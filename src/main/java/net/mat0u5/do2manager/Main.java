@@ -27,6 +27,7 @@ public class Main implements ModInitializer {
 	public static HashMap<PlayerEntity, GuiPlayerSpecific> openGuis = new HashMap<>();
 	public static HashMap<String, String> allPlayers = new HashMap<>();
 	public static MinecraftServer server;
+	public static boolean reloadedRuns = false;
 
 	@Override
 	public void onInitialize() {
@@ -63,6 +64,7 @@ public class Main implements ModInitializer {
 			}
 		});
 		System.out.println("Runs Reloaded.");
+		reloadedRuns=true;
 	}
 	public static void addRun(DO2Run run) {
 		allRuns.add(run);
