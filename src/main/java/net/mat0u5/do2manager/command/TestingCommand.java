@@ -3,6 +3,7 @@ package net.mat0u5.do2manager.command;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
+import net.mat0u5.do2manager.utils.TextUtils;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.FakeSign;
 import net.mat0u5.do2manager.world.ItemManager;
@@ -25,11 +26,7 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        String old = Main.config.getProperty("testing");
-        if (old == null || old.isEmpty()) Main.config.setProperty("testing","true");
-        else if (old.equalsIgnoreCase("false")) Main.config.setProperty("testing","true");
-        else if  (old.equalsIgnoreCase("true")) Main.config.setProperty("testing","false");
-        self.sendMessage(Text.of("Testing is now: " + Main.config.getProperty("testing")));
+        TextUtils.setEmotes();
         return 1;
     }
     public static int executeAddRun(ServerCommandSource source) {

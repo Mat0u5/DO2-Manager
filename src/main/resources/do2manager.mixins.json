@@ -6,7 +6,8 @@
 		"PlayerEntityMixin",
 		"ItemEntityMixin",
 		"ScreenHandlerMixin",
-		"SignBlockEntityMixin"
+		"SignBlockEntityMixin",
+		"ServerPlayerEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

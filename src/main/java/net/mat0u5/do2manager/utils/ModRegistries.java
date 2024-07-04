@@ -10,6 +10,7 @@ public class ModRegistries {
         registerCommands();
         registerEvents();
         DatabaseManager.initialize();
+        TextUtils.setEmotes();
     }
     private static void registerCommands() {
         CommandRegistrationCallback.EVENT.register(Command::register);
