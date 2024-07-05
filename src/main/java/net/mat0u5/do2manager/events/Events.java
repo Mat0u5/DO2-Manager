@@ -142,6 +142,9 @@ public class Events {
             }
         }
         if (RunInfoParser.isDungeonArtifact(itemStack) && Main.currentRun.artifact_item == null) {
+            if (ItemManager.getModelData(itemStack) == 36) {
+                OtherUtils.executeCommand(player.getServer(),"function dom:mat0u5/gui/other/mug_maniac_activate");
+            }
             Main.currentRun.artifact_item = itemStack;
         }
     }
