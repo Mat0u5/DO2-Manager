@@ -86,8 +86,12 @@ public class TextUtils {
         emotes.put("wand", "\uE0C2");
         emotes.put("wand_of_gorgeousness", "\uE0C2");
 
-
-
+        emotes.put("skull","☠");
+        emotes.put("smile","☺");
+        emotes.put("frown","☹");
+        emotes.put("heart","❤");
+        emotes.put("copyright","©");
+        emotes.put("trademark","™");
     }
     public static String replaceEmotes(String input) {
         for (Map.Entry<String, String> entry : emotes.entrySet()) {
