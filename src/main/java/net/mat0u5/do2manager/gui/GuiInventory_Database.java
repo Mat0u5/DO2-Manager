@@ -99,8 +99,8 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
     public void updateSearch() {
         runsSearch = new ArrayList<>();
         for (DO2Run run : allRuns) {
-            if (filter_success == 1 && String.join("",run.finishers).isEmpty()) continue;
-            if (filter_success == 2 && !String.join("",run.finishers).isEmpty()) continue;
+            if (filter_success == 1 && !run.getSuccess()) continue;
+            if (filter_success == 2 && run.getSuccess()) continue;
             if (filter_difficulty == 1 && run.difficulty != 1) continue;
             if (filter_difficulty == 2 && run.difficulty != 2) continue;
             if (filter_difficulty == 3 && run.difficulty != 3) continue;

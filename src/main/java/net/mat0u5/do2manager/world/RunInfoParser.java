@@ -74,7 +74,7 @@ public class RunInfoParser {
         List<DO2Run> allRuns = DatabaseManager.getRunsByCriteria(List.of("runners = \"" + player.getUuidAsString()+"\""));
         DO2Run fastestRun = null;
         for (DO2Run run : allRuns) {
-            if (!run.run_type.equalsIgnoreCase("testing") && !run.finishers.isEmpty() && run.getCompassLevel() == Main.currentRun.getCompassLevel() && Main.currentRun.getCompassLevel() != -1) {
+            if (!run.run_type.equalsIgnoreCase("testing") && run.getSuccess() && run.getCompassLevel() == Main.currentRun.getCompassLevel() && Main.currentRun.getCompassLevel() != -1) {
                 if (fastestRun == null) {
                     fastestRun = run;
                     continue;
@@ -108,7 +108,7 @@ public class RunInfoParser {
         return runners;
     }
     public static boolean isValidRunner(PlayerEntity runner) {
-        if (runner.isSpectator() || runner.isCreative() || !isInCitadelRegion(runner)) return false;
+        if (runner.isSpectator() || runner.isCreative() || !isInCitadelRegion(runner) || runner.isDead()) return false;
         return true;
     }
 

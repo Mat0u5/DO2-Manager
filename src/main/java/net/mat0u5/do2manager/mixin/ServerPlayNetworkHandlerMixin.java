@@ -16,7 +16,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(ServerPlayNetworkHandler.class)
 public class ServerPlayNetworkHandlerMixin {
 
-    @Inject(method = "handleDecoratedMessage(Lnet/minecraft/network/message/SentMessage;Lnet/minecraft/network/message/MessageType$Parameters;)V",
+    @Inject(method = "handleDecoratedMessage(Lnet/minecraft/network/message/SignedMessage;)V",
             at = @At("HEAD"), cancellable = true)
     private void onHandleDecoratedMessage(SignedMessage message, CallbackInfo ci) {
         ServerPlayNetworkHandler handler = (ServerPlayNetworkHandler) (Object) this;

@@ -144,7 +144,7 @@ public class GuiItems_Database {
         lore.add(Text.of(""));
 
         lore.add(Text.of("§7Runners: §3" + run.getRunnersName()));
-        lore.add(Text.of("§7Finishers: §3" + run.getRunnersName()));
+        lore.add(Text.of("§7Finishers: §3" + run.getFinishersName()));
         lore.add(Text.of(""));
         lore.add(Text.of("§7→ Run Successful: "+(run.getSuccess()?"§aYes":"§cNo")));
         lore.add(Text.of(""));

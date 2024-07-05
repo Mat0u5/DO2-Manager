@@ -25,8 +25,9 @@ public class TestingCommand {
     public static int execute(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
-
-        TextUtils.setEmotes();
+        DO2Run run = RunInfoParser.getFastestPlayerRunMatchingCurrent(self);
+        System.out.println("Test: " + Main.currentRun.getCompassLevel());
+        System.out.println("Run: "+run.run_number+"_"+run.runners+"_"+run.finishers);
         return 1;
     }
     public static int executeAddRun(ServerCommandSource source) {
