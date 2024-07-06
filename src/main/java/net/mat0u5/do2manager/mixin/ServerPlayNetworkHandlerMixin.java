@@ -1,5 +1,6 @@
 package net.mat0u5.do2manager.mixin;
 
+import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.TextUtils;
 import net.minecraft.network.message.MessageType;
@@ -23,7 +24,6 @@ public class ServerPlayNetworkHandlerMixin {
         ServerPlayerEntity player = handler.player;
         Text originalText = message.getContent();
         String originalContent = originalText.getString();
-
         if (!originalContent.contains(":")) return;
         String formattedContent = TextUtils.replaceEmotes(originalContent);
 
@@ -33,6 +33,7 @@ public class ServerPlayNetworkHandlerMixin {
             Text finalMessage = Text.empty().append("<").append(playerNameWithFormatting).append("> ").append(formattedContentText);
 
             OtherUtils.broadcastMessage(player.getServer(), finalMessage);
+            DiscordUtils.sendMessageToDiscord(TextUtils.formatEmotesForDiscord(originalContent),player.getEntityName(),"");
             ci.cancel();
         }
     }

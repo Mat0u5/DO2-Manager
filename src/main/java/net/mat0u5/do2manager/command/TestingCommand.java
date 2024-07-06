@@ -2,6 +2,7 @@ package net.mat0u5.do2manager.command;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
+import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.TextUtils;
 import net.mat0u5.do2manager.world.DO2Run;
@@ -25,9 +26,9 @@ public class TestingCommand {
     public static int execute(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
-        DO2Run run = RunInfoParser.getFastestPlayerRunMatchingCurrent(self);
-        System.out.println("Test: " + Main.currentRun.getCompassLevel());
-        System.out.println("Run: "+run.run_number+"_"+run.runners+"_"+run.finishers);
+        TextUtils.setEmotes();
+        DiscordUtils.sendMessageToDiscord("Test Message From DO2Manager");
+
         return 1;
     }
     public static int executeAddRun(ServerCommandSource source) {
