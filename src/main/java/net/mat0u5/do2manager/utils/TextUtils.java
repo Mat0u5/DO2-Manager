@@ -62,6 +62,11 @@ public class TextUtils {
         emotes.put(List.of("heart"),List.of("❤"));
         emotes.put(List.of("copyright"),List.of("©"));
         emotes.put(List.of("trademark"),List.of("™"));
+
+        emotes.put(List.of("mat","Mat0u5"), List.of("\uE0CC"));
+        emotes.put(List.of("gari","Garibaldi","Garibaldi_"), List.of("\uE0CD"));
+        emotes.put(List.of("onti","OntiMoose"), List.of("\uE0CE"));
+        emotes.put(List.of("simple","ItsSimpleAsThat"), List.of("\uE0CF"));
     }
     public static String replaceEmotes(String input) {
         for (Map.Entry<List<String>, List<String>> entry : emotes.entrySet()) {
