@@ -279,6 +279,7 @@ public class DatabaseManager {
             if (runResultSet.next()) {
                 run = new DO2Run();
                 run.run_number = runResultSet.getInt("run_number");
+                run.date = runResultSet.getString("date");
                 run.run_type = runResultSet.getString("run_type");
                 run.runners = List.of(runResultSet.getString("runners").split(","));
                 run.finishers = List.of(runResultSet.getString("finishers").split(","));

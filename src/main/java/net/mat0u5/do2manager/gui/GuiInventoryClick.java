@@ -15,17 +15,18 @@ public class GuiInventoryClick {
     public static void onClickDatabaseGUI(int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci, ScreenHandler handler) {
         ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
         ItemStack clickedItem = handler.getSlot(slotId).getStack();
-
         OtherUtils.playGuiClickSound(player);
 
         NbtCompound nbt = clickedItem.getNbt();
         String tag = nbt.getString("GUI_ITEM");
         if (tag.equalsIgnoreCase("next_page")) {
-            Main.openGuis.get(player).guiDatabase.current_page += 1;
+            if (button == 0) Main.openGuis.get(player).guiDatabase.current_page += 1;
+            else if (button == 1) Main.openGuis.get(player).guiDatabase.current_page = (int) Math.ceil(Main.openGuis.get(player).guiDatabase.runsSearch.size()/21)+1;
             Main.openGuis.get(player).guiDatabase.populateRunInventory();
         } else if (tag.equalsIgnoreCase("previous_page")) {
             if (Main.openGuis.get(player).guiDatabase.current_page <= 1) return;
-            Main.openGuis.get(player).guiDatabase.current_page -= 1;
+            if (button == 0) Main.openGuis.get(player).guiDatabase.current_page -= 1;
+            else if (button == 1) Main.openGuis.get(player).guiDatabase.current_page = 1;
             Main.openGuis.get(player).guiDatabase.populateRunInventory();
         } else if (tag.equalsIgnoreCase("next_page_custom_list")) {
             Main.openGuis.get(player).guiDatabase.current_page_custom_list += 1;

@@ -10,8 +10,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class DO2Run {
     public String run_type = null;
@@ -25,6 +28,7 @@ public class DO2Run {
     public List<ItemStack> items_bought = new ArrayList<>();
     public String death_pos = null;
     public String death_message = null;
+    public String date = null;
 
     public int difficulty = -1;
     public int run_number = -1;
@@ -41,6 +45,12 @@ public class DO2Run {
 
     private static final Gson GSON = new Gson();
 
+    public String getFormattedDate() {
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime dateTime = LocalDateTime.parse(date, inputFormatter);
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("d. MMM. yyyy HH:mm", Locale.ENGLISH);
+        return dateTime.format(outputFormatter);
+    }
     public int getRunNum() {
         return run_number;
     }

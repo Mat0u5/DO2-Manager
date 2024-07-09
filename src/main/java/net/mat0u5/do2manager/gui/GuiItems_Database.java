@@ -29,7 +29,7 @@ public class GuiItems_Database {
 
     public static ItemStack page(boolean isNextPage, int currentPage, int totalPages) {
         ItemStack itemStack = new ItemStack(Items.ARROW, 1);
-        return createGuiItem(itemStack, (isNextPage?"next":"previous")+"_page", "§a"+(isNextPage?"Next":"Previous")+" Page", List.of(Text.of("§7(" + currentPage + "/" + totalPages + ")"), Text.of(""), Text.of("§eClick to turn page!")));
+        return createGuiItem(itemStack, (isNextPage?"next":"previous")+"_page", "§a"+(isNextPage?"Next":"Previous")+" Page", List.of(Text.of("§7(" + currentPage + "/" + totalPages + ")"), Text.of(""), Text.of("§8Right-Click to skip!"), Text.of("§eClick to turn page!")));
     }
     public static ItemStack pageCustom(boolean isNextPage, int currentPage, int totalPages, String custom_inv, int run_number) {
         ItemStack itemStack = new ItemStack(Items.ARROW, 1);
@@ -67,6 +67,7 @@ public class GuiItems_Database {
         lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§d")) +run.run_type)));
 
         lore.add(Text.of("§7Run Length: §6" + OtherUtils.convertTicksToClockTime(run.run_length)));
+        lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
         if (run.embers_counted > 0) lore.add(Text.of("§7Embers Counted: §3" + run.embers_counted));
 
         if (run.run_type.equalsIgnoreCase("testing")) itemStack = new ItemStack(Items.BEDROCK);
@@ -150,6 +151,7 @@ public class GuiItems_Database {
         lore.add(Text.of(""));
         lore.add(Text.of("§7Difficulty: " +(run.difficulty==5?"§3Deepfrost":run.difficulty==4?"§4Deadly":run.difficulty==3?"§6Hard":run.difficulty==2?"§eMedium":run.difficulty==1?"§aEasy":"§dnull")));
         lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§d")) +run.run_type)));
+        lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
         return createGuiItem(itemStack, "runners", (run.getSuccess()?"§a":"§c")+"Run #" + run.run_number, lore);
     }
     public static ItemStack runClock(DO2Run run) {
