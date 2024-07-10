@@ -36,10 +36,12 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         current_page_custom_list=1;
         Main.openGuis.put(player,this);
         return 1;
-    }public int openRunInventoryNoUpdate(ServerPlayerEntity player) {
+    }
+    public int openRunInventoryNoUpdate(ServerPlayerEntity player) {
         player.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
             return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, syncId, inv, inventory, INVENTORY_SIZE / 9);
         }, Text.of("Run History")));
+        invOpen = true;
         return 1;
     }
 

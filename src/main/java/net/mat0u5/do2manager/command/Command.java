@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
+import net.mat0u5.do2manager.gui.GuiInventory_Items;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.EntityArgumentType;
@@ -167,6 +168,16 @@ public class Command {
                     .requires(source -> source.hasPermissionLevel(2))
                     .executes(context -> new GuiInventory_Database().openRunInventory(
                         context.getSource().getPlayer())
+                    )
+                    .then(literal("allItems")
+                        .executes(context -> new GuiInventory_Items().openItemsInventory(
+                            context.getSource().getPlayer())
+                        )
+                    )
+                    .then(literal("runHistory")
+                        .executes(context -> new GuiInventory_Database().openRunInventory(
+                            context.getSource().getPlayer())
+                        )
                     )
                 )
                 .then(literal("testing")

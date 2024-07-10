@@ -7,12 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class GuiPlayerSpecific {
+    public boolean invOpen = false;
     public int current_page = 1;
     public int current_page_custom_list = 1;
     public List<DO2Run> runsSearch;
     public SimpleInventory inventory;
     public String invId = "";
     public GuiInventory_Database guiDatabase;
+    public GuiInventory_Items guiItems;
     public int filter_success = 0;
     public int filter_difficulty = 0;
     public int filter_run_type = 0;

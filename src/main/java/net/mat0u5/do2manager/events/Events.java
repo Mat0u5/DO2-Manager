@@ -23,6 +23,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.network.packet.c2s.play.UpdateSignC2SPacket;
+import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.MinecraftServer;
@@ -159,20 +160,20 @@ public class Events {
     }
     public static void onSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci, ScreenHandler handler) {
         try {
-            if (player instanceof ServerPlayerEntity) {
-                ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-                if (!handler.isValid(slotId)) return;
-                ItemStack clickedItem = handler.getSlot(slotId).getStack();
-                if (clickedItem == null) return;
-                NbtCompound nbt = clickedItem.getNbt();
-                if (nbt == null) return;
-                if (!nbt.contains("GUI")) return;
-                if (!nbt.contains("GUI_DontCancelClick")) ci.cancel();
-                String tag = nbt.getString("GUI");
-                if (tag.equalsIgnoreCase("DatabaseGUI") && clickEventCooldown <= 0) {
-                    clickEventCooldown = 4;
-                    GuiInventoryClick.onClickDatabaseGUI(slotId,button,actionType,player,ci,handler);
-                }
+            if (!Main.openGuis.containsKey(player)) return;
+            if (!Main.openGuis.get(player).invOpen) return;
+
+            if (!handler.isValid(slotId)) return;
+            ItemStack clickedItem = handler.getSlot(slotId).getStack();
+            if (clickedItem == null) return;
+            NbtCompound nbt = clickedItem.getNbt();
+            if (nbt == null) return;
+            if (!nbt.contains("GUI")) return;
+            if (!nbt.contains("GUI_DontCancelClick")) ci.cancel();
+            String tag = nbt.getString("GUI");
+            if ((tag.equalsIgnoreCase("DatabaseGUI")||tag.equalsIgnoreCase("ItemsGUI")) && clickEventCooldown <= 0) {
+                clickEventCooldown = 4;
+                GuiInventoryClick.onClickDatabaseGUI(tag,slotId,button,actionType,player,ci,handler);
             }
         }catch(Exception e) {}
     }
