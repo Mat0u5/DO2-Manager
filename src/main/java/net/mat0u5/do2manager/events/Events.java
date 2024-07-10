@@ -31,6 +31,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.GameMode;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
@@ -79,9 +80,17 @@ public class Events {
         }
     }
     private static void onPlayerJoin(MinecraftServer server, ServerPlayerEntity player) {
+        if (player.isCreative() && !player.hasPermissionLevel(2)) {
+            player.changeGameMode(GameMode.SURVIVAL);
+            System.out.println(player.getEntityName()+"'s gamemode was automatically reset to survival, because they were in creative.");
+        }
+
+        //Add the player to the database
         DatabaseManager.addPlayer(player.getUuidAsString(),player.getEntityName());
         DatabaseManager.fetchAllPlayers();
         lastPlayerLogoutTime = -1;
+
+        //Remove all phase items when necessary
         String playerUUID = player.getUuidAsString();
         if (Main.lastPhaseUpdate.getProperty(playerUUID) == null) {
             System.out.println("Converting "+player.getEntityName()+"'s Items from phase to casual");
