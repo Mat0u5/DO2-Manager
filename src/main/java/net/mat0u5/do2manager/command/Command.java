@@ -239,6 +239,45 @@ public class Command {
                         )
                     )
                 )
+                .then(literal("blockLock")
+                    .requires(source -> source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()))
+                    .then(literal("startSearch")
+                        .then(CommandManager.argument("fromX", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("fromY", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("fromZ", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("toX", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("toY", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("toZ", IntegerArgumentType.integer())
+                            .executes(context -> OtherCommand.executeLock(
+                                context.getSource(),
+                                IntegerArgumentType.getInteger(context, "fromX"),
+                                IntegerArgumentType.getInteger(context, "fromY"),
+                                IntegerArgumentType.getInteger(context, "fromZ"),
+                                IntegerArgumentType.getInteger(context, "toX"),
+                                IntegerArgumentType.getInteger(context, "toY"),
+                                IntegerArgumentType.getInteger(context, "toZ"),
+                                "lock_block")
+                            )
+                            .then(literal("unlock")
+                                .executes(context -> OtherCommand.executeLock(
+                                    context.getSource(),
+                                    IntegerArgumentType.getInteger(context, "fromX"),
+                                    IntegerArgumentType.getInteger(context, "fromY"),
+                                    IntegerArgumentType.getInteger(context, "fromZ"),
+                                    IntegerArgumentType.getInteger(context, "toX"),
+                                    IntegerArgumentType.getInteger(context, "toY"),
+                                    IntegerArgumentType.getInteger(context, "toZ"),
+                                    "unlock_block")
+                                )
+                            )
+                        )
+                        )
+                        )
+                        )
+                        )
+                        )
+                    )
+                )
         );
     }
 }

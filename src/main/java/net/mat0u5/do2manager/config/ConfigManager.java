@@ -36,7 +36,7 @@ public class ConfigManager {
                     properties.setProperty("testing","false");
                     properties.setProperty("current_run_is_speedrun","false");
                     properties.setProperty("webhook_url","");
-                    properties.setProperty("webhook_token","");
+                    properties.setProperty("block_password","");
 
                     properties.store(output, null);
                 }

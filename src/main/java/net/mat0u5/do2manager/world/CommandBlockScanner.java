@@ -1,10 +1,13 @@
 package net.mat0u5.do2manager.world;
 
+import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
@@ -19,9 +22,15 @@ import java.util.List;
 
 public class CommandBlockScanner {
     static List<Integer> percentCompleted = new ArrayList<>();
+    static String scanType = "";
+    static String blockPassword = "";
+    static int lockOrUnlock=0;
 
-    public static void scanArea(ServerWorld world, BlockPos startPos, BlockPos endPos, PlayerEntity player) {
+    public static void scanArea(String scanFor, ServerWorld world, BlockPos startPos, BlockPos endPos, PlayerEntity player) {
         percentCompleted = new ArrayList<>();
+        scanType = scanFor;
+        lockOrUnlock=0;
+        if (scanFor.equalsIgnoreCase("lock_block")) blockPassword = Main.config.getProperty("block_password");
         List<BlockPos> positionsToCheck = new ArrayList<>();
 
         int minX = Math.min(startPos.getX(), endPos.getX());
@@ -49,8 +58,8 @@ public class CommandBlockScanner {
 
         if (index >= positions.size()) {
             // Processing complete
-            player.sendMessage(Text.of("§aCommand block scan complete."));
-            System.out.println("Command block scan complete.");
+            player.sendMessage(Text.of("§aBlock scan complete."));
+            System.out.println("Block scan complete.");
             return;
         }
 
@@ -66,24 +75,53 @@ public class CommandBlockScanner {
             }
 
             Block block = world.getBlockState(pos).getBlock();
-            if (block == Blocks.COMMAND_BLOCK || block == Blocks.CHAIN_COMMAND_BLOCK || block == Blocks.REPEATING_COMMAND_BLOCK) {
-                CommandBlockBlockEntity commandBlockEntity = (CommandBlockBlockEntity) world.getBlockEntity(pos);
-                if (commandBlockEntity != null) {
-                    CommandBlockExecutor executor = commandBlockEntity.getCommandExecutor();
-                    String command = executor.getCommand();
-                    if (command.startsWith("/")) command = command.substring(1);
-                    String type = block == Blocks.COMMAND_BLOCK ? "Impulse" : block == Blocks.CHAIN_COMMAND_BLOCK ? "Chain" : "Repeating";
-                    boolean conditional = commandBlockEntity.isConditionalCommandBlock();
-                    boolean auto = commandBlockEntity.isAuto();
-                    DatabaseManager.addCommandBlock(pos.getX(), pos.getY(), pos.getZ(), type, conditional, auto, command);
+            if (scanType.equalsIgnoreCase("command_block")) {
+                if (block == Blocks.COMMAND_BLOCK || block == Blocks.CHAIN_COMMAND_BLOCK || block == Blocks.REPEATING_COMMAND_BLOCK) {
+                    CommandBlockBlockEntity commandBlockEntity = (CommandBlockBlockEntity) world.getBlockEntity(pos);
+                    if (commandBlockEntity != null) {
+                        CommandBlockExecutor executor = commandBlockEntity.getCommandExecutor();
+                        String command = executor.getCommand();
+                        if (command.startsWith("/")) command = command.substring(1);
+                        String type = block == Blocks.COMMAND_BLOCK ? "Impulse" : block == Blocks.CHAIN_COMMAND_BLOCK ? "Chain" : "Repeating";
+                        boolean conditional = commandBlockEntity.isConditionalCommandBlock();
+                        boolean auto = commandBlockEntity.isAuto();
+                        DatabaseManager.addCommandBlock(pos.getX(), pos.getY(), pos.getZ(), type, conditional, auto, command);
+                    }
+                }
+            }
+            else if (scanType.contains("lock_block")) {
+                if (block == Blocks.CHEST || block == Blocks.HOPPER || block == Blocks.TRAPPED_CHEST || block == Blocks.DISPENSER || block == Blocks.DROPPER || block == Blocks.FURNACE || block == Blocks.BARREL || block == Blocks.SMOKER || block == Blocks.BLAST_FURNACE || block.asItem().toString().contains("shulker_box")) {
+                    BlockEntity blockEntity = world.getBlockEntity(pos);
+                    if (blockEntity != null) {
+                        NbtCompound nbt = blockEntity.createNbt();
+                        if (scanType.equalsIgnoreCase("unlock_block")) {
+                            if (nbt.contains("Lock")) {
+                                nbt.remove("Lock");
+                                blockEntity.readNbt(nbt);
+                                blockEntity.markDirty();
+                                world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+                                lockOrUnlock++;
+                            }
+                        }
+                        else {
+                            if (!nbt.contains("Lock") || !nbt.getString("Lock").equalsIgnoreCase(blockPassword)) {
+                                nbt.putString("Lock", blockPassword);
+                                blockEntity.readNbt(nbt);
+                                blockEntity.markDirty();
+                                world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+                                lockOrUnlock++;
+                            }
+                        }
+                    }
                 }
             }
         }
         int percent = (int) Math.floor((endIndex * 10d) / (double) positions.size())*10;
         if (!percentCompleted.contains(percent) && percent != 0) {
             percentCompleted.add(percent);
-            player.sendMessage(Text.of("[Command Block Database Searcher] Processed "+percent+"% of positions."));
-            System.out.println("[Command Block Database Searcher] Processed "+percent+"% of positions.");
+            player.sendMessage(Text.of("[Block Database Searcher] Processed "+percent+"% of positions."));
+            if (scanType.contains("lock_block")) player.sendMessage(Text.of("-Modified "+lockOrUnlock+" blocks."));
+            System.out.println("[Block Database Searcher] Processed "+percent+"% of positions.");
         }
 
         // Schedule the next batch
