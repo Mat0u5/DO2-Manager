@@ -67,7 +67,7 @@ public class GuiItems_Database {
         lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§d")) +run.run_type)));
 
         lore.add(Text.of("§7Run Length: §6" + OtherUtils.convertTicksToClockTime(run.run_length)));
-        lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
+        if (run.date!=null) lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
         if (run.embers_counted > 0) lore.add(Text.of("§7Embers Counted: §3" + run.embers_counted));
 
         if (run.run_type.equalsIgnoreCase("testing")) itemStack = new ItemStack(Items.BEDROCK);
@@ -151,7 +151,7 @@ public class GuiItems_Database {
         lore.add(Text.of(""));
         lore.add(Text.of("§7Difficulty: " +(run.difficulty==5?"§3Deepfrost":run.difficulty==4?"§4Deadly":run.difficulty==3?"§6Hard":run.difficulty==2?"§eMedium":run.difficulty==1?"§aEasy":"§dnull")));
         lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§d")) +run.run_type)));
-        lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
+        if (run.date!=null) lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
         return createGuiItem(itemStack, "runners", (run.getSuccess()?"§a":"§c")+"Run #" + run.run_number, lore);
     }
     public static ItemStack runClock(DO2Run run) {

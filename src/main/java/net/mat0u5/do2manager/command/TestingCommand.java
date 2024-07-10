@@ -48,7 +48,7 @@ public class TestingCommand {
         TestRun.death_pos = "";
         TestRun.death_message = "";
         TestRun.difficulty = 5;
-        TestRun.run_number = -24;
+        TestRun.run_number = runNum;
         TestRun.run_length = 1000;
         TestRun.timestamp_lvl2_entry = 2;
         TestRun.timestamp_lvl3_entry = 3;

@@ -179,6 +179,11 @@ public class Command {
                             context.getSource())
                         )
                     )
+                    .then(literal("testAddRun")
+                        .executes(context -> TestingCommand.executeAddRun(
+                            context.getSource())
+                        )
+                    )
                 )
                 .then(literal("commandBlockSearch")
                     .requires(source -> source.hasPermissionLevel(2))

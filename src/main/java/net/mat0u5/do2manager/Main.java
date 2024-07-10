@@ -12,6 +12,8 @@ import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 
@@ -67,6 +69,11 @@ public class Main implements ModInitializer {
 		reloadedRuns=true;
 	}
 	public static void addRun(DO2Run run) {
+		if (run.date==null||run.date.isEmpty()) {
+			LocalDateTime now = LocalDateTime.now();
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+			run.date = now.format(formatter);
+		}
 		allRuns.add(run);
 		Collections.sort(allRuns, new Comparator<DO2Run>() {
 			@Override
