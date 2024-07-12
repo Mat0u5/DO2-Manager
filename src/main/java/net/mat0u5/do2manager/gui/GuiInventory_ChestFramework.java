@@ -41,6 +41,9 @@ public class GuiInventory_Items extends GuiPlayerSpecific {
     }
 
     public void populateInventory(World world, String type) {
+
+        if (type.equalsIgnoreCase("cards_menu"))getInventoryFromDoubleChest(world,new BlockPos(-624, 10, 1954));
+
         if (type.equalsIgnoreCase("main_menu"))getInventoryFromDoubleChest(world,new BlockPos(-623, 7, 1954));
         if (type.equalsIgnoreCase("common_cards"))getInventoryFromDoubleChest(world,new BlockPos(-623, 8, 1954));
         if (type.equalsIgnoreCase("uncommon_cards"))getInventoryFromDoubleChest(world,new BlockPos(-623, 9, 1954));
