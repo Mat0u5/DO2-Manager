@@ -1,18 +1,14 @@
 package net.mat0u5.do2manager.command;
 
 import net.mat0u5.do2manager.Main;
-import net.mat0u5.do2manager.database.DatabaseManager;
+import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
-import net.mat0u5.do2manager.world.CommandBlockScanner;
-import net.mat0u5.do2manager.world.DO2Run;
-import net.mat0u5.do2manager.world.RunInfoParser;
+import net.mat0u5.do2manager.world.BlockScanner;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
-
-import java.util.List;
 
 public class OtherCommand {
     public static int executeSpeedrun(ServerCommandSource source) {
@@ -27,7 +23,12 @@ public class OtherCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
         self.sendMessage(Text.of("Started Block Lock Search..."));
-        CommandBlockScanner.scanArea(type,server.getOverworld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
+        BlockScanner.scanArea(type,server.getOverworld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
+        return 1;
+    }
+    public static int reload() {
+        Main.config= new ConfigManager("./config/"+Main.MOD_ID+"/"+Main.MOD_ID+".properties");
+        Main.lastPhaseUpdate = new ConfigManager("./config/"+Main.MOD_ID+"/"+Main.MOD_ID+"_phase_inv_update.properties");
         return 1;
     }
 }

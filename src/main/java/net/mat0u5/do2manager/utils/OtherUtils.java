@@ -33,6 +33,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -228,5 +230,28 @@ public class OtherUtils {
         if (player != null && player.getWorld() != null) {
             player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.PLAYERS, 0.5F, 1.0F);
         }
+    }
+    public static List<BlockPos> getPositionsFromString(String str) {
+        List<BlockPos> posList = new ArrayList<>();
+        str = str.replaceAll(" ","");
+        if (str.contains(";")) {
+            for (String pos : str.split(";")) {
+                try {
+                    int x = Integer.parseInt(pos.split(",")[0]);
+                    int y = Integer.parseInt(pos.split(",")[1]);
+                    int z = Integer.parseInt(pos.split(",")[2]);
+                    posList.add(new BlockPos(x,y,z));
+                }catch(Exception e) {}
+            }
+        }
+        else {
+            try {
+                int x = Integer.parseInt(str.split(",")[0]);
+                int y = Integer.parseInt(str.split(",")[1]);
+                int z = Integer.parseInt(str.split(",")[2]);
+                posList.add(new BlockPos(x,y,z));
+            }catch(Exception e) {}
+        }
+        return posList;
     }
 }

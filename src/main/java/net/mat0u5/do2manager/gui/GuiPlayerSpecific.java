@@ -14,7 +14,7 @@ public abstract class GuiPlayerSpecific {
     public SimpleInventory inventory;
     public String invId = "";
     public GuiInventory_Database guiDatabase;
-    public GuiInventory_Items guiItems;
+    public GuiInventory_ChestFramework guiItems;
     public int filter_success = 0;
     public int filter_difficulty = 0;
     public int filter_run_type = 0;

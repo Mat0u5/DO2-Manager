@@ -171,7 +171,7 @@ public class Events {
             if (!nbt.contains("GUI")) return;
             if (!nbt.contains("GUI_DontCancelClick")) ci.cancel();
             String tag = nbt.getString("GUI");
-            if ((tag.equalsIgnoreCase("DatabaseGUI")||tag.equalsIgnoreCase("ItemsGUI")) && clickEventCooldown <= 0) {
+            if ((tag.equalsIgnoreCase("DatabaseGUI")||tag.equalsIgnoreCase("custom")) && clickEventCooldown <= 0) {
                 clickEventCooldown = 4;
                 GuiInventoryClick.onClickDatabaseGUI(tag,slotId,button,actionType,player,ci,handler);
             }

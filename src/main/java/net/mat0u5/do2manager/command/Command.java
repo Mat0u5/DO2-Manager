@@ -4,15 +4,12 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
-import net.mat0u5.do2manager.gui.GuiInventory_Items;
+import net.mat0u5.do2manager.gui.GuiInventory_ChestFramework;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-
-import java.util.Collections;
 
 import static net.minecraft.server.command.CommandManager.literal;
 
@@ -170,13 +167,30 @@ public class Command {
                         context.getSource().getPlayer())
                     )
                     .then(literal("allItems")
-                        .executes(context -> new GuiInventory_Items().openItemsInventory(
-                            context.getSource().getPlayer())
+                        .executes(context -> new GuiInventory_ChestFramework().openChestInventory(
+                            context.getSource().getPlayer(),
+                        54,
+                        "Decked Out 2 Items",
+                        "-623,7,1954;-623,7,1953")
                         )
                     )
                     .then(literal("runHistory")
                         .executes(context -> new GuiInventory_Database().openRunInventory(
                             context.getSource().getPlayer())
+                        )
+                    )
+                    .then(literal("customGUI")
+                        .then(CommandManager.argument("inv_size", IntegerArgumentType.integer())
+                            .then(CommandManager.argument("inv_name", StringArgumentType.string())
+                                .then(CommandManager.argument("chest_pos", StringArgumentType.string())
+                                    .executes(context -> new GuiInventory_ChestFramework().openChestInventory(
+                                        context.getSource().getPlayer(),
+                                        IntegerArgumentType.getInteger(context, "inv_size"),
+                                        StringArgumentType.getString(context, "inv_name"),
+                                        StringArgumentType.getString(context, "chest_pos"))
+                                    )
+                                )
+                            )
                         )
                     )
                 )
@@ -287,6 +301,10 @@ public class Command {
                         )
                         )
                         )
+                    )
+                )
+                .then(literal("reload")
+                    .executes(context -> OtherCommand.reload()
                     )
                 )
         );

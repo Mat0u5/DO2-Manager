@@ -20,7 +20,7 @@ import net.minecraft.server.world.ServerChunkManager;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CommandBlockScanner {
+public class BlockScanner {
     static List<Integer> percentCompleted = new ArrayList<>();
     static String scanType = "";
     static String blockPassword = "";

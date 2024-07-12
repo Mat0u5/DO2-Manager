@@ -1,9 +1,8 @@
 package net.mat0u5.do2manager.command;
 
-import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
-import net.mat0u5.do2manager.world.CommandBlockScanner;
+import net.mat0u5.do2manager.world.BlockScanner;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.FunctionScanner;
 import net.mat0u5.do2manager.world.ItemManager;
@@ -137,7 +136,7 @@ public class DatabaseCommand {
         self.sendMessage(Text.of("Deleting all stored command block data..."));
         DatabaseManager.deleteAllCommandBlocks();
         self.sendMessage(Text.of("Started Command Block Search..."));
-        CommandBlockScanner.scanArea("command_block",server.getOverworld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
+        BlockScanner.scanArea("command_block",server.getOverworld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
         return 1;
     }
     public static int executeFunctionUpdateDatabase(ServerCommandSource source) {

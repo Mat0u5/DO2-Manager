@@ -71,8 +71,15 @@ public class GuiInventoryClick {
                 Main.openGuis.get(player).guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
             }
         }
-        else if (guiName.equalsIgnoreCase("ItemsGUI")) {
-            Main.openGuis.get(player).guiItems.populateInventory(Main.server.getOverworld(), tag);
+        else if (guiName.equalsIgnoreCase("custom")) {
+            if (nbt.contains("GUI_ChangeTo")) {
+                String leadsToChest = nbt.getString("GUI_ChangeTo");
+                Main.openGuis.get(player).guiItems.populateInventory(Main.server.getOverworld(), leadsToChest);
+            }
+            if (nbt.contains("GUI_ExecuteCommand")) {
+                String command = nbt.getString("GUI_ExecuteCommand");
+                OtherUtils.executeCommand(player.getServer(),command);
+            }
         }
     }
 }
