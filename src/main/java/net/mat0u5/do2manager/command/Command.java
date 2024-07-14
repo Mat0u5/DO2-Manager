@@ -209,6 +209,13 @@ public class Command {
                             context.getSource())
                         )
                     )
+                    .then(literal("execute")
+                        .then(CommandManager.argument("args", StringArgumentType.string())
+                            .executes(context -> TestingCommand.executeCmd(
+                                StringArgumentType.getString(context, "args"))
+                            )
+                        )
+                    )
                 )
                 .then(literal("commandBlockSearch")
                     .requires(source -> source.hasPermissionLevel(2))
@@ -306,6 +313,14 @@ public class Command {
                 .then(literal("reload")
                     .executes(context -> OtherCommand.reload()
                     )
+                )
+        );
+
+
+        dispatcher.register(
+            literal("playerlist")
+                .executes(context -> OtherCommand.playerList(
+                    context.getSource())
                 )
         );
     }

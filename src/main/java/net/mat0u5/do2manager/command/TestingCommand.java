@@ -31,6 +31,10 @@ public class TestingCommand {
 
         return 1;
     }
+    public static int executeCmd(String args) {
+        OtherUtils.executeCommand(Main.server,args);
+        return 1;
+    }
     public static int executeAddRun(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
