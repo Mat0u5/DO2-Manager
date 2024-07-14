@@ -131,7 +131,7 @@ public class ConsoleCommand {
         if (isRanByPlayer(source)) return -1;
         if (varName.contains("run_length")) {
             Main.currentRun.run_length = RunInfoParser.getRunLength(server);
-            sendSpeedrunMessage(server, "End Time", Main.currentRun.run_length,Main.speedrun.run_length);
+            if (Main.currentRun.timestamp_lvl1_exit!=-1) sendSpeedrunMessage(server, "End Time", Main.currentRun.run_length,Main.speedrun.run_length);
         }
         if (varName.contains("artifact")) {
             Main.currentRun.timestamp_artifact = RunInfoParser.getRunLength(server);

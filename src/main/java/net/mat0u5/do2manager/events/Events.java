@@ -148,7 +148,7 @@ public class Events {
                 if (runners.size() == 1) Main.speedrun = RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(player.getServer()).get(0));
             }
             if (isSpeedrun) {
-                OtherUtils.broadcastMessage(player.getServer(), Text.translatable("§6This speedrun will be compared with " + player.getEntityName() + "'s fastest level " + Main.currentRun.getCompassLevel()+" run."));
+                OtherUtils.broadcastMessage(player.getServer(), Text.translatable("§6This speedrun will be compared with " + player.getEntityName() + "'s fastest "+Main.currentRun.getFormattedDifficulty()+" level " + Main.currentRun.getCompassLevel()+"§6 run."));
             }
         }
         if (RunInfoParser.isDungeonArtifact(itemStack) && Main.currentRun.artifact_item == null) {

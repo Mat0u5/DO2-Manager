@@ -74,7 +74,7 @@ public class RunInfoParser {
         List<DO2Run> allRuns = DatabaseManager.getRunsByCriteria(List.of("runners = \"" + player.getUuidAsString()+"\""));
         DO2Run fastestRun = null;
         for (DO2Run run : allRuns) {
-            if (!run.run_type.equalsIgnoreCase("testing") && run.getSuccess() && run.getCompassLevel() == Main.currentRun.getCompassLevel() && Main.currentRun.getCompassLevel() != -1) {
+            if (!run.run_type.equalsIgnoreCase("testing") && run.getSuccess() && run.difficulty==Main.currentRun.difficulty&& run.getCompassLevel() == Main.currentRun.getCompassLevel() && Main.currentRun.getCompassLevel() != -1) {
                 if (fastestRun == null) {
                     fastestRun = run;
                     continue;

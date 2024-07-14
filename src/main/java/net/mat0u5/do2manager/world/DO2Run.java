@@ -44,7 +44,14 @@ public class DO2Run {
     public int timestamp_artifact = -1;
 
     private static final Gson GSON = new Gson();
-
+    public String getFormattedDifficulty() {
+        if (difficulty==1) return "§aEasy";
+        if (difficulty==2) return "§eMedium";
+        if (difficulty==3) return "§6Hard";
+        if (difficulty==4) return "§4Deadly";
+        if (difficulty==5) return "§3Deepfrost";
+        return "§dnull";
+    }
     public String getFormattedDate() {
         if (date==null || date.isEmpty()) return "";
         DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
