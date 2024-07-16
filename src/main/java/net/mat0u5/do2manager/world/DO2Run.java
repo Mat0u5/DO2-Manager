@@ -56,7 +56,7 @@ public class DO2Run {
         if (date==null || date.isEmpty()) return "";
         DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dateTime = LocalDateTime.parse(date, inputFormatter);
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("d. MMM. yyyy HH:mm", Locale.ENGLISH);
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MMM d., yyyy  HH:mm", Locale.ENGLISH);
         return dateTime.format(outputFormatter);
     }
     public int getRunNum() {
