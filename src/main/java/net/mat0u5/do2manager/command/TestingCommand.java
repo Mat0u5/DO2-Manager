@@ -26,8 +26,8 @@ public class TestingCommand {
     public static int execute(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
-        TextUtils.setEmotes();
-        DiscordUtils.sendMessageToDiscord("Test Message From DO2Manager");
+
+        self.sendMessage(Text.of(String.valueOf(OtherUtils.isHoldingAdminKey(self))));
 
         return 1;
     }

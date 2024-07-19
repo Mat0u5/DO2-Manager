@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
@@ -13,6 +14,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.SignEditScreen;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.server.MinecraftServer;
@@ -258,5 +260,17 @@ public class OtherUtils {
             }catch(Exception e) {}
         }
         return posList;
+    }
+    public static boolean isHoldingAdminKey(PlayerEntity player) {
+        // Get the item stacks for main hand and offhand
+        ItemStack mainHandItem = player.getMainHandStack();
+        ItemStack offHandItem = player.getOffHandStack();
+
+        // Get the item names
+        String mainHandItemName = mainHandItem.isEmpty() ? "Empty" : mainHandItem.getName().getString();
+        String offHandItemName = offHandItem.isEmpty() ? "Empty" : offHandItem.getName().getString();
+
+        // Create and return the result text
+        return Main.config.getProperty("block_password").equalsIgnoreCase(mainHandItemName) || Main.config.getProperty("block_password").equalsIgnoreCase(offHandItemName);
     }
 }

@@ -19,8 +19,9 @@ public class GuiInventoryClick {
 
         NbtCompound nbt = clickedItem.getNbt();
         String tag = nbt.getString("GUI_ITEM");
-        if (guiName.equalsIgnoreCase("DatabaseGUI")) {if (tag.equalsIgnoreCase("next_page")) {
-            if (button == 0) Main.openGuis.get(player).guiDatabase.current_page += 1;
+        if (guiName.equalsIgnoreCase("DatabaseGUI")) {
+            if (tag.equalsIgnoreCase("next_page")) {
+                if (button == 0) Main.openGuis.get(player).guiDatabase.current_page += 1;
                 else if (button == 1) Main.openGuis.get(player).guiDatabase.current_page = (int) Math.ceil(Main.openGuis.get(player).guiDatabase.runsSearch.size()/21)+1;
                 Main.openGuis.get(player).guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("previous_page")) {
@@ -72,9 +73,51 @@ public class GuiInventoryClick {
             }
         }
         else if (guiName.equalsIgnoreCase("custom")) {
+            boolean openNewInv = false;
+            if (!Main.openGuis.containsKey(player)) openNewInv = true;
+            else if (!Main.openGuis.get(player).invOpen) openNewInv = true;
+
+            if (nbt.contains("GUI_ChangeToItem")) {
+                String leadsToChest = nbt.getString("GUI_ChangeToItem");
+                leadsToChest = "_"+leadsToChest;
+                if (leadsToChest.contains(";")) {
+                    String[] split = leadsToChest.split(";");
+                    int invSize = 27;
+                    if (split.length==3) invSize=54;
+
+                    if (!openNewInv) {
+                        int oldInvsize = Main.openGuis.get(player).inventory.size();
+                        if (oldInvsize > 27) oldInvsize = 54;
+                        else oldInvsize = 27;
+                        if (oldInvsize == invSize) Main.openGuis.get(player).guiItems.populateInventory(player, Main.server.getOverworld(), leadsToChest, false);
+                        else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,false);
+                    }
+                    else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,false);
+                }
+            }
             if (nbt.contains("GUI_ChangeTo")) {
                 String leadsToChest = nbt.getString("GUI_ChangeTo");
-                Main.openGuis.get(player).guiItems.populateInventory(Main.server.getOverworld(), leadsToChest);
+                int invSize = leadsToChest.contains(";")?54:27;
+                if (!openNewInv) {
+                    int oldInvsize = Main.openGuis.get(player).inventory.size();
+                    if (oldInvsize > 27) oldInvsize = 54;
+                    else oldInvsize = 27;
+                    if (oldInvsize == invSize) Main.openGuis.get(player).guiItems.populateInventory(player, Main.server.getOverworld(), leadsToChest, false);
+                    else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,false);
+                }
+                else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,false);
+            }
+            if (nbt.contains("GUI_ChangeTo_OpenContainer")) {
+                String leadsToChest = nbt.getString("GUI_ChangeTo_OpenContainer");
+                int invSize = leadsToChest.contains(";")?54:27;
+                if (!openNewInv) {
+                    int oldInvsize = Main.openGuis.get(player).inventory.size();
+                    if (oldInvsize > 27) oldInvsize = 54;
+                    else oldInvsize = 27;
+                    if (oldInvsize == invSize) Main.openGuis.get(player).guiItems.populateInventory(player, Main.server.getOverworld(), leadsToChest, true);
+                    else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,true);
+                }
+                else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,true);
             }
             if (nbt.contains("GUI_ExecuteCommand")) {
                 String command = nbt.getString("GUI_ExecuteCommand");

@@ -160,14 +160,12 @@ public class Events {
     }
     public static void onSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci, ScreenHandler handler) {
         try {
-            if (!Main.openGuis.containsKey(player)) return;
-            if (!Main.openGuis.get(player).invOpen) return;
-
             if (!handler.isValid(slotId)) return;
             ItemStack clickedItem = handler.getSlot(slotId).getStack();
             if (clickedItem == null) return;
             NbtCompound nbt = clickedItem.getNbt();
             if (nbt == null) return;
+            if (OtherUtils.isHoldingAdminKey(player)) return;
             if (!nbt.contains("GUI")) return;
             if (!nbt.contains("GUI_DontCancelClick")) ci.cancel();
             String tag = nbt.getString("GUI");

@@ -171,7 +171,7 @@ public class Command {
                             context.getSource().getPlayer(),
                         54,
                         "Decked Out 2 Items",
-                        "-623,7,1954;-623,7,1953")
+                        "-623,7,1954;-623,7,1953",false)
                         )
                     )
                     .then(literal("runHistory")
@@ -187,7 +187,7 @@ public class Command {
                                         context.getSource().getPlayer(),
                                         IntegerArgumentType.getInteger(context, "inv_size"),
                                         StringArgumentType.getString(context, "inv_name"),
-                                        StringArgumentType.getString(context, "chest_pos"))
+                                        StringArgumentType.getString(context, "chest_pos"),false)
                                     )
                                 )
                             )
