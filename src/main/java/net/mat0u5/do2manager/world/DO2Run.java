@@ -29,6 +29,8 @@ public class DO2Run {
     public String death_pos = null;
     public String death_message = null;
     public String date = null;
+    public List<String> loot_drops = new ArrayList<>();
+    public List<String> special_events = new ArrayList<>();
 
     public int difficulty = -1;
     public int run_number = -1;
@@ -44,6 +46,11 @@ public class DO2Run {
     public int timestamp_artifact = -1;
 
     private static final Gson GSON = new Gson();
+    public boolean hasSpecialEvents(String event) {
+        if (special_events == null) return false;
+        if (special_events.isEmpty()) return false;
+        return special_events.contains(event);
+    }
     public String getFormattedDifficulty() {
         if (difficulty==1) return "§aEasy";
         if (difficulty==2) return "§eMedium";
@@ -117,6 +124,8 @@ public class DO2Run {
                 DO2_GSON.serializeListItemStack(items_bought),
                 death_pos,
                 death_message,
+                loot_drops,
+                special_events,
                 difficulty,
                 run_number,
                 run_length,
@@ -149,6 +158,8 @@ public class DO2Run {
         do2Run.items_bought = DO2_GSON.deserializeListItemStack(serializedDO2Run.items_bought);
         do2Run.death_pos = serializedDO2Run.death_pos;
         do2Run.death_message = serializedDO2Run.death_message;
+        do2Run.loot_drops = serializedDO2Run.loot_drops;
+        do2Run.special_events = serializedDO2Run.special_events;
         do2Run.difficulty = serializedDO2Run.difficulty;
         do2Run.run_number = serializedDO2Run.run_number;
         do2Run.run_length = serializedDO2Run.run_length;
@@ -178,6 +189,8 @@ public class DO2Run {
         private final String items_bought;
         private final String death_pos;
         private final String death_message;
+        private final List<String> loot_drops;
+        private final List<String> special_events;
 
         private final int difficulty;
         private final int run_number;
@@ -192,7 +205,7 @@ public class DO2Run {
         private final int timestamp_lvl1_exit;
         private final int timestamp_artifact;
 
-        public SerializedDO2Run(String run_type, List<String> runners, List<String> finishers, String card_plays, String compass_item, String artifact_item, String deck_item, String inventory_save, String items_bought, String death_pos, String death_message, int difficulty, int run_number, int run_length, int embers_counted, int timestamp_lvl2_entry, int timestamp_lvl3_entry, int timestamp_lvl4_entry, int timestamp_lvl4_exit, int timestamp_lvl3_exit, int timestamp_lvl2_exit, int timestamp_lvl1_exit, int timestamp_artifact) {
+        public SerializedDO2Run(String run_type, List<String> runners, List<String> finishers, String card_plays, String compass_item, String artifact_item, String deck_item, String inventory_save, String items_bought, String death_pos, String death_message,List<String> loot_drops, List<String> special_events, int difficulty, int run_number, int run_length, int embers_counted, int timestamp_lvl2_entry, int timestamp_lvl3_entry, int timestamp_lvl4_entry, int timestamp_lvl4_exit, int timestamp_lvl3_exit, int timestamp_lvl2_exit, int timestamp_lvl1_exit, int timestamp_artifact) {
             this.run_type = run_type;
             this.runners = runners;
             this.finishers = finishers;
@@ -204,6 +217,9 @@ public class DO2Run {
             this.items_bought = items_bought;
             this.death_pos = death_pos;
             this.death_message = death_message;
+            this.loot_drops = loot_drops;
+            this.special_events = special_events;
+
             this.difficulty = difficulty;
             this.run_number = run_number;
             this.run_length = run_length;

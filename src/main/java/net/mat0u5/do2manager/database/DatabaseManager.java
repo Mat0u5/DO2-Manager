@@ -9,12 +9,14 @@ import java.sql.SQLException;
 import java.util.*;
 
 import net.mat0u5.do2manager.Main;
+import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.DO2_GSON;
+import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.server.MinecraftServer;
 
 public class DatabaseManager {
-    public static final String DB_VERSION = "v.1.0.4";
+    public static final String DB_VERSION = "v.1.0.5";
 
     private static final String FOLDER_PATH = "./config/"+ Main.MOD_ID;
     private static final String FILE_PATH = FOLDER_PATH+"/"+Main.MOD_ID+".db";
@@ -106,6 +108,8 @@ public class DatabaseManager {
                 "items_bought TEXT," +
                 "death_pos TEXT," +
                 "death_message TEXT," +
+                "loot_drops TEXT," +
+                "special_events TEXT," +
                 "FOREIGN KEY(run_number) REFERENCES runs(run_number)" +
                 ");";
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -146,6 +150,7 @@ public class DatabaseManager {
 
         versionUpdates.put(List.of("v.1.0.0","v.1.0.1","v.1.0.2"),List.of("v.1.0.3","ALTER TABLE runs ADD embers_counted INTEGER;"));
         versionUpdates.put(List.of("v.1.0.3"),List.of("v.1.0.4",""));
+        versionUpdates.put(List.of("v.1.0.4"),List.of("v.1.0.5","ALTER TABLE runsDetailed ADD loot_drops TEXT; ALTER TABLE runsDetailed ADD special_events TEXT;"));
 
         //
         try (Connection connection = DriverManager.getConnection(URL)) {
@@ -222,7 +227,7 @@ public class DatabaseManager {
     }
 
     public static void addRunDetailed(DO2Run run) {
-        String sql = "INSERT INTO runsDetailed(db_version, run_number, card_plays, difficulty, compass_item, artifact_item, deck_item, inventory_save, items_bought, death_pos, death_message) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO runsDetailed(db_version, run_number, card_plays, difficulty, compass_item, artifact_item, deck_item, inventory_save, items_bought, death_pos, death_message, loot_drops, special_events) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, DB_VERSION);
@@ -236,6 +241,8 @@ public class DatabaseManager {
             statement.setString(9, DO2_GSON.serializeListItemStack(run.items_bought));
             statement.setString(10, run.death_pos);
             statement.setString(11, run.death_message);
+            statement.setString(12, String.join(",", run.loot_drops));
+            statement.setString(13, String.join(",", run.special_events));
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -302,6 +309,8 @@ public class DatabaseManager {
                     run.items_bought = DO2_GSON.deserializeListItemStack(runDetailedResultSet.getString("items_bought"));
                     run.death_pos = runDetailedResultSet.getString("death_pos");
                     run.death_message = runDetailedResultSet.getString("death_message");
+                    if (runDetailedResultSet.getString("loot_drops") != null ) run.loot_drops = List.of(runDetailedResultSet.getString("loot_drops").split(","));
+                    if (runDetailedResultSet.getString("loot_drops") != null ) run.special_events = List.of(runDetailedResultSet.getString("special_events").split(","));
                 }
 
                 PreparedStatement runSpeedrunsStatement = connection.prepareStatement(runSpeedrunsSql);
@@ -379,6 +388,7 @@ public class DatabaseManager {
             return;
         }
         try {
+            Main.currentRun.loot_drops = ScoreboardUtils.getLootEvents();
             DatabaseManager.addRun(Main.currentRun);
             DatabaseManager.addRunDetailed(Main.currentRun);
             DatabaseManager.addRunSpeedrun(Main.currentRun);

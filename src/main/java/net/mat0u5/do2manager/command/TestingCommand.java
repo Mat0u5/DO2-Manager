@@ -4,6 +4,7 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
+import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.mat0u5.do2manager.utils.TextUtils;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.FakeSign;
@@ -27,7 +28,7 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        self.sendMessage(Text.of(String.valueOf(OtherUtils.isHoldingAdminKey(self))));
+        self.sendMessage(Text.of(RunInfoParser.getFastestPlayerRunMatchingCurrent(self).loot_drops.toString()));
 
         return 1;
     }
@@ -38,7 +39,7 @@ public class TestingCommand {
     public static int executeAddRun(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
-        int runNum = RunInfoParser.getRunNum(server);
+        int runNum = RunInfoParser.getRunNum(server)+1;
         DO2Run TestRun = new DO2Run();
         TestRun.run_type = "casual";
         TestRun.runners = List.of(self.getUuidAsString());
@@ -62,6 +63,8 @@ public class TestingCommand {
         TestRun.timestamp_lvl2_exit = 7;
         TestRun.timestamp_lvl1_exit = 8;
         TestRun.timestamp_artifact = 9;
+        TestRun.loot_drops = ScoreboardUtils.getLootEvents();
+        TestRun.special_events = Main.currentRun.special_events;
 
         DatabaseManager.addRun(TestRun);
         DatabaseManager.addRunDetailed(TestRun);

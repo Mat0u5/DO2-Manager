@@ -70,6 +70,9 @@ public class ConsoleCommand {
             String configName = query.substring(0,setVarIndex);
             String configValue = query.substring(setVarIndex+1);
             if (configName.equalsIgnoreCase("run_type")) Main.currentRun.run_type = configValue;
+            if (configName.equalsIgnoreCase("special_event")) {
+                if (!Main.currentRun.special_events.contains(configValue)) Main.currentRun.special_events.add(configValue);
+            }
         }
         return 1;
     }
