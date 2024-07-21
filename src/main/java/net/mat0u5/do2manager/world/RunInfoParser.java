@@ -112,22 +112,6 @@ public class RunInfoParser {
         return true;
     }
 
-    public static ItemStack getRunnersCompass(MinecraftServer server) {
-        for (PlayerEntity player : getCurrentRunners(server)) {
-            for (ItemStack itemStack : player.getInventory().main) {
-                if (isDungeonCompass(itemStack)) return itemStack;
-            }
-        }
-        return null;
-    }
-    public static ItemStack getRunnersArtifact(MinecraftServer server) {
-        for (PlayerEntity player : getCurrentRunners(server)) {
-            for (ItemStack itemStack : player.getInventory().main) {
-                if (isDungeonArtifact(itemStack)) return itemStack;
-            }
-        }
-        return null;
-    }
     public static ItemStack getDeck(MinecraftServer server) {
         BlockPos startGameHopper = new BlockPos(-565, 113, 1980);
         BlockPos startDropper = new BlockPos(-565, 111, 1980);

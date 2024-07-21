@@ -27,11 +27,6 @@ public class Command {
                     )
                     .then(literal("database")
                         .then(literal("runTracking")
-                            .then(literal("getInfo")
-                                .executes(context -> ConsoleCommand.database_runTracking_GetInfo(
-                                    context.getSource())
-                                )
-                            )
                             .then(literal("prepareForRun")
                                 .executes(context -> ConsoleCommand.database_runTracking_PrepareForRun(
                                     context.getSource())

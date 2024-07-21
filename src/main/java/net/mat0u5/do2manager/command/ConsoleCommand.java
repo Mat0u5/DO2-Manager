@@ -40,39 +40,17 @@ public class ConsoleCommand {
         System.out.println("TEST-COMMAND-SUCCESSFUL");
         return 1;
     }
-    public static int database_runTracking_GetInfo(ServerCommandSource source) {
-        MinecraftServer server = source.getServer();
-        if (isRanByPlayer(source)) return -1;
-
-        System.out.println("CMD_OUTPUT: RunNum: " + RunInfoParser.getRunNum(server));
-        System.out.println("CMD_OUTPUT: RunLength: " + RunInfoParser.getRunLength(server));
-        System.out.println("CMD_OUTPUT: RunLengthFormatted: " + RunInfoParser.getFormattedRunLength(server));
-        List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(server);
-        if (runners.isEmpty()) System.out.println("CMD_OUTPUT: CurrentRunner: null");
-        for (PlayerEntity runner : runners) {
-            System.out.println("CMD_OUTPUT: CurrentRunner: " + runner.getEntityName());
-        }
-        return 1;
-    }
     public static int database_runTracking_modifyVar(ServerCommandSource source, String query) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
         query = OtherUtils.removeQuotes(query);
         int setVarIndex = OtherUtils.findStringPosInString(query, "=");
-        int addVarIndex = OtherUtils.findStringPosInString(query, "+=");
-        if (addVarIndex == (setVarIndex - 1) && addVarIndex != -1) { //Add to a variable value
-            String configName = query.substring(0,addVarIndex);
-            String configValueAdd = query.substring(addVarIndex+2);
-            //TODO
-        }
-        else {//Set a variable
-            String configName = query.substring(0,setVarIndex);
-            String configValue = query.substring(setVarIndex+1);
-            if (configName.equalsIgnoreCase("run_type")) Main.currentRun.run_type = configValue;
-            if (configName.equalsIgnoreCase("special_event")) {
-                if (!Main.currentRun.special_events.contains(configValue)) Main.currentRun.special_events.add(configValue);
-            }
+        String configName = query.substring(0,setVarIndex);
+        String configValue = query.substring(setVarIndex+1);
+        if (configName.equalsIgnoreCase("run_type")) Main.currentRun.run_type = configValue;
+        if (configName.equalsIgnoreCase("special_event")) {
+            if (!Main.currentRun.special_events.contains(configValue)) Main.currentRun.special_events.add(configValue);
         }
         return 1;
     }
