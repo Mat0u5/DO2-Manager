@@ -17,6 +17,7 @@ public abstract class GuiPlayerSpecific {
     public GuiInventory_ChestFramework guiItems;
     public int filter_success = 0;
     public int filter_difficulty = 0;
+    public int filter_level = 0;
     public int filter_run_type = 0;
     public boolean showRunsAsHeads = true;
     public List<String> filter_player = new ArrayList<>();

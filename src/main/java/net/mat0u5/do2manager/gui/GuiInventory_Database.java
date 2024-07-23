@@ -108,6 +108,10 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
             if (filter_difficulty == 3 && run.difficulty != 3) continue;
             if (filter_difficulty == 4 && run.difficulty != 4) continue;
             if (filter_difficulty == 5 && run.difficulty != 5) continue;
+            if (filter_level == 1 && run.getCompassLevel() != 1) continue;
+            if (filter_level == 2 && run.getCompassLevel() != 2) continue;
+            if (filter_level == 3 && run.getCompassLevel() != 3) continue;
+            if (filter_level == 4 && run.getCompassLevel() != 4) continue;
             if (filter_run_type == 1 && !run.run_type.equalsIgnoreCase("casual")) continue;
             if (filter_run_type == 2 && !run.run_type.equalsIgnoreCase("phase")) continue;
             if (!filter_player_uuid.isEmpty()) {
