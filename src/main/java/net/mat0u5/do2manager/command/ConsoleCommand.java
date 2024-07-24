@@ -112,7 +112,7 @@ public class ConsoleCommand {
         if (isRanByPlayer(source)) return -1;
         if (varName.contains("run_length")) {
             Main.currentRun.run_length = RunInfoParser.getRunLength(server);
-            if (Main.currentRun.timestamp_lvl1_exit!=-1) sendSpeedrunMessage(server, "End Time", Main.currentRun.run_length,Main.speedrun.run_length);
+            if (Main.currentRun.timestamp_lvl1_exit!=-1) sendSpeedrunMessage(server, "End Time", Main.currentRun.run_length,Main.speedrun.run_length,true);
         }
         if (varName.contains("artifact")) {
             Main.currentRun.timestamp_artifact = RunInfoParser.getRunLength(server);
@@ -147,13 +147,16 @@ public class ConsoleCommand {
         return 1;
     }
     public static void sendSpeedrunMessage(MinecraftServer server, String name, int currentRun, int bestRun) {
+        sendSpeedrunMessage(server,name,currentRun,bestRun,false);
+    }
+    public static void sendSpeedrunMessage(MinecraftServer server, String name, int currentRun, int bestRun, boolean showMilis) {
         boolean isSpeedrun = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("true");
         if (!isSpeedrun) return;
         if (currentRun == -1 || bestRun == -1) return;
         int diff = currentRun - bestRun;
         OtherUtils.broadcastMessage(server, Text.translatable(
-                "§6 - "+name+": " + OtherUtils.convertTicksToClockTime(currentRun) +
-                        " [" + (diff < 0 ? "§a" : "§c")+((diff > 0)? "+":"")+OtherUtils.convertTicksToClockTime(diff) + "§6]"
+                "§6 - "+name+": " + OtherUtils.convertTicksToClockTime(currentRun,showMilis) +
+                        " [" + (diff < 0 ? "§a" : "§c")+((diff > 0)? "+":"")+OtherUtils.convertTicksToClockTime(diff,showMilis) + "§6]"
         ));
     }
 

@@ -63,7 +63,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         if (current_page != 1) setOrReplaceNbt(46, GuiItems_Database.page(false,current_page,totalPages)); // Previous page
         else setIsNotMatching(46, GuiItems_Database.filler());
         setOrReplaceNbt(47, GuiItems_Database.filterPlayer(filter_player));
-        setOrReplaceNbt(48, GuiItems_Database.filterDifficulty(filter_difficulty));
+        setOrReplaceNbt(48, GuiItems_Database.filterDifficulty(filter_difficulty, filter_level));
         setOrReplaceNbt(50, GuiItems_Database.filterSuccess(filter_success));
         setOrReplaceNbt(51, GuiItems_Database.filterRunType(filter_run_type));
         if (current_page  < totalPages) setOrReplaceNbt(52, GuiItems_Database.page(true,current_page,totalPages)); // Next page

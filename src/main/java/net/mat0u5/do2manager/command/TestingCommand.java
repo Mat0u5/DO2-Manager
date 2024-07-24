@@ -27,8 +27,12 @@ public class TestingCommand {
     public static int execute(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
-
-        self.sendMessage(Text.of(RunInfoParser.getFastestPlayerRunMatchingCurrent(self).loot_drops.toString()));
+        int time = 3600*20;
+        int diff = 1202;
+        OtherUtils.broadcastMessage(server, Text.translatable(
+                "§6 - Test: " + OtherUtils.convertTicksToClockTime(time,true) +
+                        " [" + (diff < 0 ? "§a" : "§c")+((diff > 0)? "+":"")+OtherUtils.convertTicksToClockTime(diff,true) + "§6]"
+        ));
 
         return 1;
     }

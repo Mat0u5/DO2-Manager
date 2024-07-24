@@ -63,10 +63,11 @@ public class GuiItems_Database {
         }
 
         lore.add(Text.of("§7Runners: §3" + run.getRunnersName()));
-        lore.add(Text.of("§7Difficulty: " +(run.difficulty==5?"§3Deepfrost":run.difficulty==4?"§4Deadly":run.difficulty==3?"§6Hard":run.difficulty==2?"§eMedium":run.difficulty==1?"§aEasy":"§dnull")));
+        lore.add(Text.of("§7Difficulty: " +run.getFormattedDifficulty()));
+        lore.add(Text.of("§7Level: " +run.getFormattedLevel()));
         lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§d")) +run.run_type)));
-
-        lore.add(Text.of("§7Run Length: §6" + OtherUtils.convertTicksToClockTime(run.run_length)));
+        lore.add(Text.of(""));
+        lore.add(Text.of("§7Run Length: §6" + OtherUtils.convertTicksToClockTime(run.run_length,true)));
         if (run.date!=null) lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
         if (run.embers_counted > 0) lore.add(Text.of("§7Embers Counted: §3" + run.embers_counted));
 
@@ -94,8 +95,20 @@ public class GuiItems_Database {
     public static ItemStack filterSuccess(int filter_success) {
         return createGuiItem(new ItemStack((filter_success==0?Items.WHITE_WOOL:(filter_success==1)?Items.GREEN_WOOL:Items.RED_WOOL), 1), "filter_success", "§aSuccess Filter", List.of(Text.of(""), Text.of((filter_success==0?"§8▶ ":"  ")+"§8No filter"), Text.of((filter_success==1?"§2▶ ":"  §7")+"Successful"), Text.of((filter_success==2?"§c▶ ":"  §7")+"Unsuccessful"), Text.of(""), Text.of("§eClick cycle through!")));
     }
-    public static ItemStack filterDifficulty(int filter_difficulty) {
-        return createGuiItem(new ItemStack(Items.COMPASS, 1), "filter_difficulty", "§aDifficulty Filter", List.of(Text.of(""), Text.of((filter_difficulty==0?"§8▶ ":"  ")+"§8No filter"), Text.of((filter_difficulty==1?"§a▶ ":"  §7")+"Easy"), Text.of((filter_difficulty==2?"§e▶ ":"  §7")+"Normal"), Text.of((filter_difficulty==3?"§6▶ ":"  §7")+"Hard"), Text.of((filter_difficulty==4?"§4▶ ":"  §7")+"Deadly"), Text.of((filter_difficulty==5?"§3▶ ":"  §7")+"Deepfrost"), Text.of(""), Text.of("§eClick cycle through!")));
+    public static ItemStack filterDifficulty(int filter_difficulty, int filter_level) {
+        return createGuiItem(new ItemStack(Items.COMPASS, 1), "filter_difficulty", "§aDifficulty Filter",
+                List.of(Text.of(""),
+                Text.literal("§fDifficulty:").append(Text.of("§f        Level:")),
+                Text.literal(filter_difficulty==0?"§8▶ No filter ":"  §8No filter  ").append(Text.of("    "+(filter_level==0?"§8▶ ":"  §8")+"§8No filter")),
+                Text.literal(filter_difficulty==1?"§a▶ Easy ":"  §7Easy  ").append(Text.of("         "+(filter_level==1?"§a▶ ":"  §7")+"Level 1")),
+                Text.literal(filter_difficulty==2?"§e▶ Normal ":"  §7Normal  ").append(Text.of("       "+(filter_level==2?"§6▶ ":"  §7")+"Level 2")),
+                Text.literal(filter_difficulty==3?"§6▶ Hard ":"  §7Hard  ").append(Text.of("         "+(filter_level==3?"§4▶ ":"  §7")+"Level 3")),
+                Text.literal(filter_difficulty==4?"§4▶ Deadly ":"  §7Deadly  ").append(Text.of("       "+(filter_level==4?"§3▶ ":"  §7")+"Level 4")),
+                Text.literal(filter_difficulty==5?"§3▶ Deepfrost ":"  §7Deepfrost  "),
+                Text.of(""),
+                Text.of("§8Right-Click cycle through levels!"),
+                Text.of("§eclick cycle through difficulties!")));
+        // is longer
     }
     public static ItemStack filterRunType(int filter_run_type) {
         ItemStack itemStack = new ItemStack(Items.IRON_NUGGET, 1);
@@ -120,7 +133,7 @@ public class GuiItems_Database {
             }
         }
 
-        return createGuiItem(itemStack, "filter_player", "§aPlayer Filter", List.of(Text.of(""), Text.of((filter_player.isEmpty()?"§8▶ No filter":"§f▶ "+playerList)), Text.of("§eClick to filter players!")));
+        return createGuiItem(itemStack, "filter_player", "§aPlayer Filter", List.of(Text.of(""), Text.of((filter_player.isEmpty()?"§8▶ No filter":"§f▶ "+playerList)), Text.of(""),Text.of("§8Right-Click to clear!"),Text.of("§eClick to filter players!")));
     }
     public static ItemStack toggleHeads(boolean showRunsAsHeads) {
         ItemStack itemStack = new ItemStack(Items.SKELETON_SKULL, 1);
@@ -149,7 +162,8 @@ public class GuiItems_Database {
         lore.add(Text.of(""));
         lore.add(Text.of("§7→ Run Successful: "+(run.getSuccess()?"§aYes":"§cNo")));
         lore.add(Text.of(""));
-        lore.add(Text.of("§7Difficulty: " +(run.difficulty==5?"§3Deepfrost":run.difficulty==4?"§4Deadly":run.difficulty==3?"§6Hard":run.difficulty==2?"§eMedium":run.difficulty==1?"§aEasy":"§dnull")));
+        lore.add(Text.of("§7Difficulty: " +run.getFormattedDifficulty()));
+        lore.add(Text.of("§7Level: " +run.getFormattedLevel()));
         lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§d")) +run.run_type)));
         if (run.date!=null) lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
         return createGuiItem(itemStack, "runners", (run.getSuccess()?"§a":"§c")+"Run #" + run.run_number, lore);
@@ -160,7 +174,7 @@ public class GuiItems_Database {
         List<Text> lore = new ArrayList<>();
         lore.add(Text.of(""));
 
-        lore.add(Text.of("§7Run Length: §6" + OtherUtils.convertTicksToClockTime(run.run_length)));
+        lore.add(Text.of("§7Run Length: §6" + OtherUtils.convertTicksToClockTime(run.run_length,true)));
         lore.add(Text.of(""));
         if (run.timestamp_lvl2_entry > 0) lore.add(Text.of("§7Lvl2 Entry: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl2_entry)));
         if (run.timestamp_lvl3_entry > 0) lore.add(Text.of("§7Lvl3 Entry: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl3_entry)));

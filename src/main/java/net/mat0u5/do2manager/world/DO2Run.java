@@ -59,11 +59,19 @@ public class DO2Run {
         if (difficulty==5) return "§3Deepfrost";
         return "§dnull";
     }
+    public String getFormattedLevel() {
+        int level = getCompassLevel();
+        if (level==1) return "§aLevel 1";
+        if (level==2) return "§6Level 2";
+        if (level==3) return "§4Level 3";
+        if (level==4) return "§3Level 4";
+        return "§dnull";
+    }
     public String getFormattedDate() {
         if (date==null || date.isEmpty()) return "";
         DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dateTime = LocalDateTime.parse(date, inputFormatter);
-        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MMM d., yyyy  HH:mm", Locale.ENGLISH);
+        DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy  HH:mm", Locale.ENGLISH);
         return dateTime.format(outputFormatter);
     }
     public int getRunNum() {

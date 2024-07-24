@@ -9,7 +9,10 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+
+import java.util.ArrayList;
 
 public class GuiInventoryClick {
     public static void onClickDatabaseGUI(String guiName, int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci, ScreenHandler handler) {
@@ -43,8 +46,14 @@ public class GuiInventoryClick {
                 Main.openGuis.get(player).guiDatabase.updateSearch();
                 Main.openGuis.get(player).guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("filter_difficulty")) {
-                Main.openGuis.get(player).guiDatabase.filter_difficulty++;
-                if (Main.openGuis.get(player).guiDatabase.filter_difficulty > 5) Main.openGuis.get(player).guiDatabase.filter_difficulty =0;
+                if (button == 0) {
+                    Main.openGuis.get(player).guiDatabase.filter_difficulty++;
+                    if (Main.openGuis.get(player).guiDatabase.filter_difficulty > 5) Main.openGuis.get(player).guiDatabase.filter_difficulty =0;
+                }
+                else if (button == 1) {
+                    Main.openGuis.get(player).guiDatabase.filter_level++;
+                    if (Main.openGuis.get(player).guiDatabase.filter_level > 4) Main.openGuis.get(player).guiDatabase.filter_level =0;
+                }
                 Main.openGuis.get(player).guiDatabase.updateSearch();
                 Main.openGuis.get(player).guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("filter_run_type")) {
@@ -53,7 +62,13 @@ public class GuiInventoryClick {
                 Main.openGuis.get(player).guiDatabase.updateSearch();
                 Main.openGuis.get(player).guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("filter_player")) {
-                FakeSign.openFakeSign((ServerPlayerEntity) player);
+                if (button == 0) FakeSign.openFakeSign((ServerPlayerEntity) player);
+                else if (button == 1) {
+                    Main.openGuis.get(player).guiDatabase.filter_player = new ArrayList<>();
+                    Main.openGuis.get(player).guiDatabase.filter_player_uuid = new ArrayList<>();
+                    Main.openGuis.get(player).guiDatabase.updateSearch();
+                    Main.openGuis.get(player).guiDatabase.populateRunInventory();
+                }
             } else if (tag.equalsIgnoreCase("toggle_heads")) {
                 Main.openGuis.get(player).guiDatabase.showRunsAsHeads = !Main.openGuis.get(player).guiDatabase.showRunsAsHeads;
                 Main.openGuis.get(player).guiDatabase.populateRunInventory();

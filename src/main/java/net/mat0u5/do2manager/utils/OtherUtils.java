@@ -83,6 +83,9 @@ public class OtherUtils {
         return readableTime.toString();
     }
     public static String convertTicksToClockTime(long ticks) {
+        return convertTicksToClockTime(ticks, false);
+    }
+    public static String convertTicksToClockTime(long ticks, boolean forceMilis) {
 
         long totalMilliseconds = (ticks * 50);
         long totalSeconds = totalMilliseconds / 1000;
@@ -110,8 +113,11 @@ public class OtherUtils {
         }
         timeString.append(seconds);
 
-        if (minutes == 0) {
+        if (totalMinutes == 0 || forceMilis) {
             String milis = String.valueOf(milliseconds);
+            if (milliseconds < 100) {
+                milis = "0"+milis;
+            }
             while (milis.endsWith("0")) {
                 milis = milis.substring(0,milis.length()-1);
             }
