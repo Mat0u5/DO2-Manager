@@ -1,5 +1,7 @@
 package net.mat0u5.do2manager.command;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.DiscordUtils;
@@ -30,20 +32,6 @@ public class TestingCommand {
 
 
 
-
-        /*
-        List<String> result = new ArrayList<>();
-        for (DO2Run run : Main.allRuns) {
-            if (!run.loot_drops.isEmpty()) {
-                //result.add(run.getRunnersName()+" (Difficulty: "+run.difficulty+", Compass Level: "+run.getCompassLevel()+") - TreasurePerLevel: [0,0,0,0], EmbersPerLevel: [0,0,0,0]");
-                result.add(run.run_number+"____"+run.getRunnersName()+"____"+run.getSuccess()+"____"+run.embers_counted+"____"+run.difficulty+"____"+run.getCompassLevel()+"____"+run.loot_drops);
-            }
-        }
-        Collections.reverse(result);
-        setFileContent("path", result);
-        */
-
-
         return 1;
     }
     /*
@@ -70,7 +58,7 @@ public class TestingCommand {
         DO2Run TestRun = new DO2Run();
         TestRun.run_type = "casual";
         TestRun.runners = List.of(self.getUuidAsString());
-        TestRun.finishers = List.of(self.getUuidAsString());
+        TestRun.finishers = new ArrayList<>();
         TestRun.card_plays = List.of(new ItemStack(Items.STONE),new ItemStack(Items.IRON_AXE));
         TestRun.compass_item = new ItemStack(Items.COMPASS);
         TestRun.artifact_item = new ItemStack(Items.IRON_NUGGET);
@@ -81,7 +69,7 @@ public class TestingCommand {
         TestRun.death_message = "";
         TestRun.difficulty = 5;
         TestRun.run_number = runNum;
-        TestRun.run_length = 1000;
+        TestRun.run_length = 10125;
         TestRun.timestamp_lvl2_entry = 2;
         TestRun.timestamp_lvl3_entry = 3;
         TestRun.timestamp_lvl4_entry = 4;
@@ -90,12 +78,14 @@ public class TestingCommand {
         TestRun.timestamp_lvl2_exit = 7;
         TestRun.timestamp_lvl1_exit = 8;
         TestRun.timestamp_artifact = 9;
+        TestRun.embers_counted = 153;
         TestRun.loot_drops = ScoreboardUtils.getLootEvents();
-        TestRun.special_events = Main.currentRun.special_events;
-
+        TestRun.special_events = List.of("dive","bomb","rusty");
+        DatabaseManager.getRunByRunNumber(10880).sendInfoToDiscord();
+        /*
         DatabaseManager.addRun(TestRun);
         DatabaseManager.addRunDetailed(TestRun);
-        DatabaseManager.addRunSpeedrun(TestRun);
+        DatabaseManager.addRunSpeedrun(TestRun);*/
 
         self.sendMessage(Text.translatable("§6Command Worked.."));
         return 1;

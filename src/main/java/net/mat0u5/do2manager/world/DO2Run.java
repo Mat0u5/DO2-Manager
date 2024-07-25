@@ -1,10 +1,14 @@
 package net.mat0u5.do2manager.world;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.DO2_GSON;
+import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
+import net.mat0u5.do2manager.utils.TextUtils;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -46,10 +50,62 @@ public class DO2Run {
     public int timestamp_artifact = -1;
 
     private static final Gson GSON = new Gson();
-    public boolean hasSpecialEvents(String event) {
+    public int getEmbersFromInv() {
+        int result = 0;
+        for (ItemStack item : inventory_save) {
+            if (item == null) continue;
+            if (item.isEmpty()) continue;
+            item = item.copy();
+            if (RunInfoParser.isEmber(item)) {
+                result += item.getCount();
+            }
+            else if (RunInfoParser.isDungeonArtifact(item)) {
+                result += RunInfoParser.getArtifactWorth(item);
+            }
+        }
+        return result;
+    }
+    public String getArtifactEmote() {
+        return ":"+RunInfoParser.getArtifactName(artifact_item)+":";
+    }
+    public void sendInfoToDiscord() {
+        boolean run_success = getSuccess();
+        String specialEvents = getFormattedEvents();
+        String run_time = OtherUtils.convertTicksToClockTime(run_length,true);
+        String formatted_arti = (artifact_item == null || artifact_item.isEmpty())?"":TextUtils.formatEmotesForDiscord(getArtifactEmote());
+        if (run_time.contains(".")) {
+            run_time = "**"+run_time.split("\\.")[0]+"**.*"+run_time.split("\\.")[1]+"*";
+        }
+        else {
+            run_time = "**"+run_time+"**";
+        }
+
+        JsonObject json = DiscordUtils.getDefaultJSON();
+        JsonObject embed = new JsonObject();
+        embed.addProperty("description", "__**Run Info:**__   __*(Run #"+run_number+")*__"+
+                "\n\nRunners: **"+getRunnersName()+"**"+
+                "\nRun Successful: **"+(run_success?"Yes":"No")+"**"+
+                "\n\nRun Difficulty: **"+getUnFormattedDifficulty()+"**"+
+                "\nCompass Level: "+getUnFormattedLevel()+
+                "\nRun Length: "+run_time+
+                (artifact_item == null || artifact_item.isEmpty()?"":"\nArtifact:  " + formatted_arti)+
+                "\nEmbers Counted: "+(run_success?embers_counted:getEmbersFromInv())+" <:ember:1259207565330612345> "+(!formatted_arti.isEmpty()?"(including  "+formatted_arti+")":"")+
+                (!specialEvents.isEmpty()?"\nSpecial Events: "+specialEvents:"")
+        );
+        embed.addProperty("color", run_success?65289:16711680);
+        JsonArray embeds = new JsonArray();
+        embeds.add(embed);
+        json.add("embeds", embeds);
+        DiscordUtils.sendMessageToDiscord(json);
+    }
+    public boolean containsSpecialEvent(String event) {
         if (special_events == null) return false;
         if (special_events.isEmpty()) return false;
         return special_events.contains(event);
+    }
+    public String getFormattedEvents() {
+        String text = String.join(" ",special_events).replaceAll("bomb",":bomb:").replaceAll("rusty",":kit:").replaceAll("dive",":diving_mask:");
+        return TextUtils.formatEmotesForDiscord(text);
     }
     public String getFormattedDifficulty() {
         if (difficulty==1) return "§aEasy";
@@ -58,6 +114,22 @@ public class DO2Run {
         if (difficulty==4) return "§4Deadly";
         if (difficulty==5) return "§3Deepfrost";
         return "§dnull";
+    }
+    public String getUnFormattedDifficulty() {
+        if (difficulty==1) return "Easy";
+        if (difficulty==2) return "Medium";
+        if (difficulty==3) return "Hard";
+        if (difficulty==4) return "Deadly";
+        if (difficulty==5) return "Deepfrost";
+        return "null";
+    }
+    public String getUnFormattedLevel() {
+        int level = getCompassLevel();
+        if (level==1) return "Level 1";
+        if (level==2) return "Level 2";
+        if (level==3) return "Level 3";
+        if (level==4) return "Level 4";
+        return "null";
     }
     public String getFormattedLevel() {
         int level = getCompassLevel();

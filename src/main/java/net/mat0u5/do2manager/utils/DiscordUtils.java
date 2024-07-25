@@ -8,17 +8,26 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class DiscordUtils {
+    public static JsonObject getDefaultJSON() {
+        JsonObject json = new JsonObject();
+        json.addProperty("username", "Aggro-Net");
+        json.addProperty("avatar_url", "https://cdn.discordapp.com/avatars/1190831390237937876/5158470a4333a126c5b7fb545e4fea19?size=1024");
+        return json;
+    }
     public static void sendMessageToDiscord(String message) {
-        sendMessageToDiscord(message, "Aggro-Net","https://cdn.discordapp.com/avatars/1190831390237937876/5158470a4333a126c5b7fb545e4fea19?size=1024");
+        JsonObject json = getDefaultJSON();
+        json.addProperty("content", message);
+        sendMessageToDiscord(json);
     }
     public static void sendMessageToDiscord(String message, String username, String avatarURL) {
+        JsonObject json = new JsonObject();
+        json.addProperty("content", message);
+        json.addProperty("username", username);
+        json.addProperty("avatar_url", avatarURL);
+        sendMessageToDiscord(json);
+    }
+    public static void sendMessageToDiscord(JsonObject json) {
         try {
-            // Create the JSON payload
-            JsonObject json = new JsonObject();
-            json.addProperty("content", message);
-            json.addProperty("username", username);
-            json.addProperty("avatar_url", avatarURL);
-
             // Create the connection
             URL url = new URL(getWebhookURL());
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();

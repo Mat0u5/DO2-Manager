@@ -52,6 +52,36 @@ public class RunInfoParser {
         put(43, 7);
         put(42, 6);
     }};
+    public static final HashMap<Integer, String> artifactNames = new HashMap<Integer, String>() {{
+        put(37, "key");
+        put(36, "mug");
+        put(38, "skadoodler");
+        put(14, "slab");
+        put(44, "staff");
+        put(11, "rocket");
+        put(16, "gem");
+        put(39, "pickaxe");
+        put(10, "watch");
+        put(19, "golden_eye");
+        put(15, "goggles");
+        put(31, "stache");
+        put(20, "bionic_eye");
+        put(41, "helm");
+        put(35, "wand");
+        put(18, "bandana");
+        put(40, "apron");
+        put(12, "chisel");
+        put(13, "goat");
+        put(32, "pearl");
+        put(34, "loop");
+        put(29, "tome");
+        put(28, "jar");
+        put(30, "slippers");
+        put(33, "shades");
+        put(17, "waffle");
+        put(43, "axe");
+        put(42, "hood");
+    }};
 
     public static java.lang.Integer getRunNum(MinecraftServer server) {
         return ScoreboardUtils.getPlayerScore(server,"TangoCam","TestObj");
@@ -162,7 +192,18 @@ public class RunInfoParser {
     }
     public static int getArtifactWorth(ItemStack itemStack) {
         if (!isDungeonArtifact(itemStack)) return 0;
-        if (artifactWorth.containsKey(ItemManager.getModelData(itemStack))) return artifactWorth.get(ItemManager.getModelData(itemStack));
+        if (artifactWorth.containsKey(ItemManager.getModelData(itemStack))) {
+            return artifactWorth.get(ItemManager.getModelData(itemStack));
+        }
         return 0;
+    }
+    public static String getArtifactName(ItemStack itemStack) {
+        if (!isDungeonArtifact(itemStack)) return "";
+        int modelData = ItemManager.getModelData(itemStack);
+        if (modelData == -1) return "";
+        if (artifactNames.containsKey(modelData)) {
+            return artifactNames.get(modelData);
+        }
+        return "";
     }
 }

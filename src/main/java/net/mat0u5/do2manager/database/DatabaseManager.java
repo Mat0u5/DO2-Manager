@@ -196,7 +196,6 @@ public class DatabaseManager {
         }
     }
     public static void addRun(DO2Run run) {
-        Main.addRun(Main.currentRun);
         String sql = "INSERT INTO runs(db_version, run_number, date, run_type, runners, finishers, run_length, embers_counted) VALUES(?, ?, datetime('now'), ?, ?, ?, ?, ?)";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -389,6 +388,9 @@ public class DatabaseManager {
         }
         try {
             Main.currentRun.loot_drops = ScoreboardUtils.getLootEvents();
+            Main.currentRun.sendInfoToDiscord();
+            Main.addRun(Main.currentRun);
+
             DatabaseManager.addRun(Main.currentRun);
             DatabaseManager.addRunDetailed(Main.currentRun);
             DatabaseManager.addRunSpeedrun(Main.currentRun);
