@@ -69,6 +69,30 @@ public class GuiInventoryClick {
                     Main.openGuis.get(player).guiDatabase.updateSearch();
                     Main.openGuis.get(player).guiDatabase.populateRunInventory();
                 }
+            } else if (tag.equalsIgnoreCase("sort_by")) {
+                if (button == 0) {
+                    String current_sort = Main.openGuis.get(player).guiDatabase.sort_by;
+                    if (current_sort.equalsIgnoreCase("run_number")) {
+                        Main.openGuis.get(player).guiDatabase.sort_by = "run_length";
+                    }
+                    else if (current_sort.equalsIgnoreCase("run_length")) {
+                        Main.openGuis.get(player).guiDatabase.sort_by = "difficulty";
+                    }
+                    else if (current_sort.equalsIgnoreCase("difficulty")) {
+                        Main.openGuis.get(player).guiDatabase.sort_by = "embers";
+                    }
+                    else if (current_sort.equalsIgnoreCase("embers")) {
+                        Main.openGuis.get(player).guiDatabase.sort_by = "run_number";
+                    }
+                    else {//Just to be safe
+                        Main.openGuis.get(player).guiDatabase.sort_by = "run_number";
+                    }
+                }
+                else if (button == 1) {
+                    Main.openGuis.get(player).guiDatabase.sort_by_descending = !Main.openGuis.get(player).guiDatabase.sort_by_descending;
+                }
+                Main.openGuis.get(player).guiDatabase.updateSearch();
+                Main.openGuis.get(player).guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("toggle_heads")) {
                 Main.openGuis.get(player).guiDatabase.showRunsAsHeads = !Main.openGuis.get(player).guiDatabase.showRunsAsHeads;
                 Main.openGuis.get(player).guiDatabase.populateRunInventory();

@@ -77,6 +77,19 @@ public class GuiItems_Database {
         nbt.putInt("run_number", run.run_number);
         return createGuiItem(itemStack, "run", (run.getSuccess()?"§a":"§c")+"Run #" + run.run_number,lore);
     }
+    public static ItemStack sort_by(String sort_by, boolean sort_by_descending) {
+        ItemStack itemStack = new ItemStack(Items.HOPPER, 1);
+        return createGuiItem(itemStack, "sort_by", "§aSort By §7("+(sort_by_descending?"§c↓":"§a↑")+"§7)",
+            List.of(Text.of(""),
+                    Text.of((sort_by.equalsIgnoreCase("run_number")?"§e▶ ":"  §7")+"Run Number"),
+                    Text.of((sort_by.equalsIgnoreCase("run_length")?"§b▶ ":"  §7")+"Run Length"),
+                    Text.of((sort_by.equalsIgnoreCase("difficulty")?"§b▶ ":"  §7")+"Difficulty"),
+                    Text.of((sort_by.equalsIgnoreCase("embers")?"§b▶ ":"  §7")+"Embers Counted"),
+                    Text.of(""),
+                    Text.of("§8Right-Click to reverse results!"),
+                    Text.of("§eClick cycle through!")
+            ));
+    }
     public static ItemStack filler(ItemStack itemStack) {
         return createGuiItem(itemStack, "filler", "");
     }

@@ -19,23 +19,46 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
 import javax.xml.crypto.Data;
-import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.List;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.*;
 
 public class TestingCommand {
     public static int execute(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
-        int time = 3600*20;
-        int diff = 1202;
-        OtherUtils.broadcastMessage(server, Text.translatable(
-                "§6 - Test: " + OtherUtils.convertTicksToClockTime(time,true) +
-                        " [" + (diff < 0 ? "§a" : "§c")+((diff > 0)? "+":"")+OtherUtils.convertTicksToClockTime(diff,true) + "§6]"
-        ));
+
+
+
+
+        /*
+        List<String> result = new ArrayList<>();
+        for (DO2Run run : Main.allRuns) {
+            if (!run.loot_drops.isEmpty()) {
+                //result.add(run.getRunnersName()+" (Difficulty: "+run.difficulty+", Compass Level: "+run.getCompassLevel()+") - TreasurePerLevel: [0,0,0,0], EmbersPerLevel: [0,0,0,0]");
+                result.add(run.run_number+"____"+run.getRunnersName()+"____"+run.getSuccess()+"____"+run.embers_counted+"____"+run.difficulty+"____"+run.getCompassLevel()+"____"+run.loot_drops);
+            }
+        }
+        Collections.reverse(result);
+        setFileContent("path", result);
+        */
+
 
         return 1;
     }
+    /*
+    public static void setFileContent(String path, List<String> lines) {
+        FileWriter myWriter;
+        try {
+            myWriter = new FileWriter(path, false);
+            for (String s : lines) {
+                myWriter.write(s + "\n");
+            }
+            myWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }*/
     public static int executeCmd(String args) {
         OtherUtils.executeCommand(Main.server,args);
         return 1;

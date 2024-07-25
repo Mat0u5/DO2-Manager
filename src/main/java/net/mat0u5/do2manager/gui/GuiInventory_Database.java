@@ -68,6 +68,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         setOrReplaceNbt(51, GuiItems_Database.filterRunType(filter_run_type));
         if (current_page  < totalPages) setOrReplaceNbt(52, GuiItems_Database.page(true,current_page,totalPages)); // Next page
         else setIsNotMatching(52, GuiItems_Database.filler());
+        setOrReplaceNbt(53, GuiItems_Database.sort_by(sort_by,sort_by_descending));
     }
     public void setIsNotMatching(int slot, ItemStack itemStack) {
         if (!inventory.getStack(slot).getItem().equals(itemStack.getItem())) {
@@ -123,11 +124,38 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
 
             runsSearch.add(run);
         }
+        sortRuns();
         int totalPages = (int) Math.ceil(runsSearch.size()/21)+1;
         if (current_page > totalPages) {
             current_page = totalPages;
         }
 
+    }
+    public void sortRuns() {
+        if (runsSearch == null) return;
+        if (runsSearch.size() <= 1) return;
+
+        Collections.sort(runsSearch, new Comparator<DO2Run>() {
+            @Override
+            public int compare(DO2Run run1, DO2Run run2) {
+                if (sort_by.equalsIgnoreCase("run_number")) {
+                    return Integer.compare(run2.getRunNum(), run1.getRunNum());
+                }
+                else if (sort_by.equalsIgnoreCase("run_length")) {
+                    return Integer.compare(run2.run_length, run1.run_length);
+                }
+                else if (sort_by.equalsIgnoreCase("difficulty")) {
+                    return Integer.compare(run2.difficulty, run1.difficulty);
+                }
+                else if (sort_by.equalsIgnoreCase("embers")) {
+                    return Integer.compare(run2.embers_counted, run1.embers_counted);
+                }
+                return Integer.compare(run2.getRunNum(), run1.getRunNum());
+            }
+        });
+        if (!sort_by_descending) {
+            Collections.reverse(runsSearch);
+        }
     }
     public DO2Run getRunFromNum(int run_number) {
         for (DO2Run run : runsSearch) {

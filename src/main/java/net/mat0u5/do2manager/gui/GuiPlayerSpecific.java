@@ -19,6 +19,8 @@ public abstract class GuiPlayerSpecific {
     public int filter_difficulty = 0;
     public int filter_level = 0;
     public int filter_run_type = 0;
+    public String sort_by = "run_number";
+    public boolean sort_by_descending = true;
     public boolean showRunsAsHeads = true;
     public List<String> filter_player = new ArrayList<>();
     public List<String> filter_player_uuid = new ArrayList<>();
