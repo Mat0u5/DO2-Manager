@@ -9,6 +9,8 @@ import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +33,13 @@ public class Main implements ModInitializer {
 	public static MinecraftServer server;
 	public static boolean reloadedRuns = false;
 
+
+
+
+
 	@Override
 	public void onInitialize() {
+
 		config = new ConfigManager("./config/"+MOD_ID+"/"+MOD_ID+".properties");
 		lastPhaseUpdate = new ConfigManager("./config/"+MOD_ID+"/"+MOD_ID+"_phase_inv_update.properties");
 

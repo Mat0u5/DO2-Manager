@@ -254,6 +254,12 @@ public class Command {
                     .executes(context -> OtherCommand.executeSpeedrun(
                         context.getSource())
                     )
+                    .then(literal("advanced")
+                        .requires(source -> source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()))
+                        .executes(context -> OtherCommand.executeSpeedrunAdvanced(
+                            context.getSource())
+                        )
+                    )
                 )
                 .then(literal("queueRestart")
                     .requires(source -> source.hasPermissionLevel(2))

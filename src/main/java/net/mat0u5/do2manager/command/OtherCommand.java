@@ -21,6 +21,14 @@ public class OtherCommand {
         OtherUtils.broadcastMessage(server, Text.of("§6This run has been marked as a speedrun."));
         return 1;
     }
+    public static int executeSpeedrunAdvanced(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final PlayerEntity self = source.getPlayer();
+
+        Main.config.setProperty("current_run_is_speedrun","detailed");
+        OtherUtils.broadcastMessage(server, Text.of("§6This run has been marked as a §o§edetailed§r§6 speedrun."));
+        return 1;
+    }
     public static int executeLock(ServerCommandSource source, int fromX, int fromY, int fromZ, int toX, int toY, int toZ, String type) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();

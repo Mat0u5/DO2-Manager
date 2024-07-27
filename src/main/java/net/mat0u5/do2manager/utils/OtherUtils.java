@@ -118,7 +118,7 @@ public class OtherUtils {
             if (milliseconds < 100) {
                 milis = "0"+milis;
             }
-            if (milis.length() == 3 && milis.endsWith("0")) {
+            while (milis.length() >= 3 && milis.endsWith("0")) {
                 milis = milis.substring(0,milis.length()-1);
             }
             timeString.append(".").append(milis);

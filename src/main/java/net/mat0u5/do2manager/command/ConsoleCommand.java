@@ -107,42 +107,51 @@ public class ConsoleCommand {
         Main.currentRun.inventory_save = allRunnersItems;
         return 1;
     }
+    public static int lastSplit = 0;
     public static int database_runTracking_Timestamp(ServerCommandSource source, String varName) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
+        int run_length = RunInfoParser.getRunLength(server);
         if (varName.contains("run_length")) {
-            Main.currentRun.run_length = RunInfoParser.getRunLength(server);
-            if (Main.currentRun.timestamp_lvl1_exit!=-1) sendSpeedrunMessage(server, "End Time", Main.currentRun.run_length,Main.speedrun.run_length,true);
+            Main.currentRun.run_length = run_length;
+            if (Main.currentRun.timestamp_lvl1_exit!=-1) {
+                sendSpeedrunMessage(server, "End Time", Main.currentRun.run_length,Main.speedrun.run_length,true);
+            }
         }
         if (varName.contains("artifact")) {
-            Main.currentRun.timestamp_artifact = RunInfoParser.getRunLength(server);
+            Main.currentRun.timestamp_artifact = run_length;
             sendSpeedrunMessage(server, "Artifact obtained", Main.currentRun.timestamp_artifact,Main.speedrun.timestamp_artifact);
         }
         if (varName.contains("lvl2_entry")) {
-            Main.currentRun.timestamp_lvl2_entry = RunInfoParser.getRunLength(server);
+            Main.currentRun.timestamp_lvl2_entry = run_length;
             sendSpeedrunMessage(server, "Lvl2 entry", Main.currentRun.timestamp_lvl2_entry,Main.speedrun.timestamp_lvl2_entry);
         }
         if (varName.contains("lvl3_entry")) {
-            Main.currentRun.timestamp_lvl3_entry = RunInfoParser.getRunLength(server);
+            Main.currentRun.timestamp_lvl3_entry = run_length;
             sendSpeedrunMessage(server, "Lvl3 entry", Main.currentRun.timestamp_lvl3_entry,Main.speedrun.timestamp_lvl3_entry);
         }
         if (varName.contains("lvl4_entry")) {
-            Main.currentRun.timestamp_lvl4_entry = RunInfoParser.getRunLength(server);
+            Main.currentRun.timestamp_lvl4_entry = run_length;
             sendSpeedrunMessage(server, "Lvl4 entry", Main.currentRun.timestamp_lvl4_entry,Main.speedrun.timestamp_lvl4_entry);
         }
         if (varName.contains("lvl4_exit")) {
-            Main.currentRun.timestamp_lvl4_exit = RunInfoParser.getRunLength(server);
+            Main.currentRun.timestamp_lvl4_exit = run_length;
             sendSpeedrunMessage(server, "Lvl4 exit", Main.currentRun.timestamp_lvl4_exit,Main.speedrun.timestamp_lvl4_exit);
         }
         if (varName.contains("lvl3_exit")) {
-            Main.currentRun.timestamp_lvl3_exit = RunInfoParser.getRunLength(server);
+            Main.currentRun.timestamp_lvl3_exit = run_length;
             sendSpeedrunMessage(server, "Lvl3 exit", Main.currentRun.timestamp_lvl3_exit,Main.speedrun.timestamp_lvl3_exit);
         }
         if (varName.contains("lvl2_exit")) {
-            Main.currentRun.timestamp_lvl2_exit = RunInfoParser.getRunLength(server);
+            Main.currentRun.timestamp_lvl2_exit = run_length;
             sendSpeedrunMessage(server, "Lvl2 exit", Main.currentRun.timestamp_lvl2_exit,Main.speedrun.timestamp_lvl2_exit);
         }
-        if (varName.contains("lvl1_exit")) Main.currentRun.timestamp_lvl1_exit = RunInfoParser.getRunLength(server);
+        if (varName.contains("lvl1_exit")) {
+            Main.currentRun.timestamp_lvl1_exit = run_length;
+        }
+        int currentSplit = run_length-lastSplit;
+        sendTimestampMessage(server,"_CurrentSplit_",currentSplit);
+        lastSplit = run_length;
 
         return 1;
     }
@@ -150,13 +159,21 @@ public class ConsoleCommand {
         sendSpeedrunMessage(server,name,currentRun,bestRun,false);
     }
     public static void sendSpeedrunMessage(MinecraftServer server, String name, int currentRun, int bestRun, boolean showMilis) {
-        boolean isSpeedrun = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("true");
+        boolean isSpeedrun = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("true") || Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("detailed");
         if (!isSpeedrun) return;
         if (currentRun == -1 || bestRun == -1) return;
         int diff = currentRun - bestRun;
         OtherUtils.broadcastMessage(server, Text.translatable(
                 "§6 - "+name+": " + OtherUtils.convertTicksToClockTime(currentRun,showMilis) +
                         " [" + (diff < 0 ? "§a" : "§c")+((diff > 0)? "+":"")+OtherUtils.convertTicksToClockTime(diff,showMilis) + "§6]"
+        ));
+    }
+    public static void sendTimestampMessage(MinecraftServer server, String name, int currentRun) {
+        boolean isSpeedrunAdvanced = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("detailed");
+        if (!isSpeedrunAdvanced) return;
+        if (currentRun == -1) return;
+        OtherUtils.broadcastMessage(server, Text.translatable(
+                "§6 - "+name+": " + OtherUtils.convertTicksToClockTime(currentRun,true)
         ));
     }
 

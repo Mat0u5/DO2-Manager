@@ -9,7 +9,10 @@
 		"SignBlockEntityMixin",
 		"ServerPlayNetworkHandlerMixin",
 		"CommandManagerMixin",
-		"PlayerManagerMixin"
+		"PlayerManagerMixin",
+		"CrossbowItemMixin",
+		"CrossbowItemLoadFinishMixin",
+		"CrossbowItemShootMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
