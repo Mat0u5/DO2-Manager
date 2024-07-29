@@ -4,6 +4,7 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.BlockScanner;
+import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -11,6 +12,9 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameMode;
+
+import java.util.List;
 
 public class OtherCommand {
     public static int executeSpeedrun(ServerCommandSource source) {
@@ -60,6 +64,22 @@ public class OtherCommand {
         else {
             System.out.println(message.getString());
         }
+        return 1;
+    }
+    public static int stuck(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final ServerPlayerEntity self = source.getPlayer();
+        if (self == null) return -1;
+
+        List<PlayerEntity> aliveRunners = RunInfoParser.getCurrentAliveRunners(server);
+        if (!aliveRunners.contains(self)) {
+            self.changeGameMode(GameMode.SPECTATOR);
+            self.teleport(-529.5, 113, 1980.5);
+        }
+        else {
+            self.sendMessage(Text.of("§cRunners cannot use this command :)"));
+        }
+
         return 1;
     }
 }

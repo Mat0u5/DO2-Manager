@@ -9,6 +9,7 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.SignEditScreen;
@@ -277,5 +278,32 @@ public class OtherUtils {
 
         // Create and return the result text
         return Main.config.getProperty("block_password").equalsIgnoreCase(mainHandItemName) || Main.config.getProperty("block_password").equalsIgnoreCase(offHandItemName);
+    }
+    public static boolean isLocked(LockableContainerBlockEntity container) {
+        NbtCompound nbt = container.createNbt();
+        if (nbt != null && nbt.contains("Lock")) {
+            String lockKey = nbt.getString("Lock");
+            return lockKey != null && !lockKey.isEmpty();
+        }
+        return false;
+    }
+    public static String getLock(LockableContainerBlockEntity container) {
+        NbtCompound nbt = container.createNbt();
+        if (nbt == null) return null;
+        if (!nbt.contains("Lock")) return null;
+        String lockKey = nbt.getString("Lock");
+        if (lockKey.isEmpty()) return null;
+        return lockKey;
+    }
+    public static void removeItemsFromPlayerInventory(PlayerEntity player, String match) {
+        for (int i = 0; i < player.getInventory().size(); i++) {
+            ItemStack stack = player.getInventory().getStack(i);
+            if (stack.hasCustomName()) {
+                Text customName = stack.getName();
+                if (customName.getString().toLowerCase().equalsIgnoreCase(match.toLowerCase())) {
+                    player.getInventory().setStack(i, ItemStack.EMPTY);
+                }
+            }
+        }
     }
 }

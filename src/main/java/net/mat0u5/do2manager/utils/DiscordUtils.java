@@ -27,9 +27,12 @@ public class DiscordUtils {
         sendMessageToDiscord(json);
     }
     public static void sendMessageToDiscord(JsonObject json) {
+        sendMessageToDiscord(json, getWebhookURL());
+    }
+    public static void sendMessageToDiscord(JsonObject json, String webhook) {
         try {
             // Create the connection
-            URL url = new URL(getWebhookURL());
+            URL url = new URL(webhook);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
@@ -52,6 +55,9 @@ public class DiscordUtils {
     }
     public static String getWebhookURL() {
         return Main.config.getProperty("webhook_url");
+    }
+    public static String getWebhookStaffURL() {
+        return Main.config.getProperty("webhook_url_staff");
     }
     public static String getWebhookToken() {
         return Main.config.getProperty("webhook_token");

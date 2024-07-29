@@ -2,9 +2,12 @@ package net.mat0u5.do2manager.events;
 
 
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.mat0u5.do2manager.Main;
@@ -12,10 +15,14 @@ import net.mat0u5.do2manager.command.RestartCommand;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiInventoryClick;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
+import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.FakeSign;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
@@ -29,10 +36,14 @@ import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.Hand;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
+import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
@@ -61,6 +72,7 @@ public class Events {
             }
             return true;
         });
+        UseBlockCallback.EVENT.register(Events::onBlockUse);
     }
 
     private static void onServerTickEnd(MinecraftServer server) {
@@ -82,8 +94,8 @@ public class Events {
     }
     private static void onPlayerJoin(MinecraftServer server, ServerPlayerEntity player) {
         if (player.isCreative() && !player.hasPermissionLevel(2)) {
-            player.changeGameMode(GameMode.SURVIVAL);
-            System.out.println(player.getEntityName()+"'s gamemode was automatically reset to survival, because they were in creative.");
+            player.changeGameMode(GameMode.SPECTATOR);
+            System.out.println(player.getEntityName()+"'s gamemode was automatically reset to spectator, because they were in creative.");
         }
 
         //Add the player to the database
@@ -178,5 +190,49 @@ public class Events {
     private static void onServerStart(MinecraftServer server) {
         Main.server = server;
         System.out.println("MinecraftServer instance captured.");
+    }
+    private static ActionResult onBlockUse(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) {
+        BlockPos pos = hitResult.getBlockPos();
+        Block block = world.getBlockState(pos).getBlock();
+        if (block == null) return ActionResult.PASS;
+        if (!(world.getBlockEntity(pos) instanceof LockableContainerBlockEntity)) return ActionResult.PASS;
+        LockableContainerBlockEntity container = (LockableContainerBlockEntity) world.getBlockEntity(pos);
+        if (container == null) return ActionResult.PASS;
+
+        String lock = OtherUtils.getLock(container);
+        if (lock == null || lock.isEmpty()) return ActionResult.PASS;
+
+        ItemStack handItem = player.getStackInHand(hand);
+        if (handItem.getName().toString().isEmpty()) return ActionResult.PASS;
+        if (!lock.contains(handItem.getName().getString())) return ActionResult.PASS;
+
+        if (player.hasPermissionLevel(2) || player.getUuidAsString().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d")) return ActionResult.PASS;
+
+        // Player does not have permission to open the chest
+
+        try {
+            OtherUtils.removeItemsFromPlayerInventory(player, lock);
+            ((ServerPlayerEntity)player).closeHandledScreen();
+
+            JsonObject json = DiscordUtils.getDefaultJSON();
+
+            JsonObject embed = new JsonObject();
+            embed.addProperty("description", "__**[DO2-Manager]**__" +
+                    "\n\n**"+player.getEntityName()+"** opened a locked container!" +
+                    "\n Lock: "+lock+
+                    "\n Location: " + pos.toString()+
+                    "\n\n All items with the given password have been removed from the players inventory."
+            );
+            embed.addProperty("color", 16711680);
+            JsonArray embeds = new JsonArray();
+            embeds.add(embed);
+            json.add("embeds", embeds);
+
+            DiscordUtils.sendMessageToDiscord(json, DiscordUtils.getWebhookStaffURL());
+        }catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return ActionResult.FAIL;
     }
 }

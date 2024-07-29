@@ -324,5 +324,11 @@ public class Command {
                     context.getSource())
                 )
         );
+        dispatcher.register(
+            literal("stuck")
+                .executes(context -> OtherCommand.stuck(
+                    context.getSource())
+                )
+        );
     }
 }
