@@ -3,8 +3,10 @@ package net.mat0u5.do2manager.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.mat0u5.do2manager.gui.GuiInventory_ChestFramework;
+import net.mat0u5.do2manager.simulator.Simulator;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.CommandManager;
@@ -21,7 +23,7 @@ public class Command {
         dispatcher.register(
             literal("decked-out")
                 .then(literal("console-only")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
                     .executes(context -> ConsoleCommand.execute(
                         context.getSource())
                     )
@@ -210,6 +212,17 @@ public class Command {
                                 StringArgumentType.getString(context, "args"))
                             )
                         )
+                    )
+                )
+                .then(literal("simulator")
+                    .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                    .then(literal("card_played")
+                        .executes(context -> Main.simulator.cardPlayed(
+                            context.getSource())
+                        )
+                    )
+                    .executes(context -> Main.simulator.startSimulator(
+                        context.getSource())
                     )
                 )
                 .then(literal("commandBlockSearch")

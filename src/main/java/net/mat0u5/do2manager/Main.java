@@ -5,6 +5,7 @@ import net.fabricmc.api.ModInitializer;
 import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
+import net.mat0u5.do2manager.simulator.Simulator;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
 import net.minecraft.entity.player.PlayerEntity;
@@ -32,6 +33,7 @@ public class Main implements ModInitializer {
 	public static HashMap<String, String> allPlayers = new HashMap<>();
 	public static MinecraftServer server;
 	public static boolean reloadedRuns = false;
+	public static Simulator simulator;
 
 
 
@@ -47,6 +49,7 @@ public class Main implements ModInitializer {
 		DatabaseManager.checkForDBUpdates();
 		ModRegistries.registerModStuff();
 		LOGGER.info("Initializing DO2-manager...");
+		simulator = new Simulator();
 
 		DatabaseManager.fetchAllPlayers();
 		Runtime.getRuntime().addShutdownHook(new Thread(Main::saveRunInfoToConfig));

@@ -5,7 +5,10 @@ import net.minecraft.block.entity.BarrelBlockEntity;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.DispenserBlockEntity;
 import net.minecraft.block.entity.HopperBlockEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.vehicle.ChestBoatEntity;
+import net.minecraft.entity.vehicle.HopperMinecartEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -20,6 +23,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 
@@ -88,8 +92,34 @@ public class ItemManager {
                 contents.add(stack.copy());
             }
         }
-
         return contents;
+    }
+    public static List<ItemStack> getContentsOfEntitiesAtPosition(World world, BlockPos pos, int range) {
+        List<ItemStack> allContents = new ArrayList<>();
+
+        List<Entity> entities = world.getEntitiesByClass(Entity.class, new Box(pos.add(-range, -range, -range), pos.add(range, range, range)), entity -> entity instanceof HopperMinecartEntity || entity instanceof ChestBoatEntity);
+
+        for (Entity entity : entities) {
+            if (entity instanceof HopperMinecartEntity) {
+                HopperMinecartEntity hopperMinecart = (HopperMinecartEntity) entity;
+                for (int i = 0; i < hopperMinecart.size(); i++) {
+                    ItemStack stack = hopperMinecart.getStack(i);
+                    if (!stack.isEmpty()) {
+                        allContents.add(stack.copy());
+                    }
+                }
+            } else if (entity instanceof ChestBoatEntity) {
+                ChestBoatEntity chestBoat = (ChestBoatEntity) entity;
+                for (int i = 0; i < chestBoat.size(); i++) {
+                    ItemStack stack = chestBoat.getStack(i);
+                    if (!stack.isEmpty()) {
+                        allContents.add(stack.copy());
+                    }
+                }
+            }
+        }
+
+        return allContents;
     }
 
     public static List<ItemStack> getPlayerInventory(PlayerEntity player) {
@@ -261,5 +291,18 @@ public class ItemManager {
             nbt.put("Items", items);
             shulkerBox.setNbt(nbt);
         }
+    }
+
+    public static List<ItemStack> getShulkerItemContents(ItemStack shulkerBox) {
+        List<ItemStack> result = new ArrayList<>();
+
+        NbtCompound nbt = shulkerBox.getOrCreateSubNbt("BlockEntityTag");
+        NbtList items = nbt.getList("Items", 10);
+        for (int i = 0; i < items.size(); i++) {
+            NbtCompound itemTag = items.getCompound(i);
+            ItemStack itemStack = ItemStack.fromNbt(itemTag);
+            result.add(itemStack);
+        }
+        return result;
     }
 }
