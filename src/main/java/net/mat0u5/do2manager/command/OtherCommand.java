@@ -87,7 +87,7 @@ public class OtherCommand {
         MinecraftServer server = source.getServer();
         final ServerPlayerEntity self = source.getPlayer();
         if (self == null) return -1;
-        if (isRunner(server, self)) return -1;
+        if (isRunner(server, self) && !self.hasPermissionLevel(2)) return -1;
 
         List<ItemStack> currentCards = new Simulator().getDeckItemsFromProcessor(server.getOverworld());
 

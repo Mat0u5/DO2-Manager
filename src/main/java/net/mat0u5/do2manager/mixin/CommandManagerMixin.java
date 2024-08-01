@@ -22,7 +22,7 @@ public abstract class CommandManagerMixin {
         ServerPlayerEntity player = cmdSource.getPlayer();
         if (player == null) return;
         if (player.hasPermissionLevel(2)) return;
-        if (!command.equalsIgnoreCase("decked-out") && !command.matches("decked-out .*")) return;
+        if (!command.equalsIgnoreCase("decked-out") && !command.matches("decked-out .*") && !command.equalsIgnoreCase("stuck")) return;
         try {
             if (command.matches("decked-out mapGuiScale [0-9]+")) {
                 GuiMapCommand.executeGuiScale(cmdSource, Integer.parseInt(command.split("decked-out mapGuiScale ")[1]));
