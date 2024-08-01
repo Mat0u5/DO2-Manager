@@ -28,7 +28,7 @@ public class Simulator {
         }
         return deck;
     }
-    public Deck getDeckFromProcessor(World world) {
+    public List<ItemStack> getDeckItemsFromProcessor(World world) {
         List<ItemStack> entityItems = ItemManager.getContentsOfEntitiesAtPosition(world,new BlockPos(-565, 40, 1913),2);
         List<ItemStack> hopper1 = ItemManager.getHopperItems((ServerWorld) world,new BlockPos(-565, 39, 1914));
         List<ItemStack> hopper2 = ItemManager.getHopperItems((ServerWorld) world,new BlockPos(-565, 39, 1913));
@@ -38,12 +38,11 @@ public class Simulator {
         entityItems.addAll(hopper2);
         entityItems.addAll(dropper1);
         entityItems.addAll(dropper2);
-
-        Deck deck = getDeckFromItems(entityItems);
-
-        /*for (Card card : deck.deck.keySet()) {
-            System.out.println(card.cardName+"_"+deck.deck.get(card));
-        }*/
+        return entityItems;
+    }
+    public Deck getDeckFromProcessor(World world) {
+        List<ItemStack> deckItems = getDeckItemsFromProcessor(world);
+        Deck deck = getDeckFromItems(deckItems);
         return deck;
     }
     public Deck getDeckFromItems(List<ItemStack> items) {

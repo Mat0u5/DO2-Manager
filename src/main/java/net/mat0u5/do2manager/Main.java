@@ -35,10 +35,6 @@ public class Main implements ModInitializer {
 	public static boolean reloadedRuns = false;
 	public static Simulator simulator;
 
-
-
-
-
 	@Override
 	public void onInitialize() {
 

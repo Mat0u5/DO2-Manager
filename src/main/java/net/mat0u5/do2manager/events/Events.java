@@ -35,6 +35,9 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvent;
+import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
@@ -150,25 +153,27 @@ public class Events {
 
 
     public static void invPickupOrDropItem(PlayerEntity player, ItemStack itemStack) {
-        if (!RunInfoParser.getCurrentRunners(player.getServer()).contains(player)) return;
-        if (RunInfoParser.isDungeonCompass(itemStack) && Main.currentRun.compass_item == null) {
-            boolean isSpeedrun = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("true");
-            Main.currentRun.compass_item = itemStack;
+        try {
+            if (!RunInfoParser.getCurrentRunners(player.getServer()).contains(player)) return;
+            if (RunInfoParser.isDungeonCompass(itemStack) && Main.currentRun.compass_item == null) {
+                boolean isSpeedrun = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("true");
+                Main.currentRun.compass_item = itemStack;
 
-            List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(player.getServer());
-            if (!runners.isEmpty()) {
-                if (runners.size() == 1) Main.speedrun = RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(player.getServer()).get(0));
+                List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(player.getServer());
+                if (!runners.isEmpty()) {
+                    if (runners.size() == 1) Main.speedrun = RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(player.getServer()).get(0));
+                }
+                if (isSpeedrun) {
+                    OtherUtils.broadcastMessage(player.getServer(), Text.translatable("§6This speedrun will be compared with " + player.getEntityName() + "'s fastest "+Main.currentRun.getFormattedDifficulty()+" level " + Main.currentRun.getCompassLevel()+"§6 run."));
+                }
             }
-            if (isSpeedrun) {
-                OtherUtils.broadcastMessage(player.getServer(), Text.translatable("§6This speedrun will be compared with " + player.getEntityName() + "'s fastest "+Main.currentRun.getFormattedDifficulty()+" level " + Main.currentRun.getCompassLevel()+"§6 run."));
+            if (RunInfoParser.isDungeonArtifact(itemStack) && Main.currentRun.artifact_item == null) {
+                if (ItemManager.getModelData(itemStack) == 36) {
+                    OtherUtils.executeCommand(player.getServer(),"function dom:mat0u5/gui/other/mug_maniac_activate");
+                }
+                Main.currentRun.artifact_item = itemStack;
             }
-        }
-        if (RunInfoParser.isDungeonArtifact(itemStack) && Main.currentRun.artifact_item == null) {
-            if (ItemManager.getModelData(itemStack) == 36) {
-                OtherUtils.executeCommand(player.getServer(),"function dom:mat0u5/gui/other/mug_maniac_activate");
-            }
-            Main.currentRun.artifact_item = itemStack;
-        }
+        }catch(Exception e) {}
     }
     public static void onSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci, ScreenHandler handler) {
         try {
@@ -201,12 +206,29 @@ public class Events {
 
         String lock = OtherUtils.getLock(container);
         if (lock == null || lock.isEmpty()) return ActionResult.PASS;
+        if (player.hasPermissionLevel(2) || player.getUuidAsString().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d")) {
+            NbtCompound nbt = container.createNbt();
+            String originalLock = nbt.getString("Lock");
+            nbt.remove("Lock");
+            container.readNbt(nbt);
+            player.getServer().execute(() -> {
+                try {
+                    NbtCompound newNbt = container.createNbt();
+                    newNbt.putString("Lock", originalLock);
+                    container.readNbt(newNbt);
+                }catch(Exception e) {
+                    System.out.println("_Failed to re-add lock at " + pos.toString());
+                }
+            });
+
+            player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_STEP, SoundCategory.PLAYERS, 0.7f, 1.0f);
+            return ActionResult.PASS;
+        }
 
         ItemStack handItem = player.getStackInHand(hand);
         if (handItem.getName().toString().isEmpty()) return ActionResult.PASS;
         if (!lock.contains(handItem.getName().getString())) return ActionResult.PASS;
 
-        if (player.hasPermissionLevel(2) || player.getUuidAsString().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d")) return ActionResult.PASS;
 
         // Player does not have permission to open the chest
 

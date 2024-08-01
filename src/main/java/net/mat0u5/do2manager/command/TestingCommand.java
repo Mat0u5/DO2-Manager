@@ -35,19 +35,6 @@ public class TestingCommand {
 
         return 1;
     }
-    /*
-    public static void setFileContent(String path, List<String> lines) {
-        FileWriter myWriter;
-        try {
-            myWriter = new FileWriter(path, false);
-            for (String s : lines) {
-                myWriter.write(s + "\n");
-            }
-            myWriter.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }*/
     public static int executeCmd(String args) {
         OtherUtils.executeCommand(Main.server,args);
         return 1;

@@ -2,10 +2,17 @@ package net.mat0u5.do2manager.command;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.config.ConfigManager;
+import net.mat0u5.do2manager.simulator.Simulator;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.BlockScanner;
 import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.SimpleInventory;
+import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.screen.GenericContainerScreenHandler;
+import net.minecraft.screen.ScreenHandlerType;
+import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -70,16 +77,51 @@ public class OtherCommand {
         MinecraftServer server = source.getServer();
         final ServerPlayerEntity self = source.getPlayer();
         if (self == null) return -1;
+        if (isRunner(server, self)) return -1;
 
-        List<PlayerEntity> aliveRunners = RunInfoParser.getCurrentAliveRunners(server);
-        if (!aliveRunners.contains(self)) {
-            self.changeGameMode(GameMode.SPECTATOR);
-            self.teleport(-529.5, 113, 1980.5);
-        }
-        else {
-            self.sendMessage(Text.of("§cRunners cannot use this command :)"));
-        }
-
+        self.changeGameMode(GameMode.SPECTATOR);
+        self.teleport(-529.5, 113, 1980.5);
         return 1;
+    }
+    public static int viewDeck(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final ServerPlayerEntity self = source.getPlayer();
+        if (self == null) return -1;
+        if (isRunner(server, self)) return -1;
+
+        List<ItemStack> currentCards = new Simulator().getDeckItemsFromProcessor(server.getOverworld());
+
+        SimpleInventory inventory = new SimpleInventory(27);
+        for (ItemStack item : currentCards) {
+            NbtCompound nbt = item.getOrCreateNbt();
+            nbt.putString("GUI","view-deck");
+            item.setNbt(nbt);
+            inventory.addStack(item);
+        }
+
+        self.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
+            return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X3, syncId, inv, inventory, 3);
+        }, Text.of("Cards Remaining In Deck")));
+        return 1;
+    }
+    public static int getInfo(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final ServerPlayerEntity self = source.getPlayer();
+        if (self == null) return -1;
+        if (isRunner(server, self)) return -1;
+
+        self.sendMessage(Text.of("This command is not done yet :P"));
+        return 1;
+    }
+    public static boolean isRunner(MinecraftServer server, ServerPlayerEntity self) {
+        if (self == null) {
+            return true;
+        }
+        List<PlayerEntity> aliveRunners = RunInfoParser.getCurrentAliveRunners(server);
+        if (aliveRunners.contains(self)) {
+            self.sendMessage(Text.of("§cRunners cannot use this command :)"));
+            return true;
+        }
+        return false;
     }
 }

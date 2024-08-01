@@ -274,6 +274,18 @@ public class Command {
                         )
                     )
                 )
+                .then(literal("currentRun")
+                    .then(literal("getInfo")
+                        .executes(context -> OtherCommand.getInfo(
+                            context.getSource())
+                        )
+                    )
+                    .then(literal("viewDeck")
+                        .executes(context -> OtherCommand.viewDeck(
+                            context.getSource())
+                        )
+                    )
+                )
                 .then(literal("queueRestart")
                     .requires(source -> source.hasPermissionLevel(2))
                     .executes(context -> RestartCommand.queueRestart(
