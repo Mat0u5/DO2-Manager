@@ -94,6 +94,28 @@ public class ItemManager {
         }
         return contents;
     }
+    public static List<ItemStack> getBarrelItems(ServerWorld world, BlockPos hopperPos) {
+        BlockEntity blockEntity = world.getBlockEntity(hopperPos);
+
+        if (blockEntity instanceof BarrelBlockEntity) {
+            BarrelBlockEntity barrel = (BarrelBlockEntity) blockEntity;
+            return getBarrelContents(barrel);
+
+        } else {
+            System.out.println("No barrel found at the specified position.");
+        }
+        return null;
+    }
+    private static List<ItemStack> getBarrelContents(BarrelBlockEntity barrel) {
+        List<ItemStack> contents = new ArrayList<>();
+        for (int i = 0; i < barrel.size(); i++) {
+            ItemStack stack = barrel.getStack(i);
+            if (!stack.isEmpty()) {
+                contents.add(stack.copy());
+            }
+        }
+        return contents;
+    }
     public static List<ItemStack> getContentsOfEntitiesAtPosition(World world, BlockPos pos, int range) {
         List<ItemStack> allContents = new ArrayList<>();
 
@@ -304,5 +326,24 @@ public class ItemManager {
             result.add(itemStack);
         }
         return result;
+    }
+    public static int getHopperItemsCount(ServerWorld world, BlockPos pos) {
+        List<ItemStack> items = getHopperItems(world,pos);
+        return countItems(items);
+    }
+    public static int getDropperItemsCount(ServerWorld world, BlockPos pos) {
+        List<ItemStack> items = getDropperItems(world,pos);
+        return countItems(items);
+    }
+    public static int countItems(List<ItemStack> items) {
+        if (items == null) return 0;
+        if (items.isEmpty()) return 0;
+        int count = 0;
+        for (ItemStack item : items) {
+            if (item == null) continue;
+            if (item.isEmpty()) continue;
+            count+= item.getCount();
+        }
+        return count;
     }
 }

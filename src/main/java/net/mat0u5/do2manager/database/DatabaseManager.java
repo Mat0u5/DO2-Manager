@@ -390,7 +390,7 @@ public class DatabaseManager {
             Main.currentRun.loot_drops = ScoreboardUtils.getLootEvents();
             Main.currentRun.sendInfoToDiscord();
             Main.addRun(Main.currentRun);
-            Main.simulator.runFinished();
+            Main.simulator.finishedRun();
 
             DatabaseManager.addRun(Main.currentRun);
             DatabaseManager.addRunDetailed(Main.currentRun);

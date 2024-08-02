@@ -268,16 +268,22 @@ public class OtherUtils {
         return posList;
     }
     public static boolean isHoldingAdminKey(PlayerEntity player) {
-        // Get the item stacks for main hand and offhand
-        ItemStack mainHandItem = player.getMainHandStack();
-        ItemStack offHandItem = player.getOffHandStack();
+        try {
+            // Get the item stacks for main hand and offhand
+            ItemStack mainHandItem = player.getMainHandStack();
+            ItemStack offHandItem = player.getOffHandStack();
 
-        // Get the item names
-        String mainHandItemName = mainHandItem.isEmpty() ? "Empty" : mainHandItem.getName().getString();
-        String offHandItemName = offHandItem.isEmpty() ? "Empty" : offHandItem.getName().getString();
+            // Get the item names
+            String mainHandItemName = mainHandItem.isEmpty() ? "Empty" : mainHandItem.getName().getString();
+            String offHandItemName = offHandItem.isEmpty() ? "Empty" : offHandItem.getName().getString();
 
-        // Create and return the result text
-        return Main.config.getProperty("block_password").equalsIgnoreCase(mainHandItemName) || Main.config.getProperty("block_password").equalsIgnoreCase(offHandItemName);
+            // Create and return the result text
+            return Main.config.getProperty("block_password").equalsIgnoreCase(mainHandItemName) || Main.config.getProperty("block_password").equalsIgnoreCase(offHandItemName);
+
+        }catch(Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
     public static boolean isLocked(LockableContainerBlockEntity container) {
         NbtCompound nbt = container.createNbt();

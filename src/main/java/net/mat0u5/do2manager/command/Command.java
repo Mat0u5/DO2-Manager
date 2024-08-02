@@ -221,8 +221,41 @@ public class Command {
                             context.getSource())
                         )
                     )
-                    .executes(context -> Main.simulator.startSimulator(
-                        context.getSource())
+                    .then(literal("save_permanents")
+                        .executes(context -> Main.simulator.saveHand(
+                            context.getSource())
+                        )
+                    )
+                    .then(literal("hand_deck")
+                        .executes(context -> Main.simulator.runHand(
+                            context.getSource(),5000,false)
+                        )
+                        .then(CommandManager.argument("simulate_runs_num", IntegerArgumentType.integer(1))
+                            .executes(context -> Main.simulator.runHand(
+                                context.getSource(),
+                                IntegerArgumentType.getInteger(context, "simulate_runs_num"),false)
+                            )
+                            .then(literal("dont_skip_cards")
+                                .executes(context -> Main.simulator.runHand(
+                                    context.getSource(),IntegerArgumentType.getInteger(context, "simulate_runs_num"),true)
+                                )
+                            )
+                        )
+                    )
+                    .then(literal("stop_sim")
+                        .executes(context -> Main.simulator.stopSimCommand(
+                            context.getSource())
+                        )
+                    )
+                    .then(literal("disable")
+                        .executes(context -> Main.simulator.enOrDis(
+                            context.getSource(),"false")
+                        )
+                    )
+                    .then(literal("enable")
+                        .executes(context -> Main.simulator.enOrDis(
+                            context.getSource(),"true")
+                        )
                     )
                 )
                 .then(literal("commandBlockSearch")
@@ -282,6 +315,11 @@ public class Command {
                     )
                     .then(literal("viewDeck")
                         .executes(context -> OtherCommand.viewDeck(
+                            context.getSource())
+                        )
+                    )
+                    .then(literal("viewRunnerInv")
+                        .executes(context -> OtherCommand.viewInv(
                             context.getSource())
                         )
                     )

@@ -40,6 +40,10 @@ public abstract class CommandManagerMixin {
                 OtherCommand.getInfo(cmdSource);
                 cir.setReturnValue(0);
             }
+            else if (command.equalsIgnoreCase("decked-out currentRun viewRunnerInv")) {
+                OtherCommand.viewInv(cmdSource);
+                cir.setReturnValue(0);
+            }
         }catch (Exception e) {}
     }
 }

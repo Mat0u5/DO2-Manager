@@ -5,6 +5,7 @@ import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.simulator.Simulator;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.BlockScanner;
+import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SimpleInventory;
@@ -102,6 +103,35 @@ public class OtherCommand {
         self.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
             return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X3, syncId, inv, inventory, 3);
         }, Text.of("Cards Remaining In Deck")));
+        return 1;
+    }
+    public static int viewInv(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final ServerPlayerEntity self = source.getPlayer();
+        if (self == null) return -1;
+        if (isRunner(server, self) && !self.hasPermissionLevel(2)) return -1;
+        List<PlayerEntity> runners = RunInfoParser.getCurrentAliveRunners(server);
+        if (runners.isEmpty()) return -1;
+        if (runners.size() != 1) {
+            self.sendMessage(Text.of("§cYou cannot use this commands with more than one runner!"));
+            return -1;
+        }
+        PlayerEntity runner = runners.get(0);
+
+        List<ItemStack> currentCards = ItemManager.getPlayerInventory(runner);
+
+        SimpleInventory inventory = new SimpleInventory(27);
+
+        for (ItemStack item : currentCards) {
+            NbtCompound nbt = item.getOrCreateNbt();
+            nbt.putString("GUI","player_inv");
+            item.setNbt(nbt);
+            inventory.addStack(item);
+        }
+
+        self.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
+            return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X3, syncId, inv, inventory, 3);
+        }, Text.of(runner.getEntityName()+"'s Items")));
         return 1;
     }
     public static int getInfo(ServerCommandSource source) {

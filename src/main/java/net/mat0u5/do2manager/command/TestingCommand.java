@@ -31,7 +31,9 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        new Simulator().getDeckFromProcessor(server.getOverworld());
+        for (int i = 0; i < 50;i++) {
+            self.sendMessage(Text.of(OtherUtils.convertTicksToClockTime(i,true)));
+        }
 
         return 1;
     }

@@ -26,6 +26,23 @@ public class Deck {
         }
         return count;
     }
+    public int getNonPermanentCardCount() {
+        int count = 0;
+        for (Card card : deck.keySet()) {
+            count += deck.get(card);
+
+        }
+        return count;
+    }
+    public boolean hasCard(Card matchFor) {
+        for (Card card : deck.keySet()) {
+            if (card.cardName.equalsIgnoreCase(matchFor.cardName)) return true;
+        }
+        for (Card card : permanents.keySet()) {
+            if (card.cardName.equalsIgnoreCase(matchFor.cardName)) return true;
+        }
+        return false;
+    }
     public void removeCard(Card card, int count) {
         if (count <= 0) return;
         if (!card.isPermanent) {
@@ -81,6 +98,26 @@ public class Deck {
             if (pos == random) return card;
             pos++;
         }
+        return null;
+    }
+    public Card getRandomWeightedCard() {//This is the correct function.
+        // Calculate the total weight
+        int totalWeight = 0;
+        for (int weight : deck.values()) {
+            totalWeight += weight;
+        }
+        // Generate a random number between 0 and the total weight
+        Random random = new Random();
+        int randomWeight = random.nextInt(totalWeight);
+        // Iterate through the entries of the map and subtract the weights from the random number
+        for (Card key : deck.keySet()) {
+            randomWeight -= deck.get(key);
+            if (randomWeight < 0) {
+                return key;
+            }
+        }
+
+        // Should never reach here if the map is not empty and weights are positive
         return null;
     }
     public Deck copy() {

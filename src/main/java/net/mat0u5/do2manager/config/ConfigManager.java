@@ -38,6 +38,7 @@ public class ConfigManager {
                     properties.setProperty("webhook_url","");
                     properties.setProperty("webhook_url_staff","");
                     properties.setProperty("block_password","");
+                    properties.setProperty("simulator_enabled","false");
 
                     properties.store(output, null);
                 }

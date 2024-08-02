@@ -178,6 +178,7 @@ public class Events {
     public static void onSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci, ScreenHandler handler) {
         try {
             if (!handler.isValid(slotId)) return;
+            if (slotId < 0 ) return;
             ItemStack clickedItem = handler.getSlot(slotId).getStack();
             if (clickedItem == null) return;
             NbtCompound nbt = clickedItem.getNbt();
@@ -190,7 +191,9 @@ public class Events {
                 clickEventCooldown = 4;
                 GuiInventoryClick.onClickDatabaseGUI(tag,slotId,button,actionType,player,ci,handler);
             }
-        }catch(Exception e) {}
+        }catch(Exception e) {
+            e.printStackTrace();
+        }
     }
     private static void onServerStart(MinecraftServer server) {
         Main.server = server;
