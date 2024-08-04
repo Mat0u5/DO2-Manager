@@ -120,7 +120,7 @@ public class OtherCommand {
 
         List<ItemStack> currentCards = ItemManager.getPlayerInventory(runner);
 
-        SimpleInventory inventory = new SimpleInventory(27);
+        SimpleInventory inventory = new SimpleInventory(54);
 
         for (ItemStack item : currentCards) {
             NbtCompound nbt = item.getOrCreateNbt();
@@ -130,7 +130,7 @@ public class OtherCommand {
         }
 
         self.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
-            return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X3, syncId, inv, inventory, 3);
+            return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, syncId, inv, inventory, 6);
         }, Text.of(runner.getEntityName()+"'s Items")));
         return 1;
     }

@@ -82,7 +82,36 @@ public class RunInfoParser {
         put(43, "axe");
         put(42, "hood");
     }};
-
+    public static final LinkedHashMap<Integer, String> artifactNamesByValue = new LinkedHashMap<Integer, String>() {{
+        put(60, "key");
+        put(54, "mug");
+        put(52, "skadoodler");
+        put(50, "slab");
+        put(48, "staff");
+        put(46, "rocket");
+        put(40, "gem");
+        put(38, "pickaxe");
+        put(36, "watch");
+        put(34, "golden_eye");
+        put(32, "goggles");
+        put(30, "stache");
+        put(24, "bionic_eye");
+        put(23, "helm");
+        put(22, "wand");
+        put(21, "bandana");
+        put(20, "apron");
+        put(19, "chisel");
+        put(18, "goat");
+        put(14, "pearl");
+        put(13, "loop");
+        put(12, "tome");
+        put(11, "jar");
+        put(10, "slippers");
+        put(9, "shades");
+        put(8, "waffle");
+        put(7, "axe");
+        put(6, "hood");
+    }};
     public static java.lang.Integer getRunNum(MinecraftServer server) {
         return ScoreboardUtils.getPlayerScore(server,"TangoCam","TestObj");
     }

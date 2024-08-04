@@ -215,13 +215,15 @@ public class Command {
                     )
                 )
                 .then(literal("simulator")
-                    .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                    .requires(source -> source.hasPermissionLevel(2))
                     .then(literal("card_played")
+                        .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
                         .executes(context -> Main.simulator.cardPlayed(
                             context.getSource())
                         )
                     )
                     .then(literal("save_permanents")
+                        .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
                         .executes(context -> Main.simulator.saveHand(
                             context.getSource())
                         )
@@ -248,11 +250,13 @@ public class Command {
                         )
                     )
                     .then(literal("disable")
+                        .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
                         .executes(context -> Main.simulator.enOrDis(
                             context.getSource(),"false")
                         )
                     )
                     .then(literal("enable")
+                        .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
                         .executes(context -> Main.simulator.enOrDis(
                             context.getSource(),"true")
                         )
