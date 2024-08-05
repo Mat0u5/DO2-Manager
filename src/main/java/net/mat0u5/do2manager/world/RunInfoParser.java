@@ -23,18 +23,29 @@ import java.util.*;
 public class RunInfoParser {
     public static final List<Integer> artiModelDataList = Arrays.asList(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57);
     public static final HashMap<Integer, Integer> artifactWorth = new HashMap<Integer, Integer>() {{
+            put(53, 66);
+            put(48, 64);
+            put(54, 62);
         put(37, 60);
+            put(46, 57);
         put(36, 54);
         put(38, 52);
         put(14, 50);
         put(44, 48);
         put(11, 46);
         put(16, 40);
+            put(52, 44);
         put(39, 38);
+            put(50, 37);
         put(10, 36);
         put(19, 34);
+            put(49, 33);
         put(15, 32);
         put(31, 30);
+            put(56, 29);
+            put(47, 27);
+            put(51, 26);
+            put(57, 25);
         put(20, 24);
         put(41, 23);
         put(35, 22);
@@ -51,6 +62,7 @@ public class RunInfoParser {
         put(17, 8);
         put(43, 7);
         put(42, 6);
+            put(55, 5);
     }};
     public static final HashMap<Integer, String> artifactNames = new HashMap<Integer, String>() {{
         put(37, "key");
@@ -81,20 +93,44 @@ public class RunInfoParser {
         put(17, "waffle");
         put(43, "axe");
         put(42, "hood");
+
+        put(55, "coin");
+        put(57, "payday");
+        put(51, "chip");
+        put(47, "notes");
+        put(56, "fist");
+        put(49, "tie");
+        put(50, "trigger");
+        put(52, "spanner");
+        put(46, "orb");
+        put(54, "laptop");
+        put(48, "cloak");
+        put(53, "mat");
     }};
     public static final LinkedHashMap<Integer, String> artifactNamesByValue = new LinkedHashMap<Integer, String>() {{
+            put(66,"mat");
+            put(64,"cloak");
+            put(62,"laptop");
         put(60, "key");
+            put(57,"orb");
         put(54, "mug");
         put(52, "skadoodler");
         put(50, "slab");
         put(48, "staff");
         put(46, "rocket");
+            put(44,"spanner");
         put(40, "gem");
         put(38, "pickaxe");
+            put(37,"trigger");
         put(36, "watch");
         put(34, "golden_eye");
+            put(33,"tie");
         put(32, "goggles");
         put(30, "stache");
+            put(29,"fist");
+            put(27,"notes");
+            put(26,"chip");
+            put(25,"payday");
         put(24, "bionic_eye");
         put(23, "helm");
         put(22, "wand");
@@ -111,12 +147,13 @@ public class RunInfoParser {
         put(8, "waffle");
         put(7, "axe");
         put(6, "hood");
+            put(5,"coin");
     }};
     public static java.lang.Integer getRunNum(MinecraftServer server) {
         return ScoreboardUtils.getPlayerScore(server,"TangoCam","TestObj");
     }
     public static java.lang.Integer getRunDifficulty(MinecraftServer server) {
-        return ScoreboardUtils.getPlayerScore(server,"Difficulty","DOM_Difficulty");
+        return ScoreboardUtils.getPlayerScore(server,"Difficulty","DeckedOutGame");
     }
     public static java.lang.Integer getRunLength(MinecraftServer server) {
         return ScoreboardUtils.getPlayerScore(server,"#Tick","DOM_Timer");

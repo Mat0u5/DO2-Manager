@@ -7,10 +7,15 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
+import net.minecraft.block.DoubleBlockProperties;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.ChestBlockEntity;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
+import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.SignEditScreen;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
@@ -26,10 +31,12 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
+import net.minecraft.state.property.Properties;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
@@ -284,6 +291,72 @@ public class OtherUtils {
             e.printStackTrace();
             return false;
         }
+    }
+    public static void unlockContainerForTick(ServerWorld world, MinecraftServer server, LockableContainerBlockEntity container, BlockPos pos) {
+        NbtCompound nbt = container.createNbt();
+        String originalLock = nbt.getString("Lock");
+        nbt.remove("Lock");
+        container.readNbt(nbt);
+        server.execute(() -> {
+            try {
+                // Re-lock the original container
+                NbtCompound newNbt = container.createNbt();
+                newNbt.putString("Lock", originalLock);
+                container.readNbt(newNbt);
+            } catch (Exception e) {
+                System.out.println("Failed to re-add lock at " + pos.toString());
+            }
+        });
+
+        // Unlock the other half if it's a double chest
+        if (container instanceof ChestBlockEntity) {
+            ChestBlockEntity chest = (ChestBlockEntity) container;
+            ChestBlockEntity otherHalf = getOtherHalf(world, chest, pos);
+
+            if (otherHalf != null) {
+                NbtCompound otherNbt = otherHalf.createNbt();
+                String otherOriginalLock = otherNbt.getString("Lock");
+                otherNbt.remove("Lock");
+                otherHalf.readNbt(otherNbt);
+
+                server.execute(() -> {
+                    try {
+                        if (otherHalf != null) {
+                            NbtCompound newOtherNbt = otherHalf.createNbt();
+                            newOtherNbt.putString("Lock", otherOriginalLock);
+                            otherHalf.readNbt(newOtherNbt);
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Failed to re-add lock at " + pos.toString());
+                    }
+                });
+            }
+        }
+    }
+
+    private static ChestBlockEntity getOtherHalf(ServerWorld world, ChestBlockEntity chest, BlockPos pos) {
+        BlockState state = chest.getCachedState();
+        Direction facing = state.get(Properties.HORIZONTAL_FACING);
+        ChestType type = state.get(Properties.CHEST_TYPE);
+
+        BlockPos otherHalfPos = null;
+
+        if (type == ChestType.LEFT) {
+            otherHalfPos = pos.offset(facing.rotateYClockwise());
+        } else if (type == ChestType.RIGHT) {
+            otherHalfPos = pos.offset(facing.rotateYCounterclockwise());
+        }
+
+        if (otherHalfPos != null) {
+            BlockEntity adjacentBlockEntity = world.getBlockEntity(otherHalfPos);
+            if (adjacentBlockEntity instanceof ChestBlockEntity) {
+                ChestBlockEntity adjacentChest = (ChestBlockEntity) adjacentBlockEntity;
+                if (adjacentChest.getCachedState().getBlock() == Blocks.CHEST) {
+                    return adjacentChest;
+                }
+            }
+        }
+        return null;
     }
     public static boolean isLocked(LockableContainerBlockEntity container) {
         NbtCompound nbt = container.createNbt();

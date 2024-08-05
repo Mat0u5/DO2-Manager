@@ -4,6 +4,7 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.simulator.Simulator;
 import net.mat0u5.do2manager.utils.OtherUtils;
+import net.mat0u5.do2manager.utils.TextUtils;
 import net.mat0u5.do2manager.world.BlockScanner;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
@@ -51,6 +52,7 @@ public class OtherCommand {
     public static int reload() {
         Main.config= new ConfigManager("./config/"+Main.MOD_ID+"/"+Main.MOD_ID+".properties");
         Main.lastPhaseUpdate = new ConfigManager("./config/"+Main.MOD_ID+"/"+Main.MOD_ID+"_phase_inv_update.properties");
+        TextUtils.setEmotes();
         return 1;
     }
     public static int playerList(ServerCommandSource source) {

@@ -35,6 +35,7 @@ import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
@@ -210,6 +211,8 @@ public class Events {
         String lock = OtherUtils.getLock(container);
         if (lock == null || lock.isEmpty()) return ActionResult.PASS;
         if (player.hasPermissionLevel(2) || player.getUuidAsString().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d")) {
+            OtherUtils.unlockContainerForTick((ServerWorld) world, player.getServer(), container,pos);
+            /*
             NbtCompound nbt = container.createNbt();
             String originalLock = nbt.getString("Lock");
             nbt.remove("Lock");
@@ -223,6 +226,7 @@ public class Events {
                     System.out.println("_Failed to re-add lock at " + pos.toString());
                 }
             });
+            */
 
             player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_STEP, SoundCategory.PLAYERS, 0.7f, 1.0f);
             return ActionResult.PASS;

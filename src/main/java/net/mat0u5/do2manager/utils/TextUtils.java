@@ -61,12 +61,25 @@ public class TextUtils {
         emotes.put(List.of("frown"),List.of("☹"));
         emotes.put(List.of("heart"),List.of("❤"));
         emotes.put(List.of("copyright"),List.of("©"));
-        emotes.put(List.of("trademark"),List.of("™"));
+        emotes.put(List.of("trademark","tm"),List.of("™"));
 
         emotes.put(List.of("mat","Mat0u5"), List.of("\uE0CC"));
         emotes.put(List.of("gari","Garibaldi","Garibaldi_"), List.of("\uE0CD"));
         emotes.put(List.of("onti","OntiMoose"), List.of("\uE0CE"));
         emotes.put(List.of("simple","ItsSimpleAsThat"), List.of("\uE0CF"));
+
+        emotes.put(List.of("glitched","glitched_coin"), List.of("\uE0D0"));
+        emotes.put(List.of("payday","willie","payday_payout"), List.of("\uE0D1"));
+        emotes.put(List.of("chip","tungsten_chip"), List.of("\uE0D2", "1269729688092282910"));
+        emotes.put(List.of("notes","notepad","almighty_notepad"), List.of("\uE0D3", "1269729689677729853"));
+        emotes.put(List.of("fist","iron_fist"), List.of("\uE0D4"));
+        emotes.put(List.of("tie","fancy_tie"), List.of("\uE0D5", "1269729694119628881"));
+        emotes.put(List.of("trigger","haunter","haunters","haunters_trigger"), List.of("\uE0D6", "1269729686552973433"));
+        emotes.put(List.of("spanner","super_spanner"), List.of("\uE0D7", "1269729692798292019"));
+        emotes.put(List.of("orb","ball","ontiball","onti_ball","oversized_onti_ball"), List.of("\uE0D8", "1269729690944405615"));
+        emotes.put(List.of("laptop","citadel_laptop"), List.of("\uE0D9", "1269729681687445504"));
+        emotes.put(List.of("cloak","cloak_of_the_dungeon_master","cloak_of_the_new_dungeon_master"), List.of("\uE0DA", "1269729683650646017"));
+        emotes.put(List.of("doormat","1027","auto_temp_doormat","door_mat"), List.of("\uE0DB", "1269729685110132929"));
     }
     public static String replaceEmotes(String input) {
         for (Map.Entry<List<String>, List<String>> entry : emotes.entrySet()) {
