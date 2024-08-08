@@ -63,7 +63,7 @@ public class Main implements ModInitializer {
 	public static void loadRunInfoFromConfig() {
 		currentRun = new DO2Run().deserialize(config.getProperty("current_run"));
 	}
-	public static void reloadAllRuns() {
+	public static void reloadAllRunsActual() {
 		allRuns = DatabaseManager.getRunsByCriteria(new ArrayList<>());
 		Collections.sort(allRuns, new Comparator<DO2Run>() {
 			@Override
@@ -72,7 +72,23 @@ public class Main implements ModInitializer {
 			}
 		});
 		System.out.println("Runs Reloaded.");
-		reloadedRuns=true;
+		reloadedRuns = true;
+	}
+
+	public static void reloadAllRuns() {
+		Thread reloadThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				reloadAllRunsActual();
+			}
+		});
+		reloadThread.start();
+
+		try {
+			reloadThread.join(); // This will block until the thread is finished
+		} catch (InterruptedException e) {
+			e.printStackTrace(); // Handle interruption exception
+		}
 	}
 	public static void addRun(DO2Run run) {
 		if (run.date==null||run.date.isEmpty()) {

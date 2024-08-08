@@ -114,7 +114,7 @@ public class GuiItems_Database {
                 Text.literal("§fDifficulty:").append(Text.of("§f        Level:")),
                 Text.literal(filter_difficulty==0?"§8▶ No filter ":"  §8No filter  ").append(Text.of("    "+(filter_level==0?"§8▶ ":"  §8")+"§8No filter")),
                 Text.literal(filter_difficulty==1?"§a▶ Easy ":"  §7Easy  ").append(Text.of("         "+(filter_level==1?"§a▶ ":"  §7")+"Level 1")),
-                Text.literal(filter_difficulty==2?"§e▶ Normal ":"  §7Normal  ").append(Text.of("       "+(filter_level==2?"§6▶ ":"  §7")+"Level 2")),
+                Text.literal(filter_difficulty==2?"§e▶ Medium ":"  §7Medium  ").append(Text.of("       "+(filter_level==2?"§6▶ ":"  §7")+"Level 2")),
                 Text.literal(filter_difficulty==3?"§6▶ Hard ":"  §7Hard  ").append(Text.of("         "+(filter_level==3?"§4▶ ":"  §7")+"Level 3")),
                 Text.literal(filter_difficulty==4?"§4▶ Deadly ":"  §7Deadly  ").append(Text.of("       "+(filter_level==4?"§3▶ ":"  §7")+"Level 4")),
                 Text.literal(filter_difficulty==5?"§3▶ Deepfrost ":"  §7Deepfrost  "),

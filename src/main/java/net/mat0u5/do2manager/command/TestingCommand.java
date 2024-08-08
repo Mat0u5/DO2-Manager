@@ -32,7 +32,7 @@ public class TestingCommand {
         final PlayerEntity self = source.getPlayer();
 
         for (int i = 0; i < 50;i++) {
-            self.sendMessage(Text.of(OtherUtils.convertTicksToClockTime(i,true)));
+            self.sendMessage(Text.of(OtherUtils.convertTicksToClockTime(i,false)));
         }
 
         return 1;
