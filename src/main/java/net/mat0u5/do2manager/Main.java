@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 
 public class Main implements ModInitializer {
@@ -63,32 +64,19 @@ public class Main implements ModInitializer {
 	public static void loadRunInfoFromConfig() {
 		currentRun = new DO2Run().deserialize(config.getProperty("current_run"));
 	}
-	public static void reloadAllRunsActual() {
-		allRuns = DatabaseManager.getRunsByCriteria(new ArrayList<>());
-		Collections.sort(allRuns, new Comparator<DO2Run>() {
-			@Override
-			public int compare(DO2Run run1, DO2Run run2) {
-				return Integer.compare(run2.getRunNum(), run1.getRunNum());
-			}
-		});
-		System.out.println("Runs Reloaded.");
-		reloadedRuns = true;
-	}
 
-	public static void reloadAllRuns() {
-		Thread reloadThread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				reloadAllRunsActual();
-			}
+	public static CompletableFuture<Void> reloadAllRunsAsync() {
+		return CompletableFuture.runAsync(() -> {
+			allRuns = DatabaseManager.getRunsByCriteria(new ArrayList<>());
+			Collections.sort(allRuns, new Comparator<DO2Run>() {
+				@Override
+				public int compare(DO2Run run1, DO2Run run2) {
+					return Integer.compare(run2.getRunNum(), run1.getRunNum());
+				}
+			});
+			System.out.println("Runs Reloaded.");
+			reloadedRuns = true;
 		});
-		reloadThread.start();
-
-		try {
-			reloadThread.join(); // This will block until the thread is finished
-		} catch (InterruptedException e) {
-			e.printStackTrace(); // Handle interruption exception
-		}
 	}
 	public static void addRun(DO2Run run) {
 		if (run.date==null||run.date.isEmpty()) {

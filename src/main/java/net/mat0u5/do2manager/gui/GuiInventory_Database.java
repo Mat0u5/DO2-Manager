@@ -26,7 +26,17 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         inventory = new SimpleInventory(INVENTORY_SIZE);
         invId = "runs";
         // Populate the inventory with run data
-        if (!Main.reloadedRuns) Main.reloadAllRuns();
+        if (!Main.reloadedRuns) {
+            Main.reloadAllRunsAsync().thenRun(() -> {
+                openRunInventoryAfterLoad(player);
+            });
+        }
+        else {
+            openRunInventoryAfterLoad(player);
+        }
+        return 1;
+    }
+    public void openRunInventoryAfterLoad(ServerPlayerEntity player) {
         runsSearch = List.copyOf(allRuns);
         populateRunInventory();
 
@@ -35,7 +45,6 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         current_page = 1;
         current_page_custom_list=1;
         Main.openGuis.put(player,this);
-        return 1;
     }
     public int openRunInventoryNoUpdate(ServerPlayerEntity player) {
         player.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {

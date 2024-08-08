@@ -93,7 +93,7 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        Main.reloadAllRuns();
+        Main.reloadAllRunsAsync();
 
 
         return 1;
