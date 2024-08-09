@@ -9,19 +9,16 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.command.RestartCommand;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiInventoryClick;
-import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
-import net.mat0u5.do2manager.world.FakeSign;
+import net.mat0u5.do2manager.world.ItemConvertor;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
@@ -29,20 +26,16 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.packet.c2s.play.UpdateSignC2SPacket;
-import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.sound.SoundEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -107,21 +100,8 @@ public class Events {
         DatabaseManager.fetchAllPlayers();
         lastPlayerLogoutTime = -1;
 
-        //Remove all phase items when necessary
-        String playerUUID = player.getUuidAsString();
-        if (Main.lastPhaseUpdate.getProperty(playerUUID) == null) {
-            System.out.println("Converting "+player.getEntityName()+"'s Items from phase to casual");
-            ItemManager.phaseToCasualPlayer(player);
-            Main.lastPhaseUpdate.setProperty(playerUUID, String.valueOf(Main.PHASE_UPDATE));
-            System.out.println("Conversion complete.");
-            return;
-        }
-        if (Integer.parseInt(Main.lastPhaseUpdate.getProperty(playerUUID)) < Main.PHASE_UPDATE) {
-            System.out.println("Converting "+player.getEntityName()+"'s Items from phase to casual");
-            ItemManager.phaseToCasualPlayer(player);
-            Main.lastPhaseUpdate.setProperty(playerUUID, String.valueOf(Main.PHASE_UPDATE));
-            System.out.println("Conversion complete.");
-        }
+        //Item Conversions
+        ItemConvertor.onPlayerJoin(player);
     }
     private static void onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
         MinecraftServer server = player.getServer();
@@ -212,22 +192,6 @@ public class Events {
         if (lock == null || lock.isEmpty()) return ActionResult.PASS;
         if (player.hasPermissionLevel(2) || player.getUuidAsString().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d")) {
             OtherUtils.unlockContainerForTick((ServerWorld) world, player.getServer(), container,pos);
-            /*
-            NbtCompound nbt = container.createNbt();
-            String originalLock = nbt.getString("Lock");
-            nbt.remove("Lock");
-            container.readNbt(nbt);
-            player.getServer().execute(() -> {
-                try {
-                    NbtCompound newNbt = container.createNbt();
-                    newNbt.putString("Lock", originalLock);
-                    container.readNbt(newNbt);
-                }catch(Exception e) {
-                    System.out.println("_Failed to re-add lock at " + pos.toString());
-                }
-            });
-            */
-
             player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_STEP, SoundCategory.PLAYERS, 0.7f, 1.0f);
             return ActionResult.PASS;
         }

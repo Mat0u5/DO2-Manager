@@ -51,7 +51,7 @@ public class OtherCommand {
     }
     public static int reload() {
         Main.config= new ConfigManager("./config/"+Main.MOD_ID+"/"+Main.MOD_ID+".properties");
-        Main.lastPhaseUpdate = new ConfigManager("./config/"+Main.MOD_ID+"/"+Main.MOD_ID+"_phase_inv_update.properties");
+        Main.lastInvUpdate = new ConfigManager("./config/"+Main.MOD_ID+"/"+Main.MOD_ID+"_inv_update.properties");
         TextUtils.setEmotes();
         return 1;
     }

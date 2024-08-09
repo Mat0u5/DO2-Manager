@@ -10,8 +10,6 @@ import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,11 +20,10 @@ import java.util.concurrent.CompletableFuture;
 
 
 public class Main implements ModInitializer {
-	public static final int PHASE_UPDATE = 1;
 	public static final String MOD_ID = "do2manager";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 	public static ConfigManager config;
-	public static ConfigManager lastPhaseUpdate;
+	public static ConfigManager lastInvUpdate;
 	public static DO2Run currentRun = new DO2Run();
 	public static DO2Run speedrun = new DO2Run();
 	public static List<DO2Run> allRuns = new ArrayList<>();
@@ -40,7 +37,7 @@ public class Main implements ModInitializer {
 	public void onInitialize() {
 
 		config = new ConfigManager("./config/"+MOD_ID+"/"+MOD_ID+".properties");
-		lastPhaseUpdate = new ConfigManager("./config/"+MOD_ID+"/"+MOD_ID+"_phase_inv_update.properties");
+		lastInvUpdate = new ConfigManager("./config/"+MOD_ID+"/"+MOD_ID+"_inv_update.properties");
 
 		if (config.getProperty("current_run") != null && !config.getProperty("current_run").isEmpty()) loadRunInfoFromConfig();
 		DatabaseManager.checkForDBUpdates();
