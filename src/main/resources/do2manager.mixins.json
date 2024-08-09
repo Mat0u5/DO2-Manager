@@ -10,7 +10,8 @@
 		"ServerPlayNetworkHandlerMixin",
 		"CommandManagerMixin",
 		"PlayerManagerMixin",
-		"CrossbowItemMixin"
+		"CrossbowItemMixin",
+		"ServerPlayerInteractionManagerMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
