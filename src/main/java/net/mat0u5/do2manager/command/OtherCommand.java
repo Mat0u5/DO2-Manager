@@ -46,7 +46,7 @@ public class OtherCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
         self.sendMessage(Text.of("Started Block Lock Search..."));
-        BlockScanner.scanArea(type,server.getOverworld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
+        new BlockScanner().scanArea(type,server.getOverworld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
         return 1;
     }
     public static int reload() {
@@ -115,7 +115,7 @@ public class OtherCommand {
         List<PlayerEntity> runners = RunInfoParser.getCurrentAliveRunners(server);
         if (runners.isEmpty()) return -1;
         if (runners.size() != 1) {
-            self.sendMessage(Text.of("§cYou cannot use this commands with more than one runner!"));
+            self.sendMessage(Text.of("§cYou cannot use this command with more than one runner!"));
             return -1;
         }
         PlayerEntity runner = runners.get(0);

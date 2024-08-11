@@ -1,14 +1,22 @@
 package net.mat0u5.do2manager.mixin;
 
+import net.mat0u5.do2manager.database.DatabaseManager;
+import net.mat0u5.do2manager.events.CommandBlockEvents;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.TextUtils;
+import net.mat0u5.do2manager.world.CommandBlockData;
+import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.network.message.MessageType;
 import net.minecraft.network.message.SentMessage;
 import net.minecraft.network.message.SignedMessage;
+import net.minecraft.network.packet.c2s.play.UpdateCommandBlockC2SPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
+import net.minecraft.util.math.BlockPos;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -35,6 +43,21 @@ public class ServerPlayNetworkHandlerMixin {
             OtherUtils.broadcastMessage(player.getServer(), finalMessage);
             DiscordUtils.sendMessageToDiscord(TextUtils.formatEmotesForDiscord(originalContent),player.getEntityName(),"");
             ci.cancel();
+        }
+    }
+
+    @Inject(method = "onUpdateCommandBlock", at = @At("HEAD"))
+    private void onUpdateCommandBlock(UpdateCommandBlockC2SPacket packet, CallbackInfo ci) {
+        ServerWorld world = ((ServerPlayNetworkHandler) (Object) this).getPlayer().getServerWorld();
+        BlockPos pos = packet.getBlockPos();
+        BlockEntity blockEntity = world.getBlockEntity(pos);
+
+        if (blockEntity instanceof CommandBlockBlockEntity) {
+            String type = packet.getType().toString();
+            type = type.replaceAll("REDSTONE","Impulse").replaceAll("AUTO","Repeating").replaceAll("SEQUENCE","Chain");
+            CommandBlockData data = new CommandBlockData(pos.getX(),pos.getY(),pos.getZ(),type,packet.isConditional(),packet.isAlwaysActive(),packet.getCommand());
+            // Update the database with the new command block data
+            DatabaseManager.updateCommandBlock(data);
         }
     }
 }

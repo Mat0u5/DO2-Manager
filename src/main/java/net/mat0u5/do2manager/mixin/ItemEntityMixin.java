@@ -1,6 +1,7 @@
 package net.mat0u5.do2manager.mixin;
 
 import net.mat0u5.do2manager.events.Events;
+import net.mat0u5.do2manager.events.PlayerEvents;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -13,6 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class ItemEntityMixin {
 	@Inject(method = "onPlayerCollision", at = @At("HEAD"))
 	private void onPlayerCollision(PlayerEntity player, CallbackInfo ci) {
-		Events.onPlayerPickupItem(player, (ItemEntity)(Object)this);
+		PlayerEvents.onPlayerPickupItem(player, (ItemEntity)(Object)this);
 	}
 }

@@ -10,10 +10,12 @@ import java.util.*;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;
+import net.mat0u5.do2manager.world.CommandBlockData;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 
 public class DatabaseManager {
     public static final String DB_VERSION = "v.1.0.5";
@@ -354,22 +356,77 @@ public class DatabaseManager {
         return runsDictionary;
     }
 
-    public static void addCommandBlock(int x, int y, int z, String type, boolean conditional, boolean auto, String command) {
-        String sql = "INSERT INTO command_blocks(x, y, z, type, conditional, auto,command) VALUES(?, ?, ?, ?, ?, ?, ?)";
+    public static void addCommandBlocks(List<CommandBlockData> commandBlocks) {
+        String sql = "INSERT INTO command_blocks(x, y, z, type, conditional, auto, command) VALUES(?, ?, ?, ?, ?, ?, ?)";
+
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, x);
-            statement.setInt(2, y);
-            statement.setInt(3, z);
-            statement.setString(4, type);
-            statement.setBoolean(5, conditional);
-            statement.setBoolean(6, auto);
-            statement.setString(7, command);
+
+            connection.setAutoCommit(false); // Disable auto-commit for batch processing
+
+            for (CommandBlockData blockData : commandBlocks) {
+                statement.setInt(1, blockData.getX());
+                statement.setInt(2, blockData.getY());
+                statement.setInt(3, blockData.getZ());
+                statement.setString(4, blockData.getType());
+                statement.setBoolean(5, blockData.isConditional());
+                statement.setBoolean(6, blockData.isAuto());
+                statement.setString(7, blockData.getCommand());
+                statement.addBatch(); // Add to batch
+            }
+
+            statement.executeBatch(); // Execute all batched statements
+            connection.commit(); // Commit the transaction
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void removeCommandBlock(BlockPos pos) {
+        String sql = "DELETE FROM command_blocks WHERE x = ? AND y = ? AND z = ?";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, pos.getX());
+            statement.setInt(2, pos.getY());
+            statement.setInt(3, pos.getZ());
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
+    public static void updateCommandBlock(CommandBlockData blockData) {
+        String sql = "UPDATE command_blocks SET type = ?, conditional = ?, auto = ?, command = ? WHERE x = ? AND y = ? AND z = ?";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, blockData.getType());
+            statement.setBoolean(2, blockData.isConditional());
+            statement.setBoolean(3, blockData.isAuto());
+            statement.setString(4, blockData.getCommand());
+            statement.setInt(5, blockData.getX());
+            statement.setInt(6, blockData.getY());
+            statement.setInt(7, blockData.getZ());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void addCommandBlock(CommandBlockData blockData) {
+        String sql = "INSERT INTO command_blocks(x, y, z, type, conditional, auto, command) VALUES(?, ?, ?, ?, ?, ?, ?)";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setInt(1, blockData.getX());
+            statement.setInt(2, blockData.getY());
+            statement.setInt(3, blockData.getZ());
+            statement.setString(4, blockData.getType());
+            statement.setBoolean(5, blockData.isConditional());
+            statement.setBoolean(6, blockData.isAuto());
+            statement.setString(7, blockData.getCommand());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public static ResultSet runQuery(String sql) {
         try (Connection connection = DriverManager.getConnection(URL);

@@ -9,13 +9,12 @@ public abstract class MSPTUtils {
     private static final double DESIRED_MAX_MSPT = 45;
     private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private static MinecraftServer server;
-    private boolean running = true;
+    public boolean running = true;
 
     public void start(MinecraftServer server) {
         this.server = server;
         executorService.submit(this::runComplexFunction);
     }
-
     private void runComplexFunction() {
         while (running) {
             try {
@@ -24,10 +23,10 @@ public abstract class MSPTUtils {
 
                 // Adjust the workload based on current MSPT
                 if (currentMSPT < DESIRED_MAX_MSPT) {
-                    complexFunction();
+                    server.execute(this::complexFunction);
                 } else {
-                    // Reduce workload or sleep if MSPT is too high
-                    Thread.sleep(1); // Adjust sleep time as needed
+                    long sleep = (long) Math.max(1,(currentMSPT-45));
+                    Thread.sleep(sleep); // Adjust sleep time as needed
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
