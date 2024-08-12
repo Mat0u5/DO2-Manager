@@ -164,6 +164,11 @@ public class GuiItems_Database {
 
         return createGuiItem(itemStack, "back_to_run", "§aGo Back", List.of(Text.of(""), Text.of("§eClick to return!")));
     }
+    public static ItemStack resetAll() {
+        ItemStack itemStack = new ItemStack(Items.BARRIER, 1);
+
+        return createGuiItem(itemStack, "reset_all", "§aReset All Filters", List.of(Text.of(""), Text.of("§eClick to reset!")));
+    }
     public static ItemStack runHeads(DO2Run run) {
         ItemStack itemStack = run.getRunnerSkull();
 

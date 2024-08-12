@@ -21,7 +21,7 @@ import org.spongepowered.include.com.google.common.base.Predicate;
 import java.util.*;
 
 public class RunInfoParser {
-    public static final List<Integer> artiModelDataList = Arrays.asList(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57);
+    public static final List<Integer> artiModelDataList = Arrays.asList(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58);
     public static final HashMap<Integer, Integer> artifactWorth = new HashMap<Integer, Integer>() {{
             put(53, 66);
             put(48, 64);
@@ -34,6 +34,7 @@ public class RunInfoParser {
         put(44, 48);
         put(11, 46);
         put(16, 40);
+            put(58, 44);
             put(52, 44);
         put(39, 38);
             put(50, 37);
@@ -102,6 +103,7 @@ public class RunInfoParser {
         put(49, "tie");
         put(50, "trigger");
         put(52, "spanner");
+        put(58, "stopwatch");
         put(46, "orb");
         put(54, "laptop");
         put(48, "cloak");
@@ -118,7 +120,8 @@ public class RunInfoParser {
         put(50, "slab");
         put(48, "staff");
         put(46, "rocket");
-            put(44,"spanner");
+            put(44,"stopwatch");
+        //    put(44,"spanner");
         put(40, "gem");
         put(38, "pickaxe");
             put(37,"trigger");

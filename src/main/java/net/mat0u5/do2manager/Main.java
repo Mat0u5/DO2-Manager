@@ -5,6 +5,7 @@ import net.fabricmc.api.ModInitializer;
 import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
+import net.mat0u5.do2manager.queue.DungeonQueue;
 import net.mat0u5.do2manager.simulator.Simulator;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
@@ -32,6 +33,7 @@ public class Main implements ModInitializer {
 	public static MinecraftServer server;
 	public static boolean reloadedRuns = false;
 	public static Simulator simulator;
+	public static DungeonQueue dungeonQueue = new DungeonQueue();
 
 	@Override
 	public void onInitialize() {

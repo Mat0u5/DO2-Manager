@@ -80,6 +80,7 @@ public class TextUtils {
         emotes.put(List.of("laptop","citadel_laptop"), List.of("\uE0D9", "1269729681687445504"));
         emotes.put(List.of("cloak","cloak_of_the_dungeon_master","cloak_of_the_new_dungeon_master"), List.of("\uE0DA", "1269729683650646017"));
         emotes.put(List.of("doormat","1027","auto_temp_doormat","door_mat"), List.of("\uE0DB", "1269729685110132929"));
+        emotes.put(List.of("stopwatch","attuned_stopwatch","speedrun","speedrunner"), List.of("\uE0DC", "1272583799997333556"));
     }
     public static String replaceEmotes(String input) {
         for (Map.Entry<List<String>, List<String>> entry : emotes.entrySet()) {

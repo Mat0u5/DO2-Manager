@@ -109,6 +109,10 @@ public class GuiInventoryClick {
             } else if (tag.equalsIgnoreCase("items_bought")) {
                 Main.openGuis.get(player).guiDatabase.current_page_custom_list = 1;
                 Main.openGuis.get(player).guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
+            } else if (tag.equalsIgnoreCase("reset_all")) {
+                serverPlayer.closeHandledScreen();
+                Main.openGuis.get(player).invId="";
+                new GuiInventory_Database().openRunInventory(serverPlayer);
             }
         }
         else if (guiName.equalsIgnoreCase("custom")) {

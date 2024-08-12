@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiInventoryClick;
+import net.mat0u5.do2manager.queue.QueueEvents;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.ItemConvertor;
@@ -43,6 +44,7 @@ import static net.mat0u5.do2manager.events.Events.lastPlayerLogoutTime;
 
 public class PlayerEvents {
     static void onPlayerDisconnect(MinecraftServer server, ServerPlayerEntity player) {
+        QueueEvents.onPlayerLeave(player);
         if (OtherUtils.isServerEmptyOrOnlyTangoCam(server)) {//Last player disconnects
             lastPlayerLogoutTime = System.currentTimeMillis();
         }
@@ -51,6 +53,7 @@ public class PlayerEvents {
         }
     }
     static void onPlayerJoin(MinecraftServer server, ServerPlayerEntity player) {
+        QueueEvents.onPlayerJoin(player);
         if (player.isCreative() && !player.hasPermissionLevel(2)) {
             player.changeGameMode(GameMode.SPECTATOR);
             System.out.println(player.getEntityName()+"'s gamemode was automatically reset to spectator, because they were in creative.");

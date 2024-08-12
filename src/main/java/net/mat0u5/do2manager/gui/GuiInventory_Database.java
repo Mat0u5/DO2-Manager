@@ -23,6 +23,13 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
 
 
     public int openRunInventory(ServerPlayerEntity player) {
+        if (Main.openGuis.containsKey(player)) {
+            GuiPlayerSpecific openGui = Main.openGuis.get(player);
+            if (openGui.invId.equalsIgnoreCase("runs")) {
+                openGui.guiDatabase.openRunInventoryNoUpdate(player);
+                return 1;
+            }
+        }
         inventory = new SimpleInventory(INVENTORY_SIZE);
         invId = "runs";
         // Populate the inventory with run data
@@ -73,6 +80,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         else setIsNotMatching(46, GuiItems_Database.filler());
         setOrReplaceNbt(47, GuiItems_Database.filterPlayer(filter_player));
         setOrReplaceNbt(48, GuiItems_Database.filterDifficulty(filter_difficulty, filter_level));
+        setOrReplaceNbt(49, GuiItems_Database.resetAll());
         setOrReplaceNbt(50, GuiItems_Database.filterSuccess(filter_success));
         setOrReplaceNbt(51, GuiItems_Database.filterRunType(filter_run_type));
         if (current_page  < totalPages) setOrReplaceNbt(52, GuiItems_Database.page(true,current_page,totalPages)); // Next page
