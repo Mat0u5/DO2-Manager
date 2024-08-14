@@ -411,24 +411,23 @@ public class Command {
                 .then(literal("join").executes(QueueCommand::joinQueue))
                 .then(literal("leave").executes(QueueCommand::leaveQueue))
                 .then(literal("skip").executes(QueueCommand::skipTurn))
-                .then(literal("enter").executes(QueueCommand::enterRoom))
                 .then(literal("add").requires(source -> source.hasPermissionLevel(2))
-                        .then(CommandManager.argument("player", player())
-                                .executes(context -> QueueCommand.addPlayerToQueue(
-                                        context.getSource(),getPlayer(context,"player")
-                                ))
+                    .then(CommandManager.argument("player", player())
+                        .executes(context -> QueueCommand.addPlayerToQueue(
+                            context.getSource(),getPlayer(context,"player")
                         ))
+                    ))
                 .then(literal("remove").requires(source -> source.hasPermissionLevel(2))
-                        .then(CommandManager.argument("player", player())
-                                .suggests(QueueCommand.getQueuePlayersSuggestionProvider())
-                                .executes(context -> QueueCommand.removePlayerFromQueue(
-                                        context.getSource(),getPlayer(context,"player")
-                                        ))
+                    .then(CommandManager.argument("player", player())
+                        .suggests(QueueCommand.getQueuePlayersSuggestionProvider())
+                        .executes(context -> QueueCommand.removePlayerFromQueue(
+                            context.getSource(),getPlayer(context,"player")
                         ))
+                    ))
                 .then(literal("move").requires(source -> source.hasPermissionLevel(2))
-                        .executes(QueueCommand::moveQueue))
+                    .executes(QueueCommand::moveQueue))
                 .then(literal("list").requires(source -> source.hasPermissionLevel(2))
-                        .executes(QueueCommand::listQueue))
+                    .executes(QueueCommand::listQueue))
         );
 
     }

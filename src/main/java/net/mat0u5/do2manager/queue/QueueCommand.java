@@ -27,7 +27,6 @@ public class QueueCommand {
         ServerPlayerEntity player = context.getSource().getPlayer();
         UUID playerUuid = player.getUuid();
         dungeonQueue.addToQueue(playerUuid);
-        //context.getSource().sendFeedback(Text.literal("You have joined the queue!"), false);
         return 1;
     }
 
@@ -50,28 +49,11 @@ public class QueueCommand {
 
         ServerPlayerEntity player = context.getSource().getPlayer();
         UUID playerUuid = player.getUuid();
-        if (dungeonQueue.getNextPlayer().equals(playerUuid)) {
-            dungeonQueue.moveQueue();
-            self.sendMessage(Text.of("You skipped your turn!"));
-        } else {
-            self.sendMessage(Text.of("It's not your turn!"));
+        if (dungeonQueue.containsPlayer(playerUuid)) {
+            dungeonQueue.removeFromQueue(playerUuid);
+            self.sendMessage(Text.of("You have skipped your turn!"));
         }
-        return 1;
-    }
-
-    public static int enterRoom(CommandContext<ServerCommandSource> context) {
-        ServerCommandSource source = context.getSource();
-        MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
-
-        ServerPlayerEntity player = context.getSource().getPlayer();
-        UUID playerUuid = player.getUuid();
-        if (dungeonQueue.getNextPlayer().equals(playerUuid)) {
-            dungeonQueue.moveQueue();
-            self.sendMessage(Text.of("You have entered the room!"));
-        } else {
-            self.sendMessage(Text.of("It's not your turn yet!"));
-        }
+        dungeonQueue.addToQueue(playerUuid);
         return 1;
     }
 

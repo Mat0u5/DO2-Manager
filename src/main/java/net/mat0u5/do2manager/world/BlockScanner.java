@@ -73,7 +73,7 @@ public class BlockScanner extends MSPTUtils {
         positionsToCheckInt = (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);
         chunkManager = world.getChunkManager();
 
-        start(Main.server);
+        startBoosted(Main.server);
     }
 
     @Override
@@ -86,10 +86,6 @@ public class BlockScanner extends MSPTUtils {
             stop();
         }
         else {
-            if (listPos % 100000 == 0) {
-                System.out.println("Running..." + listPos);
-            }
-
             // Process a batch of 10000 positions
             int batchSize = 10_000;
             int batchEndPos = Math.min(listPos + batchSize, positionsToCheckInt);
@@ -173,16 +169,16 @@ public class BlockScanner extends MSPTUtils {
     protected void stoppedFunction() {
         player.sendMessage(Text.of("§aBlock scan complete."));
         System.out.println("Block scan complete.");
-        addCommandBlockData();
+        if (scanType.equalsIgnoreCase("command_block")) {
+            addCommandBlockData();
+        }
+        else if (scanType.contains("lock_block")) {
+            player.sendMessage(Text.of("-Modified " + lockOrUnlock + " blocks."));
+        }
     }
     private void addCommandBlockData() {
         player.sendMessage(Text.of("§aSaving Data to database."));
         DatabaseManager.addCommandBlocks(commandBlocksList);
         player.sendMessage(Text.of("§aData saved."));
     }
-
-//USED TO BE 51s
-    //With normal .execute - 19.5s
-    //With batching (100b) - 7.16
-    //With batching (10_000b) - 6.8
 }
