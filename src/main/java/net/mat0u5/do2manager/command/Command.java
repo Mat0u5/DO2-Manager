@@ -177,7 +177,7 @@ public class Command {
                             context.getSource().getPlayer(),
                         54,
                         "Decked Out 2 Items",
-                        "-623,7,1954;-623,7,1953",false)
+                        "_-629,11,1966;0;1",false)
                         )
                     )
                     .then(literal("runHistory")
