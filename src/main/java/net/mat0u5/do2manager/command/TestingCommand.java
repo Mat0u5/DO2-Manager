@@ -31,9 +31,7 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        for (int i = 0; i < 50;i++) {
-            self.sendMessage(Text.of(OtherUtils.convertTicksToClockTime(i,false)));
-        }
+        new DiscordUtils().updateDiscordChannelDescription();
 
         return 1;
     }

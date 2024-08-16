@@ -44,28 +44,34 @@ import static net.mat0u5.do2manager.events.Events.lastPlayerLogoutTime;
 
 public class PlayerEvents {
     static void onPlayerDisconnect(MinecraftServer server, ServerPlayerEntity player) {
-        QueueEvents.onPlayerLeave(player);
-        if (OtherUtils.isServerEmptyOrOnlyTangoCam(server)) {//Last player disconnects
-            lastPlayerLogoutTime = System.currentTimeMillis();
-        }
-        else {
-            lastPlayerLogoutTime = -1;
-        }
+        try {
+            new DiscordUtils().updateDiscordChannelDescription();
+            QueueEvents.onPlayerLeave(player);
+            if (OtherUtils.isServerEmptyOrOnlyTangoCam(server)) {//Last player disconnects
+                lastPlayerLogoutTime = System.currentTimeMillis();
+            }
+            else {
+                lastPlayerLogoutTime = -1;
+            }
+        }catch (Exception e) {}
     }
     static void onPlayerJoin(MinecraftServer server, ServerPlayerEntity player) {
-        QueueEvents.onPlayerJoin(player);
-        if (player.isCreative() && !player.hasPermissionLevel(2)) {
-            player.changeGameMode(GameMode.SPECTATOR);
-            System.out.println(player.getEntityName()+"'s gamemode was automatically reset to spectator, because they were in creative.");
-        }
+        try {
+            new DiscordUtils().updateDiscordChannelDescription();
+            QueueEvents.onPlayerJoin(player);
+            if (player.isCreative() && !player.hasPermissionLevel(2)) {
+                player.changeGameMode(GameMode.SPECTATOR);
+                System.out.println(player.getEntityName()+"'s gamemode was automatically reset to spectator, because they were in creative.");
+            }
 
-        //Add the player to the database
-        DatabaseManager.addPlayer(player.getUuidAsString(),player.getEntityName());
-        DatabaseManager.fetchAllPlayers();
-        lastPlayerLogoutTime = -1;
+            //Add the player to the database
+            DatabaseManager.addPlayer(player.getUuidAsString(),player.getEntityName());
+            DatabaseManager.fetchAllPlayers();
+            lastPlayerLogoutTime = -1;
 
-        //Item Conversions
-        ItemConvertor.onPlayerJoin(player);
+            //Item Conversions
+            ItemConvertor.onPlayerJoin(player);
+        }catch (Exception e) {}
     }
     static void onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
         MinecraftServer server = player.getServer();

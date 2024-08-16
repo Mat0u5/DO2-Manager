@@ -194,13 +194,13 @@ public class GuiItems_Database {
 
         lore.add(Text.of("§7Run Length: §6" + OtherUtils.convertTicksToClockTime(run.run_length,true)));
         lore.add(Text.of(""));
-        if (run.timestamp_lvl2_entry > 0) lore.add(Text.of("§7Lvl2 Entry: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl2_entry)));
-        if (run.timestamp_lvl3_entry > 0) lore.add(Text.of("§7Lvl3 Entry: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl3_entry)));
-        if (run.timestamp_lvl4_entry > 0) lore.add(Text.of("§7Lvl4 Entry: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl4_entry)));
-        if (run.timestamp_artifact > 0) lore.add(Text.of("§3Artifact obtained: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_artifact)));
-        if (run.timestamp_lvl4_exit > 0) lore.add(Text.of("§7Lvl4 Exit: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl4_exit)));
-        if (run.timestamp_lvl3_exit > 0) lore.add(Text.of("§7Lvl3 Exit: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl3_exit)));
-        if (run.timestamp_lvl2_exit > 0) lore.add(Text.of("§7Lvl2 Exit: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl2_exit)));
+        if (run.timestamp_lvl2_entry > 0) lore.add(Text.of("§7Lvl2 Entry: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl2_entry,true)));
+        if (run.timestamp_lvl3_entry > 0) lore.add(Text.of("§7Lvl3 Entry: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl3_entry,true)));
+        if (run.timestamp_lvl4_entry > 0) lore.add(Text.of("§7Lvl4 Entry: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl4_entry,true)));
+        if (run.timestamp_artifact > 0) lore.add(Text.of("§3Artifact obtained: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_artifact,true)));
+        if (run.timestamp_lvl4_exit > 0) lore.add(Text.of("§7Lvl4 Exit: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl4_exit,true)));
+        if (run.timestamp_lvl3_exit > 0) lore.add(Text.of("§7Lvl3 Exit: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl3_exit,true)));
+        if (run.timestamp_lvl2_exit > 0) lore.add(Text.of("§7Lvl2 Exit: §6" + OtherUtils.convertTicksToClockTime(run.timestamp_lvl2_exit,true)));
         return createGuiItem(itemStack, "timestamps", "§aTimestamps", lore);
     }
     public static ItemStack runDeath(DO2Run run) {

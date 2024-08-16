@@ -7,6 +7,7 @@ import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
 import net.mat0u5.do2manager.queue.DungeonQueue;
 import net.mat0u5.do2manager.simulator.Simulator;
+import net.mat0u5.do2manager.utils.DiscordBot;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
 import net.minecraft.entity.player.PlayerEntity;
@@ -34,6 +35,7 @@ public class Main implements ModInitializer {
 	public static boolean reloadedRuns = false;
 	public static Simulator simulator;
 	public static DungeonQueue dungeonQueue = new DungeonQueue();
+	public static DiscordBot discordBot = null;
 
 	@Override
 	public void onInitialize() {
@@ -42,6 +44,14 @@ public class Main implements ModInitializer {
 		lastInvUpdate = new ConfigManager("./config/"+MOD_ID+"/"+MOD_ID+"_inv_update.properties");
 
 		if (config.getProperty("current_run") != null && !config.getProperty("current_run").isEmpty()) loadRunInfoFromConfig();
+		if (config.getProperty("webhook_token") != null && !config.getProperty("webhook_token").isEmpty()) {
+			String botToken = config.getProperty("webhook_token");
+			if (config.getProperty("server_chat_channel_id") != null && !config.getProperty("server_chat_channel_id").isEmpty()) {
+				String channelId = config.getProperty("server_chat_channel_id");
+				discordBot = new DiscordBot();
+				discordBot.startBot(botToken, channelId);
+			}
+		}
 		DatabaseManager.checkForDBUpdates();
 		ModRegistries.registerModStuff();
 		LOGGER.info("Initializing DO2-manager...");

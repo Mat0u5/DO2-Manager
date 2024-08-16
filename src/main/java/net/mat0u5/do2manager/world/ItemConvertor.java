@@ -16,13 +16,14 @@ import java.util.List;
 
 public class ItemConvertor extends PlayerInventoryScanner {
     public static List<Integer> expandedModelDatas = List.of(136,137,138,139,140);//plus <142;197>
-    public static final int INV_UPDATE = 2;
+    public static final int INV_UPDATE = 3;
 
     public static void onPlayerJoin(ServerPlayerEntity player) {
         while (getPlayerUpdateNum(player) < INV_UPDATE) {
             int num = getPlayerUpdateNum(player);
             if (num == 0) convertPhaseItems(player,1);
             if (num == 1) convertCustomItems(player,2);
+            if (num == 2) convertPhaseItems(player,3);
         }
     }
     public static void convertPhaseItems(ServerPlayerEntity player, int updateToNum) {
