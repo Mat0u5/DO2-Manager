@@ -44,14 +44,6 @@ public class Main implements ModInitializer {
 		lastInvUpdate = new ConfigManager("./config/"+MOD_ID+"/"+MOD_ID+"_inv_update.properties");
 
 		if (config.getProperty("current_run") != null && !config.getProperty("current_run").isEmpty()) loadRunInfoFromConfig();
-		if (config.getProperty("webhook_token") != null && !config.getProperty("webhook_token").isEmpty()) {
-			String botToken = config.getProperty("webhook_token");
-			if (config.getProperty("server_chat_channel_id") != null && !config.getProperty("server_chat_channel_id").isEmpty()) {
-				String channelId = config.getProperty("server_chat_channel_id");
-				discordBot = new DiscordBot();
-				discordBot.startBot(botToken, channelId);
-			}
-		}
 		DatabaseManager.checkForDBUpdates();
 		ModRegistries.registerModStuff();
 		LOGGER.info("Initializing DO2-manager...");

@@ -45,7 +45,6 @@ import static net.mat0u5.do2manager.events.Events.lastPlayerLogoutTime;
 public class PlayerEvents {
     static void onPlayerDisconnect(MinecraftServer server, ServerPlayerEntity player) {
         try {
-            new DiscordUtils().updateDiscordChannelDescription();
             QueueEvents.onPlayerLeave(player);
             if (OtherUtils.isServerEmptyOrOnlyTangoCam(server)) {//Last player disconnects
                 lastPlayerLogoutTime = System.currentTimeMillis();
@@ -57,7 +56,6 @@ public class PlayerEvents {
     }
     static void onPlayerJoin(MinecraftServer server, ServerPlayerEntity player) {
         try {
-            new DiscordUtils().updateDiscordChannelDescription();
             QueueEvents.onPlayerJoin(player);
             if (player.isCreative() && !player.hasPermissionLevel(2)) {
                 player.changeGameMode(GameMode.SPECTATOR);

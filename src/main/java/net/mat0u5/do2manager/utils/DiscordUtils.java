@@ -68,8 +68,10 @@ public class DiscordUtils {
     public static String getWebhookToken() {
         return Main.config.getProperty("webhook_token");
     }
+    public static String getChatChannelId() {
+        return Main.config.getProperty("server_chat_channel_id");
+    }
     public void updateDiscordChannelDescription() {
-        if (Main.discordBot == null) return;
         List<ServerPlayerEntity> players = Main.server.getPlayerManager().getPlayerList();
         List<String> playerNames = new ArrayList<>();
         for (ServerPlayerEntity player : players) {
@@ -77,6 +79,7 @@ public class DiscordUtils {
         }
         if (playerNames.contains("TangoCam")) playerNames.remove("TangoCam");
         String description = "Players online (" + playerNames.size() + "): " + String.join(", ",playerNames);
-        Main.discordBot.updateChannelDescription(description);
+        DiscordBot discordBot = new DiscordBot();
+        discordBot.startBot(getWebhookToken(), getChatChannelId(),true,description);
     }
 }

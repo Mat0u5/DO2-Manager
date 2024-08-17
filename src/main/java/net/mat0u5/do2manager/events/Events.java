@@ -57,6 +57,7 @@ public class Events {
     public static long clickEventCooldown = 0;
     public static long lastPlayerLogoutTime = -1;
     public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    public static long discordDescriptionUpdate = 0;
 
     public static void register() {
         ServerLifecycleEvents.SERVER_STARTING.register(Events::onServerStart);
@@ -94,6 +95,11 @@ public class Events {
                 }
             }
             if (clickEventCooldown > 0) clickEventCooldown--;
+            discordDescriptionUpdate++;
+            if (discordDescriptionUpdate >=12500) {
+                discordDescriptionUpdate=0;
+                new DiscordUtils().updateDiscordChannelDescription();
+            }
         }catch (Exception e) {
             e.printStackTrace();
         }
