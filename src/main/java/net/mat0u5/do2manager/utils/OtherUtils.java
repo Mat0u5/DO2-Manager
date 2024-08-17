@@ -170,6 +170,11 @@ public class OtherUtils {
             player.sendMessage(message, false);
         }
     }
+    public static void broadcastMessage(Text message) {
+        for (ServerPlayerEntity player : Main.server.getPlayerManager().getPlayerList()) {
+            player.sendMessage(message, false);
+        }
+    }
     public static PlayerEntity getPlayerFromUUIDString(MinecraftServer server, String uuidString) {
         return getPlayerFromName(server, DatabaseManager.getPlayerNameFromUUID(uuidString));
     }
@@ -204,6 +209,14 @@ public class OtherUtils {
             return null;
         }
         return uuid;
+    }
+    public static boolean isPlayerOnline(MinecraftServer server, String username) {
+        PlayerManager playerManager = server.getPlayerManager();
+        ServerPlayerEntity player = playerManager.getPlayer(username);
+        return player != null;
+    }
+    public static boolean isPlayerOnline(String username) {
+        return isPlayerOnline(Main.server,username);
     }
     public static PlayerEntity getPlayerFromName(MinecraftServer server, String playerName) {
         PlayerManager playerManager = server.getPlayerManager();

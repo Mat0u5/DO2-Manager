@@ -15,6 +15,7 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.command.RestartCommand;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiInventoryClick;
+import net.mat0u5.do2manager.queue.QueueEvents;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.ItemConvertor;
@@ -88,6 +89,7 @@ public class Events {
 
     private static void onServerTickEnd(MinecraftServer server) {
         try {
+            QueueEvents.onTickEnd();
             if (lastPlayerLogoutTime != -1 && RestartCommand.isRestartQueued() && OtherUtils.isServerEmptyOrOnlyTangoCam(server)) {
                 long currentTime = System.currentTimeMillis();
                 if (currentTime - lastPlayerLogoutTime >= TimeUnit.MINUTES.toMillis(3)) {

@@ -407,10 +407,45 @@ public class Command {
                 )
         );
         dispatcher.register(literal("queue")
-                .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
-                .then(literal("join").executes(QueueCommand::joinQueue))
-                .then(literal("leave").executes(QueueCommand::leaveQueue))
-                .then(literal("skip").executes(QueueCommand::skipTurn))
+                .then(literal("join")
+                    .executes(context -> QueueCommand.joinQueue(
+                            context.getSource()
+                        )
+                    )
+                )
+                .then(literal("leave")
+                    .executes(context -> QueueCommand.leaveQueue(
+                            context.getSource()
+                        )
+                    )
+                )
+                .then(literal("list")
+                    .executes(context -> QueueCommand.listQueue(
+                            context.getSource()
+                        )
+                    )
+                )
+                .then(literal("skipTurn")
+                    .executes(context -> QueueCommand.skipTurn(
+                            context.getSource(),1
+                        )
+                    )
+                    .then(CommandManager.argument("skipTurns", IntegerArgumentType.integer(1))
+                        .executes(context -> QueueCommand.skipTurn(
+                                context.getSource(),IntegerArgumentType.getInteger(context,"skipTurns")
+                            )
+                        )
+                    )
+                )
+                .then(literal("startRun")
+                        .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                        .then(CommandManager.argument("targets", EntityArgumentType.players())
+                            .executes(context -> QueueCommand.runStart(
+                                    context.getSource(),
+                                    EntityArgumentType.getPlayers(context, "targets"))
+                            )
+                    )
+                )
                 .then(literal("add").requires(source -> source.hasPermissionLevel(2))
                     .then(CommandManager.argument("player", player())
                         .executes(context -> QueueCommand.addPlayerToQueue(
@@ -426,8 +461,6 @@ public class Command {
                     ))
                 .then(literal("move").requires(source -> source.hasPermissionLevel(2))
                     .executes(QueueCommand::moveQueue))
-                .then(literal("list").requires(source -> source.hasPermissionLevel(2))
-                    .executes(QueueCommand::listQueue))
         );
 
     }

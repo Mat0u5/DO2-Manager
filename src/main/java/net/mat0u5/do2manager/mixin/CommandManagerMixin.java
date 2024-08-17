@@ -3,6 +3,7 @@ package net.mat0u5.do2manager.mixin;
 import com.mojang.brigadier.ParseResults;
 import net.mat0u5.do2manager.command.GuiMapCommand;
 import net.mat0u5.do2manager.command.OtherCommand;
+import net.mat0u5.do2manager.queue.QueueCommand;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -22,7 +23,7 @@ public abstract class CommandManagerMixin {
         ServerPlayerEntity player = cmdSource.getPlayer();
         if (player == null) return;
         if (player.hasPermissionLevel(2)) return;
-        if (!command.equalsIgnoreCase("decked-out") && !command.matches("decked-out .*") && !command.equalsIgnoreCase("stuck")) return;
+        if (!command.equalsIgnoreCase("decked-out") && !command.matches("decked-out .*") && !command.matches("queue .*") && !command.equalsIgnoreCase("stuck")) return;
         try {
             if (command.matches("decked-out mapGuiScale [0-9]+")) {
                 GuiMapCommand.executeGuiScale(cmdSource, Integer.parseInt(command.split("decked-out mapGuiScale ")[1]));
@@ -42,6 +43,26 @@ public abstract class CommandManagerMixin {
             }
             else if (command.equalsIgnoreCase("decked-out currentRun viewRunnerInv")) {
                 OtherCommand.viewInv(cmdSource);
+                cir.setReturnValue(0);
+            }
+            else if (command.equalsIgnoreCase("queue join")) {
+                QueueCommand.joinQueue(cmdSource);
+                cir.setReturnValue(0);
+            }
+            else if (command.equalsIgnoreCase("queue leave")) {
+                QueueCommand.leaveQueue(cmdSource);
+                cir.setReturnValue(0);
+            }
+            else if (command.equalsIgnoreCase("queue list")) {
+                QueueCommand.listQueue(cmdSource);
+                cir.setReturnValue(0);
+            }
+            else if (command.equalsIgnoreCase("queue skipTurn")) {
+                QueueCommand.skipTurn(cmdSource,1);
+                cir.setReturnValue(0);
+            }
+            else if (command.matches("queue skipTurn [0-9]+")) {
+                QueueCommand.skipTurn(cmdSource,Integer.parseInt(command.split("queue skipTurn ")[1]));
                 cir.setReturnValue(0);
             }
         }catch (Exception e) {}

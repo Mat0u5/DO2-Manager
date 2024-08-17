@@ -25,18 +25,22 @@ public class DatabaseManager {
     public static final String URL = "jdbc:sqlite:"+FILE_PATH;
 
     public static void initialize() {
-        createFolderIfNotExists();
-        try (Connection connection = DriverManager.getConnection(URL)) {
-            if (connection != null) {
-                createRunsTable(connection);
-                createRunsDetailedTable(connection);
-                createRunsSpeedrunsTable(connection);
-                createCommandBlocksTable(connection);
-                createFunctionsTable(connection);
-                createPlayersTable(connection);
-                System.out.println("Database initialized.");
+        try {
+            createFolderIfNotExists();
+            try (Connection connection = DriverManager.getConnection(URL)) {
+                if (connection != null) {
+                    createRunsTable(connection);
+                    createRunsDetailedTable(connection);
+                    createRunsSpeedrunsTable(connection);
+                    createCommandBlocksTable(connection);
+                    createFunctionsTable(connection);
+                    createPlayersTable(connection);
+                    System.out.println("Database initialized.");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
+        }catch (Exception e) {
             e.printStackTrace();
         }
     }
