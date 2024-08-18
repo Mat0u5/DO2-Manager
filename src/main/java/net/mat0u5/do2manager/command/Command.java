@@ -463,10 +463,10 @@ public class Command {
                         ))
                     ))
                 .then(literal("remove").requires(source -> source.hasPermissionLevel(2))
-                    .then(CommandManager.argument("player", player())
+                    .then(CommandManager.argument("target", StringArgumentType.string())
                         .suggests(QueueCommand.getQueuePlayersSuggestionProvider())
                         .executes(context -> QueueCommand.removePlayerFromQueue(
-                            context.getSource(),getPlayer(context,"player")
+                            context.getSource(),StringArgumentType.getString(context,"target")
                         ))
                     ))
                 .then(literal("move").requires(source -> source.hasPermissionLevel(2))

@@ -1,6 +1,7 @@
 package net.mat0u5.do2manager.queue;
 
 import net.mat0u5.do2manager.Main;
+import net.mat0u5.do2manager.utils.OtherUtils;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.MutableText;
@@ -11,7 +12,7 @@ import net.minecraft.util.Formatting;
 import java.util.HashMap;
 
 public class QueueEvents {
-    private static HashMap<String, Integer> disconnectTimes = new HashMap<>();
+    public static HashMap<String, Integer> disconnectTimes = new HashMap<>();
     private static final int MAX_LOGOUT_TIME_BEFORE_QUEUE_LEAVE = 150;// 2.5 mins
     private static int checkDisconnectTimes = 20;
 
@@ -57,7 +58,9 @@ public class QueueEvents {
             int timeLeft = disconnectTimes.get(playerName);
             if (timeLeft <= 0) {
                 Main.dungeonQueue.removeFromOffline(playerName);
-                disconnectTimes.remove(playerName);
+                if (!OtherUtils.isPlayerOnline(playerName)) {
+                    disconnectTimes.remove(playerName);
+                }
             }
             else {
                 disconnectTimes.replace(playerName,timeLeft-1);

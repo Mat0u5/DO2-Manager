@@ -54,11 +54,11 @@ public class QueueCommand {
         return 1;
     }
 
-    public static int removePlayerFromQueue(ServerCommandSource source, ServerPlayerEntity target) {
+    public static int removePlayerFromQueue(ServerCommandSource source, String target) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        dungeonQueue.removeFromQueue(target);
+        dungeonQueue.removeFromQueueStr(target);
         return 1;
     }
 

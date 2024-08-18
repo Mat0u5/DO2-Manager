@@ -60,12 +60,27 @@ public class DungeonQueue {
         queue.remove(playerName);
         queueUpdated("§b"+playerName + "§7 has left the queue!");
     }
+    public void removeFromQueueStr(String playerName) {
+        if (!queue.contains(playerName)) {
+            return;
+        }
+        queue.remove(playerName);
+        queueUpdated("§b"+playerName + "§7 has left the queue!");
+    }
     public void removeFromOffline(String playerName) {
         if (!queue.contains(playerName)) {
             return;
         }
         queue.remove(playerName);
         queueUpdated("§b"+playerName + "§7 has been removed from the queue, because they have been offline for 2.5 minutes!");
+    }
+    public boolean queueHasOnlinePlayer() {
+        for (String playerName : queue) {
+            if (OtherUtils.isPlayerOnline(playerName)) {
+                return true;
+            }
+        }
+        return false;
     }
     public void removeFromDisconnect(String playerName) {
         skipOfflinePlayer(playerName);
@@ -74,8 +89,16 @@ public class DungeonQueue {
         if (!queue.contains(playerName)) {
             return;
         }
-        int index = queue.indexOf(playerName)+1;
+        if (!queueHasOnlinePlayer()) {
+            return;
+        }
+        int index = queue.indexOf(playerName);
         queue.remove(playerName);
+        int pos = 1;
+        while(!OtherUtils.isPlayerOnline(queue.get(pos-1)) && pos < 10) {
+            pos++;
+        }
+        index += pos;
         index = Math.min(queue.size(),index);
         queue.add(index,playerName);
         queueUpdated("§b"+playerName+"§7's turn has been skipped because are offline and it's their turn.");
@@ -130,10 +153,14 @@ public class DungeonQueue {
     public void getQueueFromString(String queueStr) {
         if (queueStr.isEmpty()) return;
         if (queueStr.contains(",")) {
-            queue.addAll(Arrays.asList(queueStr.split(",")));
+            for (String playerName : queueStr.split(",")) {
+                queue.add(playerName);
+                QueueEvents.disconnectTimes.put(playerName, 150);
+            }
         }
         else {
             queue.add(queueStr);
+            QueueEvents.disconnectTimes.put(queueStr, 150);
         }
     }
     public void loadQueueFromConfig() {
