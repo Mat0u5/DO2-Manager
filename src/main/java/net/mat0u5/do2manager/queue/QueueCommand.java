@@ -1,24 +1,16 @@
 package net.mat0u5.do2manager.queue;
 
-import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
-import net.mat0u5.do2manager.Main;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import static net.mat0u5.do2manager.Main.dungeonQueue;
-import static net.minecraft.command.argument.EntityArgumentType.getPlayer;
 
 public class QueueCommand {
     public static int joinQueue(ServerCommandSource source) {
@@ -44,7 +36,7 @@ public class QueueCommand {
         dungeonQueue.skipTurns(self, skipTurns);
         return 1;
     }
-    public static int runStart(ServerCommandSource source, Collection<? extends ServerPlayerEntity> targets) {
+    public static int runFinish(ServerCommandSource source, Collection<? extends ServerPlayerEntity> targets) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 

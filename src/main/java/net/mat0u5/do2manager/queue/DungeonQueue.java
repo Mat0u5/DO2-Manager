@@ -1,14 +1,12 @@
 package net.mat0u5.do2manager.queue;
 
+import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class DungeonQueue {
     private final LinkedList<String> queue = new LinkedList<>();
@@ -19,7 +17,7 @@ public class DungeonQueue {
             return;
         }
         queue.add(playerName);
-        queueUpdated("§b"+playerName + "§3 has joined the queue!");
+        queueUpdated("§b"+playerName + "§7 has joined the queue!");
     }
     public void putAtEnd(PlayerEntity player) {
         putAtEnd(player,true);
@@ -31,15 +29,16 @@ public class DungeonQueue {
         }
         queue.remove(playerName);
         queue.add(playerName);
-        if (sendFeedback) queueUpdated("§b"+playerName + "§3 has started a run!");
+        if (sendFeedback) queueUpdated("§b"+playerName + "§7 has finished a run!");
     }
     public void putAtEnd(Collection<? extends ServerPlayerEntity> players) {
+        if (queue.isEmpty()) return;
         List<String> playersList = new ArrayList<>();
         for (ServerPlayerEntity player : players) {
             putAtEnd(player,false);
             playersList.add(player.getEntityName());
         }
-        queueUpdated("§b"+ String.join(", ", playersList)+ "§3 "+(playersList.size()>1?"have":"has")+" started a run!");
+        queueUpdated("§b"+ String.join(", ", playersList)+ "§7 "+(playersList.size()>1?"have":"has")+" finished a run!");
     }
     public void skipTurns(PlayerEntity player, int turnsNum) {
         String playerName = player.getEntityName();
@@ -50,7 +49,7 @@ public class DungeonQueue {
         queue.remove(playerName);
         index = Math.min(queue.size(),index);
         queue.add(index,playerName);
-        queueUpdated("§b"+playerName + "§3 has skipped " + turnsNum + " of their turns!");
+        queueUpdated("§b"+playerName + "§7 has skipped " + turnsNum + " of their turns!");
     }
 
     public void removeFromQueue(PlayerEntity player) {
@@ -59,21 +58,27 @@ public class DungeonQueue {
             return;
         }
         queue.remove(playerName);
-        queueUpdated("§b"+playerName + "§3 has left the queue!");
+        queueUpdated("§b"+playerName + "§7 has left the queue!");
     }
     public void removeFromOffline(String playerName) {
         if (!queue.contains(playerName)) {
             return;
         }
         queue.remove(playerName);
-        queueUpdated("§b"+playerName + "§3 has been removed from the queue, because they have been offline for five minutes!");
+        queueUpdated("§b"+playerName + "§7 has been removed from the queue, because they have been offline for 2.5 minutes!");
     }
     public void removeFromDisconnect(String playerName) {
+        skipOfflinePlayer(playerName);
+    }
+    public void skipOfflinePlayer(String playerName) {
         if (!queue.contains(playerName)) {
             return;
         }
+        int index = queue.indexOf(playerName)+1;
         queue.remove(playerName);
-        queueUpdated("§b"+playerName+"§3 has been removed from the queue, because have disconnected and it's their turn.");
+        index = Math.min(queue.size(),index);
+        queue.add(index,playerName);
+        queueUpdated("§b"+playerName+"§7's turn has been skipped because are offline and it's their turn.");
     }
     public boolean containsPlayer(PlayerEntity player) {
         String playerName = player.getEntityName();
@@ -87,7 +92,7 @@ public class DungeonQueue {
 
         String playerName = queue.poll();  // Remove the first player
         queue.add(playerName);  // Add them to the end of the queue
-        queueUpdated("§3The queue has been manually moved.");
+        queueUpdated("§7The queue has been manually moved.");
     }
 
     public String getNextPlayer() {
@@ -99,10 +104,10 @@ public class DungeonQueue {
     }
     public void queueUpdated(String updateMessage) {
         OtherUtils.broadcastMessage(Text.of(updateMessage));
+        if (queue.isEmpty()) return;
         String firstPlayer = queue.getFirst();
         if (!OtherUtils.isPlayerOnline(firstPlayer)) {
-            queue.remove(firstPlayer);
-            OtherUtils.broadcastMessage(Text.of("§b"+firstPlayer+"§3 has been removed from the queue, because they are offline and it's their turn."));
+            skipOfflinePlayer(firstPlayer);
         }
         messageQueueToPlayers();
     }
@@ -116,8 +121,25 @@ public class DungeonQueue {
         if (queue.isEmpty()) {
             return Text.of("§cThe queue is currently empty.");
         }
-        Text result = Text.of("§3Current Queue Order: §b"+ String.join("§3, §b",queue)+"\n§3 -> §b"+queue.getFirst()+"§3 is the next in queue!");
+        Text result = Text.of("§7Current Queue Order: §b"+ String.join("§7, §b",queue)+"\n§7 -> §b"+queue.getFirst()+"§7 is the next in queue!");
         return result;
+    }
+    public String getQueueAsString() {
+        return String.join(",",queue);
+    }
+    public void getQueueFromString(String queueStr) {
+        if (queueStr.isEmpty()) return;
+        if (queueStr.contains(",")) {
+            queue.addAll(Arrays.asList(queueStr.split(",")));
+        }
+        else {
+            queue.add(queueStr);
+        }
+    }
+    public void loadQueueFromConfig() {
+        if (Main.config.getProperty("current_queue") == null) return;
+        if (Main.config.getProperty("current_queue").isEmpty()) return;
+        getQueueFromString(Main.config.getProperty("current_queue"));
     }
 
 }

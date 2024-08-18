@@ -6,6 +6,7 @@ import net.mat0u5.do2manager.simulator.Simulator;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.TextUtils;
 import net.mat0u5.do2manager.world.BlockScanner;
+import net.mat0u5.do2manager.world.ItemConvertor;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.entity.player.PlayerEntity;
@@ -23,6 +24,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 
+import java.util.Collection;
 import java.util.List;
 
 public class OtherCommand {
@@ -155,5 +157,15 @@ public class OtherCommand {
             return true;
         }
         return false;
+    }
+    public static int invScanner(ServerCommandSource source, Collection<? extends ServerPlayerEntity> targets, String scanType) {
+        MinecraftServer server = source.getServer();
+        final ServerPlayerEntity self = source.getPlayer();
+
+        for (ServerPlayerEntity player : targets) {
+            if (scanType.equalsIgnoreCase("tagExpanded")) ItemConvertor.convertCustomItems(player,-1);
+            if (scanType.equalsIgnoreCase("removePhase")) ItemConvertor.convertPhaseItems(player,-1);
+        }
+        return 1;
     }
 }

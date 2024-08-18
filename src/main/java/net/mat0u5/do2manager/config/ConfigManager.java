@@ -32,6 +32,7 @@ public class ConfigManager {
                 configFile.createNewFile();
                 try (OutputStream output = new FileOutputStream(configFile)) {
                     properties.setProperty("current_run","");
+                    properties.setProperty("current_queue","");
                     properties.setProperty("db_version",DatabaseManager.DB_VERSION);
                     properties.setProperty("testing","false");
                     properties.setProperty("current_run_is_speedrun","false");

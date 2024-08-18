@@ -3,23 +3,16 @@ package net.mat0u5.do2manager.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import com.mojang.brigadier.context.CommandContext;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.mat0u5.do2manager.gui.GuiInventory_ChestFramework;
-import net.mat0u5.do2manager.queue.DungeonQueue;
 import net.mat0u5.do2manager.queue.QueueCommand;
-import net.mat0u5.do2manager.simulator.Simulator;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 
-import java.util.UUID;
-
-import static com.mojang.brigadier.builder.RequiredArgumentBuilder.argument;
 import static net.minecraft.command.argument.EntityArgumentType.getPlayer;
 import static net.minecraft.command.argument.EntityArgumentType.player;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -337,6 +330,23 @@ public class Command {
                         )
                     )
                 )
+                .then(literal("invScanner")
+                    .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                        .then(CommandManager.argument("targets", EntityArgumentType.players())
+                            .then(literal("tagExpanded")
+                                .executes(context -> OtherCommand.invScanner(
+                                    context.getSource(),
+                                    EntityArgumentType.getPlayers(context, "targets"),"tagExpanded")
+                                )
+                            )
+                            .then(literal("removePhase")
+                                .executes(context -> OtherCommand.invScanner(
+                                    context.getSource(),
+                                    EntityArgumentType.getPlayers(context, "targets"),"removePhase")
+                                )
+                            )
+                        )
+                )
                 .then(literal("queueRestart")
                     .requires(source -> source.hasPermissionLevel(2))
                     .executes(context -> RestartCommand.queueRestart(
@@ -437,13 +447,13 @@ public class Command {
                         )
                     )
                 )
-                .then(literal("startRun")
-                        .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
-                        .then(CommandManager.argument("targets", EntityArgumentType.players())
-                            .executes(context -> QueueCommand.runStart(
-                                    context.getSource(),
-                                    EntityArgumentType.getPlayers(context, "targets"))
-                            )
+                .then(literal("finishRun")
+                    .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                    .then(CommandManager.argument("targets", EntityArgumentType.players())
+                        .executes(context -> QueueCommand.runFinish(
+                                context.getSource(),
+                                EntityArgumentType.getPlayers(context, "targets"))
+                        )
                     )
                 )
                 .then(literal("add").requires(source -> source.hasPermissionLevel(2))

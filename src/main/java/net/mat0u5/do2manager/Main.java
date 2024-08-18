@@ -49,6 +49,7 @@ public class Main implements ModInitializer {
 		LOGGER.info("Initializing DO2-manager...");
 		simulator = new Simulator();
 
+		dungeonQueue.loadQueueFromConfig();
 		DatabaseManager.fetchAllPlayers();
 		Runtime.getRuntime().addShutdownHook(new Thread(Main::saveRunInfoToConfig));
 	}
@@ -61,6 +62,7 @@ public class Main implements ModInitializer {
 	}
 	public static void saveRunInfoToConfig() {
 		config.setProperty("current_run",currentRun.serialize());
+		config.setProperty("current_queue",dungeonQueue.getQueueAsString());
 	}
 	public static void loadRunInfoFromConfig() {
 		currentRun = new DO2Run().deserialize(config.getProperty("current_run"));

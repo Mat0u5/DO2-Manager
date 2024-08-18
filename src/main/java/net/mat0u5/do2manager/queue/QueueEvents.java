@@ -12,7 +12,7 @@ import java.util.HashMap;
 
 public class QueueEvents {
     private static HashMap<String, Integer> disconnectTimes = new HashMap<>();
-    private static final int MAX_LOGOUT_TIME_BEFORE_QUEUE_LEAVE = 300;// 5 mins
+    private static final int MAX_LOGOUT_TIME_BEFORE_QUEUE_LEAVE = 150;// 2.5 mins
     private static int checkDisconnectTimes = 20;
 
     public static void onPlayerJoin(ServerPlayerEntity player) {

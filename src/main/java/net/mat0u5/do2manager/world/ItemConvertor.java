@@ -35,7 +35,7 @@ public class ItemConvertor extends PlayerInventoryScanner {
             convertPhaseItem(item);
         }
 
-        Main.lastInvUpdate.setProperty(playerUUID, String.valueOf(updateToNum));
+        if (updateToNum != -1) Main.lastInvUpdate.setProperty(playerUUID, String.valueOf(updateToNum));
         System.out.println("Conversion complete.");
     }
     public static void convertCustomItems(ServerPlayerEntity player, int updateToNum) {
@@ -47,7 +47,7 @@ public class ItemConvertor extends PlayerInventoryScanner {
             tagExtendedItems(item);
         }
 
-        Main.lastInvUpdate.setProperty(playerUUID, String.valueOf(updateToNum));
+        if (updateToNum != -1) Main.lastInvUpdate.setProperty(playerUUID, String.valueOf(updateToNum));
         System.out.println("Tagging complete.");
     }
     public static int getPlayerUpdateNum(ServerPlayerEntity player) {
