@@ -85,7 +85,8 @@ public class DO2Run {
         embed.addProperty("description", "__**Run Info:**__   __*(Run #"+run_number+")*__"+
                 "\n\nRunners: **"+getRunnersName()+"**"+
                 "\nRun Successful: **"+(run_success?"Yes":"No")+"**"+
-                "\n\nRun Difficulty: **"+getUnFormattedDifficulty()+"**"+
+                "\n\nRun Type: **"+run_type+"**"+
+                "\nRun Difficulty: **"+getUnFormattedDifficulty()+"**"+
                 "\nCompass Level: "+getUnFormattedLevel()+
                 "\nRun Length: "+run_time+
                 (artifact_item == null || artifact_item.isEmpty()?"":"\nArtifact:  " + formatted_arti)+

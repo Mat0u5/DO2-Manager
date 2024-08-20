@@ -89,6 +89,10 @@ public class DungeonQueue {
         if (!queue.contains(playerName)) {
             return;
         }
+        if (!QueueEvents.disconnectTimes.containsKey(playerName)) {
+            removeFromOffline(playerName);
+            return;
+        }
         if (!queueHasOnlinePlayer()) {
             return;
         }
