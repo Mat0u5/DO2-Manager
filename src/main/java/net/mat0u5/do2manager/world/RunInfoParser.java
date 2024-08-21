@@ -197,14 +197,14 @@ public class RunInfoParser {
     }
     public static List<PlayerEntity> getCurrentAliveRunners(MinecraftServer server) {
         List<PlayerEntity> runners = getCurrentRunners(server);
-        if (runners.isEmpty()) return runners;
+        List<PlayerEntity> aliveRunners = new ArrayList<>();
+        if (runners.isEmpty()) return aliveRunners;
         for (PlayerEntity runner : runners) {
             if (!isValidRunner(runner)) {
-                runners.remove(runner);
-                if (runners.isEmpty()) return runners;
+                aliveRunners.add(runner);
             }
         }
-        return runners;
+        return aliveRunners;
     }
     public static boolean isValidRunner(PlayerEntity runner) {
         if (runner.isSpectator() || runner.isCreative() || !isInCitadelRegion(runner) || runner.isDead()) return false;

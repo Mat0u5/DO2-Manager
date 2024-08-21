@@ -201,7 +201,6 @@ public class ConsoleCommand {
         if (isRanByPlayer(source)) return -1;
 
         if (!varName.equalsIgnoreCase("runners") && !varName.equalsIgnoreCase("finishers")) return -1;
-        String players = "";
         List<PlayerEntity> playersList = varName.equalsIgnoreCase("runners")?RunInfoParser.getCurrentRunners(server):RunInfoParser.getCurrentAliveRunners(server);
         if (playersList.isEmpty()) {
             if (varName.equalsIgnoreCase("runners")) Main.currentRun.runners = new ArrayList<>();
