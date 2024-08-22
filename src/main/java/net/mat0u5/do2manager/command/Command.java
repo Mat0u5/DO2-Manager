@@ -416,6 +416,34 @@ public class Command {
                     context.getSource())
                 )
         );
+        dispatcher.register(
+            literal("items")
+                .requires(source -> source.hasPermissionLevel(2))
+                .executes(context -> new GuiInventory_ChestFramework().openChestInventory(
+                        context.getSource().getPlayer(),
+                        54,
+                        "Decked Out 2 Items",
+                        "_-629,11,1966;0;1",false)
+                )
+        );
+        dispatcher.register(
+            literal("run")
+                .then(literal("getInfo")
+                        .executes(context -> OtherCommand.getInfo(
+                                context.getSource())
+                        )
+                )
+                .then(literal("viewDeck")
+                        .executes(context -> OtherCommand.viewDeck(
+                                context.getSource())
+                        )
+                )
+                .then(literal("viewRunnerInv")
+                        .executes(context -> OtherCommand.viewInv(
+                                context.getSource())
+                        )
+                )
+        );
         dispatcher.register(literal("queue")
                 .then(literal("join")
                     .executes(context -> QueueCommand.joinQueue(

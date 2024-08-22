@@ -85,7 +85,7 @@ public class DO2Run {
         embed.addProperty("description", "__**Run Info:**__   __*(Run #"+run_number+")*__"+
                 "\n\nRunners: **"+getRunnersName()+"**"+
                 "\nRun Successful: **"+(run_success?"Yes":"No")+"**"+
-                "\n\nRun Type: **"+run_type+"**"+
+                "\n\nRun Type: **"+getRunType()+"**"+
                 "\nRun Difficulty: **"+getUnFormattedDifficulty()+"**"+
                 "\nCompass Level: "+getUnFormattedLevel()+
                 "\nRun Length: "+run_time+
@@ -98,6 +98,9 @@ public class DO2Run {
         embeds.add(embed);
         json.add("embeds", embeds);
         DiscordUtils.sendMessageToDiscord(json);
+    }
+    public String getRunType() {
+        return TextUtils.capitalize(run_type);
     }
     public boolean containsSpecialEvent(String event) {
         if (special_events == null) return false;

@@ -23,7 +23,7 @@ public abstract class CommandManagerMixin {
         ServerPlayerEntity player = cmdSource.getPlayer();
         if (player == null) return;
         if (player.hasPermissionLevel(2)) return;
-        if (!command.equalsIgnoreCase("decked-out") && !command.matches("decked-out .*") && !command.matches("queue .*") && !command.equalsIgnoreCase("stuck")) return;
+        if (!command.equalsIgnoreCase("decked-out") && !command.matches("decked-out .*") && !command.matches("run .*") && !command.matches("queue .*") && !command.equalsIgnoreCase("stuck")) return;
         try {
             if (command.matches("decked-out mapGuiScale [0-9]+")) {
                 GuiMapCommand.executeGuiScale(cmdSource, Integer.parseInt(command.split("decked-out mapGuiScale ")[1]));
@@ -33,15 +33,15 @@ public abstract class CommandManagerMixin {
                 OtherCommand.stuck(cmdSource);
                 cir.setReturnValue(0);
             }
-            else if (command.equalsIgnoreCase("decked-out currentRun viewDeck")) {
+            else if (command.equalsIgnoreCase("decked-out currentRun viewDeck") || command.equalsIgnoreCase("run viewDeck")) {
                 OtherCommand.viewDeck(cmdSource);
                 cir.setReturnValue(0);
             }
-            else if (command.equalsIgnoreCase("decked-out currentRun getInfo")) {
+            else if (command.equalsIgnoreCase("decked-out currentRun getInfo") || command.equalsIgnoreCase("run getInfo")) {
                 OtherCommand.getInfo(cmdSource);
                 cir.setReturnValue(0);
             }
-            else if (command.equalsIgnoreCase("decked-out currentRun viewRunnerInv")) {
+            else if (command.equalsIgnoreCase("decked-out currentRun viewRunnerInv") || command.equalsIgnoreCase("run viewRunnerInv")) {
                 OtherCommand.viewInv(cmdSource);
                 cir.setReturnValue(0);
             }

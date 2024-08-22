@@ -125,4 +125,17 @@ public class TextUtils {
         String result = matcher.replaceAll(replaceWith);
         return result;
     }
+    public static String capitalize(String line) {
+        return Character.toUpperCase(line.charAt(0)) + line.substring(1);
+    }
+    public static String toTitleCase(String givenString) {
+        String[] arr = givenString.split(" ");
+        StringBuffer sb = new StringBuffer();
+
+        for (int i = 0; i < arr.length; i++) {
+            sb.append(Character.toUpperCase(arr[i].charAt(0)))
+                    .append(arr[i].substring(1)).append(" ");
+        }
+        return sb.toString().trim();
+    }
 }

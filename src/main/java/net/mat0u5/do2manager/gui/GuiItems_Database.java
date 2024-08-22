@@ -65,7 +65,7 @@ public class GuiItems_Database {
         lore.add(Text.of("§7Runners: §3" + run.getRunnersName()));
         lore.add(Text.of("§7Difficulty: " +run.getFormattedDifficulty()));
         lore.add(Text.of("§7Level: " +run.getFormattedLevel()));
-        lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§d")) +run.run_type)));
+        lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§d")) +run.getRunType())));
         lore.add(Text.of(""));
         lore.add(Text.of("§7Run Length: §6" + OtherUtils.convertTicksToClockTime(run.run_length,true)));
         if (run.date!=null) lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
@@ -182,7 +182,7 @@ public class GuiItems_Database {
         lore.add(Text.of(""));
         lore.add(Text.of("§7Difficulty: " +run.getFormattedDifficulty()));
         lore.add(Text.of("§7Level: " +run.getFormattedLevel()));
-        lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§d")) +run.run_type)));
+        lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§d")) +run.getRunType())));
         if (run.date!=null) lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
         return createGuiItem(itemStack, "runners", (run.getSuccess()?"§a":"§c")+"Run #" + run.run_number, lore);
     }
