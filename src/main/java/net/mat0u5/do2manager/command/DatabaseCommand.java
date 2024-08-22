@@ -1,5 +1,6 @@
 package net.mat0u5.do2manager.command;
 
+import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.BlockScanner;
@@ -16,6 +17,7 @@ import net.minecraft.util.math.BlockPos;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class DatabaseCommand {
@@ -149,5 +151,141 @@ public class DatabaseCommand {
         FunctionScanner.scanFunctions();
         return 1;
     }
+    public static int updateCrowns() {
+        for (DO2Run run : Main.allRuns) {
+            boolean modified = false;
+            if (run.getSuccess()) {
+                run.crowns_counted = run.getCrownsFromInv();
+                modified = true;
+            }
+            else {
+                run.crowns_counted = 0;
+                modified = true;
+            }
+            if (modified) DatabaseManager.updateRun(run);
+        }
+        return 1;
+    }
+    public static int updateLackeys() {
+        int i = 0;
+        for (DO2Run run : List.copyOf(Main.allRuns)) {
+            boolean modified = false;
+            if (run.isLackey() && !run.getSuccess()) {
+                if (run.embers_counted != 0) {
+                    System.out.println("TEST_"+run.run_number+"_"+run.embers_counted);
+                    if (run.runners.contains("41682eb6-2b32-4f52-abc9-c15a9d53c83e")) {
+                        run.finishers = List.of("41682eb6-2b32-4f52-abc9-c15a9d53c83e");
+                        System.out.println("mat run");
+                    }
+                    else if (run.run_number == 10182) {
+                        run.finishers = List.of("0f8865f3-a9fd-406c-8c42-354887ad3891");
+                    }
+                    else if (run.run_number == 10239) {
+                        run.finishers = List.of("3a491cb4-ba7d-4a4c-96df-d78a397c0bff");
+                    }
+                    else if (run.run_number == 10548) {
+                        run.finishers = List.of("0f8865f3-a9fd-406c-8c42-354887ad3891");
+                    }
+                    else if (run.run_number == 10707) {
+                        run.finishers = List.of("3a491cb4-ba7d-4a4c-96df-d78a397c0bff");
+                    }
+                    else if (run.run_number == 10734) {
+                        run.finishers = List.of("3a491cb4-ba7d-4a4c-96df-d78a397c0bff");
+                    }
+                    else if (run.run_number == 10782) {
+                        run.finishers = List.of("983895d7-82b6-4bcb-a8ad-17d93245e0a4");
+                    }
+                    else if (run.run_number == 10798) {
+                        run.finishers = List.of("8b77df27-95ea-4c62-a12e-d5b9e19fc50b");
+                    }
+                    else if (run.run_number == 11075) {
+                        run.finishers = List.of("3a491cb4-ba7d-4a4c-96df-d78a397c0bff");
+                    }
+                    else if (run.run_number == 11241) {
+                        run.finishers = List.of("8b77df27-95ea-4c62-a12e-d5b9e19fc50b");
+                    }
+                    else if (run.run_number == 11471) {
+                        run.finishers = List.of("3a491cb4-ba7d-4a4c-96df-d78a397c0bff");
+                    }
+                    else if (run.run_number == 11503) {
+                        run.finishers = List.of("3a491cb4-ba7d-4a4c-96df-d78a397c0bff", "d2317734-f9d0-4819-b503-4e3fb1fd1f2c", "722b3035-7c50-4f31-bdcd-f8c82c8f38cb");
+                    }
+                    else if (run.run_number == 11594) {
+                        run.finishers = List.of("2c4ace91-7b4b-4215-8dc8-2b79335be2e3");
+                    }
+                    else if (run.run_number == 12236) {
+                        run.finishers = List.of("3a491cb4-ba7d-4a4c-96df-d78a397c0bff");
+                    }
+                    else if (run.run_number == 12240) {
+                        run.finishers = List.of("3a491cb4-ba7d-4a4c-96df-d78a397c0bff");
+                    }
+                    else if (run.run_number == 12474) {
+                        run.finishers = List.of("5de9d3bc-8fa8-48eb-a6a4-d78094973ce2");
+                    }
+                    else if (run.run_number == 12519) {
+                        run.finishers = List.of("5de9d3bc-8fa8-48eb-a6a4-d78094973ce2");
+                    }
+                    else {
+                        System.out.println(run.runners);
+                        System.out.println(run.getRunnersName());
+                    }
+                    modified = true;
+                    i++;
+                }
+            }
+            if (modified) DatabaseManager.updateRun(run);
+        }
+        System.out.println("___TESTTT_"+i);
+        return 1;
+    }
+    public static int updateTotalEmbers() {
+        OtherUtils.executeCommand(Main.server,"scoreboard objectives remove OverallEmbers");
+        OtherUtils.executeCommand(Main.server,"scoreboard objectives add OverallEmbers dummy");
+        HashMap<String,Integer> totalEmbers = new HashMap<String, Integer>();
+        for (DO2Run run : Main.allRuns) {
+            if (!run.getSuccess()) continue;
+            if (run.embers_counted == 0) continue;
+            String finishersStr = run.getFinishersName();
+            int embers = (!finishersStr.contains(", ")?run.embers_counted:(run.embers_counted/finishersStr.split(", ").length));
 
+            for (String finisher : finishersStr.split(", ")) {
+                if (!totalEmbers.containsKey(finisher)) {
+                    totalEmbers.put(finisher, embers);
+                }
+                else {
+                    totalEmbers.put(finisher, totalEmbers.get(finisher)+embers);
+                }
+            }
+        }
+        for (String playerName : totalEmbers.keySet()) {
+            int embers = totalEmbers.get(playerName);
+            OtherUtils.executeCommand(Main.server,"scoreboard players set "+playerName+" OverallEmbers "+embers);
+        }
+        return 1;
+    }
+    public static int updateTotalCrowns() {
+        OtherUtils.executeCommand(Main.server,"scoreboard objectives remove OverallCrowns");
+        OtherUtils.executeCommand(Main.server,"scoreboard objectives add OverallCrowns dummy");
+        HashMap<String,Integer> totalCrowns = new HashMap<String, Integer>();
+        for (DO2Run run : Main.allRuns) {
+            if (!run.getSuccess()) continue;
+            if (run.crowns_counted == 0) continue;
+            String finishersStr = run.getFinishersName();
+            int crowns = (!finishersStr.contains(", ")?run.crowns_counted:(run.crowns_counted/finishersStr.split(", ").length));
+
+            for (String finisher : finishersStr.split(", ")) {
+                if (!totalCrowns.containsKey(finisher)) {
+                    totalCrowns.put(finisher, crowns);
+                }
+                else {
+                    totalCrowns.put(finisher, totalCrowns.get(finisher)+crowns);
+                }
+            }
+        }
+        for (String playerName : totalCrowns.keySet()) {
+            int crowns = totalCrowns.get(playerName);
+            OtherUtils.executeCommand(Main.server,"scoreboard players set "+playerName+" OverallCrowns "+crowns);
+        }
+        return 1;
+    }
 }

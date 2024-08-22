@@ -70,6 +70,7 @@ public class GuiItems_Database {
         lore.add(Text.of("§7Run Length: §6" + OtherUtils.convertTicksToClockTime(run.run_length,true)));
         if (run.date!=null) lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
         if (run.embers_counted > 0) lore.add(Text.of("§7Embers Counted: §3" + run.embers_counted));
+        if (run.crowns_counted > 0) lore.add(Text.of("§7Crowns Counted: §6" + run.crowns_counted));
 
         if (run.run_type.equalsIgnoreCase("testing")) itemStack = new ItemStack(Items.BEDROCK);
 
@@ -82,9 +83,10 @@ public class GuiItems_Database {
         return createGuiItem(itemStack, "sort_by", "§aSort By §7("+(sort_by_descending?"§c↓":"§a↑")+"§7)",
             List.of(Text.of(""),
                     Text.of((sort_by.equalsIgnoreCase("run_number")?"§e▶ ":"  §7")+"Run Number"),
-                    Text.of((sort_by.equalsIgnoreCase("run_length")?"§b▶ ":"  §7")+"Run Length"),
-                    Text.of((sort_by.equalsIgnoreCase("difficulty")?"§b▶ ":"  §7")+"Difficulty"),
-                    Text.of((sort_by.equalsIgnoreCase("embers")?"§b▶ ":"  §7")+"Embers Counted"),
+                    Text.of((sort_by.equalsIgnoreCase("run_length")?"§9▶ ":"  §7")+"Run Length"),
+                    Text.of((sort_by.equalsIgnoreCase("difficulty")?"§c▶ ":"  §7")+"Difficulty"),
+                    Text.of((sort_by.equalsIgnoreCase("embers")?"§3▶ ":"  §7")+"Embers Counted"),
+                    Text.of((sort_by.equalsIgnoreCase("crowns")?"§6▶ ":"  §7")+"Crowns Counted"),
                     Text.of(""),
                     Text.of("§8Right-Click to reverse results!"),
                     Text.of("§eClick cycle through!")
@@ -215,18 +217,38 @@ public class GuiItems_Database {
 
             lore.add(Text.of("§7Death Message: §c" + run.death_message));
             lore.add(Text.of("§7Death Pos: §c" + run.death_pos));
+            return createGuiItem(itemStack, "death_info", itemName, lore);
         }
-        else {
-            itemStack = new ItemStack(Items.IRON_NUGGET, 1);
-            NbtCompound nbt = itemStack.getOrCreateNbt();
-            nbt.putInt("CustomModelData", 3);
-            itemStack.setCount(Math.max(1, Math.min(64, run.embers_counted)));
-            itemName = "§aFrost Embers";
-            lore.add(Text.of(""));
+        //Run is successful
 
-            lore.add(Text.of("§7Embers Counted: §c" + run.embers_counted));
-        }
+        return getEmbers(run);
+    }
+    public static ItemStack getEmbers(DO2Run run) {
+        ItemStack itemStack = new ItemStack(Items.IRON_NUGGET, 1);
+        List<Text> lore = new ArrayList<>();
+        NbtCompound nbt = itemStack.getOrCreateNbt();
+        nbt.putInt("CustomModelData", 3);
+        itemStack.setCount(Math.max(1, Math.min(64, run.embers_counted)));
+        String itemName = "§aFrost Embers";
+        lore.add(Text.of(""));
+
+        lore.add(Text.of("§7Embers Counted: §c" + run.embers_counted));
         return createGuiItem(itemStack, "death_info", itemName, lore);
+    }
+    public static ItemStack getCrowns(DO2Run run) {
+        if (!run.getSuccess() || run.crowns_counted == 0) {
+            return run.getSuccess()?GuiItems_Database.fillerGreen():GuiItems_Database.fillerRed();
+        }
+        ItemStack itemStack = new ItemStack(Items.IRON_NUGGET, 1);
+        List<Text> lore = new ArrayList<>();
+        NbtCompound nbt = itemStack.getOrCreateNbt();
+        nbt.putInt("CustomModelData", 2);
+        itemStack.setCount(Math.max(1, Math.min(64, run.crowns_counted)));
+        String itemName = "§aCrowns";
+        lore.add(Text.of(""));
+
+        lore.add(Text.of("§7Crowns Counted: §6" + run.crowns_counted));
+        return createGuiItem(itemStack, "crowns_info", itemName, lore);
     }
     public static ItemStack runCardPlays(DO2Run run) {
         ItemStack itemStack = new ItemStack(Items.IRON_NUGGET, 1);

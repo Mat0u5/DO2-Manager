@@ -24,6 +24,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -55,6 +56,15 @@ public class OtherCommand {
         Main.config= new ConfigManager("./config/"+Main.MOD_ID+"/"+Main.MOD_ID+".properties");
         Main.lastInvUpdate = new ConfigManager("./config/"+Main.MOD_ID+"/"+Main.MOD_ID+"_inv_update.properties");
         TextUtils.setEmotes();
+        return 1;
+    }
+    public static int reloadDatabase(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final PlayerEntity self = source.getPlayer();
+        self.sendMessage(Text.of("Reloading database..."));
+        Main.reloadAllRunsAsync().thenRun(() -> {
+            self.sendMessage(Text.of("Database Reloaded."));
+        });
         return 1;
     }
     public static int playerList(ServerCommandSource source) {
@@ -116,17 +126,15 @@ public class OtherCommand {
         if (isRunner(server, self) && !self.hasPermissionLevel(2)) return -1;
         List<PlayerEntity> runners = RunInfoParser.getCurrentAliveRunners(server);
         if (runners.isEmpty()) return -1;
-        if (runners.size() != 1) {
-            self.sendMessage(Text.of("§cYou cannot use this command with more than one runner!"));
-            return -1;
-        }
-        PlayerEntity runner = runners.get(0);
 
-        List<ItemStack> currentCards = ItemManager.getPlayerInventory(runner);
+        List<ItemStack> currentItems = new ArrayList<>();
+        for (PlayerEntity runner : runners) {
+            currentItems.addAll(ItemManager.getPlayerInventory(runner));
+        }
 
         SimpleInventory inventory = new SimpleInventory(54);
 
-        for (ItemStack item : currentCards) {
+        for (ItemStack item : currentItems) {
             NbtCompound nbt = item.getOrCreateNbt();
             nbt.putString("GUI","player_inv");
             item.setNbt(nbt);
@@ -135,7 +143,7 @@ public class OtherCommand {
 
         self.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
             return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, syncId, inv, inventory, 6);
-        }, Text.of(runner.getEntityName()+"'s Items")));
+        }, Text.of((runners.size() == 1 ? runners.get(0).getEntityName(): "Coop")+"'s Items")));
         return 1;
     }
     public static int getInfo(ServerCommandSource source) {

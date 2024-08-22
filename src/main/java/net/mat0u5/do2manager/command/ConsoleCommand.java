@@ -92,6 +92,13 @@ public class ConsoleCommand {
         Main.currentRun.embers_counted = RunInfoParser.getPlayerEmbers(server);
         return 1;
     }
+    public static int database_runTracking_Crowns(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        if (isRanByPlayer(source)) return -1;
+
+        Main.currentRun.crowns_counted = RunInfoParser.getPlayerCrowns(server);
+        return 1;
+    }
     public static int database_runTracking_ItemInventory(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;

@@ -82,6 +82,9 @@ public class GuiInventoryClick {
                         Main.openGuis.get(player).guiDatabase.sort_by = "embers";
                     }
                     else if (current_sort.equalsIgnoreCase("embers")) {
+                        Main.openGuis.get(player).guiDatabase.sort_by = "crowns";
+                    }
+                    else if (current_sort.equalsIgnoreCase("crowns")) {
                         Main.openGuis.get(player).guiDatabase.sort_by = "run_number";
                     }
                     else {//Just to be safe

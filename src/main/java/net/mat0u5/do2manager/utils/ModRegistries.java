@@ -7,10 +7,12 @@ import net.mat0u5.do2manager.events.Events;
 
 public class ModRegistries {
     public static void registerModStuff() {
-        registerCommands();
-        registerEvents();
-        DatabaseManager.initialize();
-        TextUtils.setEmotes();
+        try {
+            registerCommands();
+            registerEvents();
+            DatabaseManager.initialize();
+            TextUtils.setEmotes();
+        }catch (Exception e) {}
     }
     private static void registerCommands() {
         CommandRegistrationCallback.EVENT.register(Command::register);

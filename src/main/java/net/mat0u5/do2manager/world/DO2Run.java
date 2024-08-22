@@ -40,6 +40,7 @@ public class DO2Run {
     public int run_number = -1;
     public int run_length = -1;
     public int embers_counted = 0;
+    public int crowns_counted = 0;
     public int timestamp_lvl2_entry = -1;
     public int timestamp_lvl3_entry = -1;
     public int timestamp_lvl4_entry = -1;
@@ -50,6 +51,12 @@ public class DO2Run {
     public int timestamp_artifact = -1;
 
     private static final Gson GSON = new Gson();
+    public boolean isLackey() {
+        if (runners == null) return false;
+        if (runners.isEmpty()) return false;
+        if (runners.size() == 1) return false;
+        return true;
+    }
     public int getEmbersFromInv() {
         int result = 0;
         for (ItemStack item : inventory_save) {
@@ -64,6 +71,23 @@ public class DO2Run {
             }
         }
         return result;
+    }
+    public int getCrownsFromInv() {
+        int crowns = 0;
+        int coins = 0;
+        for (ItemStack item : inventory_save) {
+            if (item == null) continue;
+            if (item.isEmpty()) continue;
+            item = item.copy();
+            if (RunInfoParser.isCrown(item)) {
+                crowns += item.getCount();
+            }
+            else if (RunInfoParser.isCoin(item)) {
+                coins += item.getCount();
+            }
+        }
+        int total = crowns+Math.floorDiv(coins,4);
+        return total;
     }
     public String getArtifactEmote() {
         return ":"+RunInfoParser.getArtifactName(artifact_item)+":";
@@ -88,12 +112,13 @@ public class DO2Run {
                 "\n\nRun Type: **"+getRunType()+"**"+
                 "\nRun Difficulty: **"+getUnFormattedDifficulty()+"**"+
                 "\nCompass Level: "+getUnFormattedLevel()+
-                "\nRun Length: "+run_time+
+                "\nRun Length: "+run_time+"\n"+
                 (artifact_item == null || artifact_item.isEmpty()?"":"\nArtifact:  " + formatted_arti)+
                 "\nEmbers Counted: "+(run_success?embers_counted:getEmbersFromInv())+" <:ember:1259207565330612345> "+(!formatted_arti.isEmpty()?"(including  "+formatted_arti+")":"")+
+                "\nCrowns Counted: "+(run_success?crowns_counted:getCrownsFromInv())+" <:crown:1259207563988307988>"+
                 (!specialEvents.isEmpty()?"\nSpecial Events: "+specialEvents:"")
         );
-        embed.addProperty("color", run_success?65289:16711680);
+        embed.addProperty("color", (run_type.equalsIgnoreCase("testing")?11223753:run_success?65289:16711680));
         JsonArray embeds = new JsonArray();
         embeds.add(embed);
         json.add("embeds", embeds);
@@ -214,6 +239,7 @@ public class DO2Run {
                 run_number,
                 run_length,
                 embers_counted,
+                crowns_counted,
                 timestamp_lvl2_entry,
                 timestamp_lvl3_entry,
                 timestamp_lvl4_entry,
@@ -248,6 +274,7 @@ public class DO2Run {
         do2Run.run_number = serializedDO2Run.run_number;
         do2Run.run_length = serializedDO2Run.run_length;
         do2Run.embers_counted = serializedDO2Run.embers_counted;
+        do2Run.crowns_counted = serializedDO2Run.crowns_counted;
         do2Run.timestamp_lvl2_entry = serializedDO2Run.timestamp_lvl2_entry;
         do2Run.timestamp_lvl3_entry = serializedDO2Run.timestamp_lvl3_entry;
         do2Run.timestamp_lvl4_entry = serializedDO2Run.timestamp_lvl4_entry;
@@ -280,6 +307,7 @@ public class DO2Run {
         private final int run_number;
         private final int run_length;
         private final int embers_counted;
+        private final int crowns_counted;
         private final int timestamp_lvl2_entry;
         private final int timestamp_lvl3_entry;
         private final int timestamp_lvl4_entry;
@@ -289,7 +317,7 @@ public class DO2Run {
         private final int timestamp_lvl1_exit;
         private final int timestamp_artifact;
 
-        public SerializedDO2Run(String run_type, List<String> runners, List<String> finishers, String card_plays, String compass_item, String artifact_item, String deck_item, String inventory_save, String items_bought, String death_pos, String death_message,List<String> loot_drops, List<String> special_events, int difficulty, int run_number, int run_length, int embers_counted, int timestamp_lvl2_entry, int timestamp_lvl3_entry, int timestamp_lvl4_entry, int timestamp_lvl4_exit, int timestamp_lvl3_exit, int timestamp_lvl2_exit, int timestamp_lvl1_exit, int timestamp_artifact) {
+        public SerializedDO2Run(String run_type, List<String> runners, List<String> finishers, String card_plays, String compass_item, String artifact_item, String deck_item, String inventory_save, String items_bought, String death_pos, String death_message,List<String> loot_drops, List<String> special_events, int difficulty, int run_number, int run_length, int embers_counted, int crowns_counted, int timestamp_lvl2_entry, int timestamp_lvl3_entry, int timestamp_lvl4_entry, int timestamp_lvl4_exit, int timestamp_lvl3_exit, int timestamp_lvl2_exit, int timestamp_lvl1_exit, int timestamp_artifact) {
             this.run_type = run_type;
             this.runners = runners;
             this.finishers = finishers;
@@ -308,6 +336,7 @@ public class DO2Run {
             this.run_number = run_number;
             this.run_length = run_length;
             this.embers_counted = embers_counted;
+            this.crowns_counted = crowns_counted;
             this.timestamp_lvl2_entry = timestamp_lvl2_entry;
             this.timestamp_lvl3_entry = timestamp_lvl3_entry;
             this.timestamp_lvl4_entry = timestamp_lvl4_entry;

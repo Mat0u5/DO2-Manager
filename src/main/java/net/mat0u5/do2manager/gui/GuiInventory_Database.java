@@ -167,6 +167,9 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
                 else if (sort_by.equalsIgnoreCase("embers")) {
                     return Integer.compare(run2.embers_counted, run1.embers_counted);
                 }
+                else if (sort_by.equalsIgnoreCase("crowns")) {
+                    return Integer.compare(run2.crowns_counted, run1.crowns_counted);
+                }
                 return Integer.compare(run2.getRunNum(), run1.getRunNum());
             }
         });
@@ -188,6 +191,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         inventory.setStack(49, GuiItems_Database.backToMain());
         setOrReplaceNbt(4, GuiItems_Database.runHeads(run));
         setOrReplaceNbt(12, GuiItems_Database.runClock(run));
+        setOrReplaceNbt(13, GuiItems_Database.getCrowns(run));
         setOrReplaceNbt(14, GuiItems_Database.runDeath(run));
         setOrReplaceNbt(20, GuiItems_Database.runCardPlays(run));
         setOrReplaceNbt(22, GuiItems_Database.runInventory(run));

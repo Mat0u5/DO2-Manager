@@ -1,24 +1,21 @@
 package net.mat0u5.do2manager.world;
 
 import net.mat0u5.do2manager.Main;
-import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.command.TagCommand;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
-import org.jetbrains.annotations.NotNull;
-import org.spongepowered.include.com.google.common.base.Predicate;
 
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class RunInfoParser {
     public static final List<Integer> artiModelDataList = Arrays.asList(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58);
@@ -164,24 +161,37 @@ public class RunInfoParser {
     public static java.lang.Integer getPlayerEmbers(MinecraftServer server) {
         return ScoreboardUtils.getPlayerScore(server,"TempPlayerEmbers","OverallEmbers");
     }
+    public static java.lang.Integer getPlayerCrowns(MinecraftServer server) {
+        return ScoreboardUtils.getPlayerScore(server,"TempPlayerCrowns","OverallCrowns");
+    }
     public static String getFormattedRunLength(MinecraftServer server) {
         java.lang.Integer ticks = getRunLength(server);
         if (ticks == null) return "null";
         return OtherUtils.convertSecondsToReadableTime(ticks / 20);
     }
-    public static DO2Run getFastestPlayerRunMatchingCurrent(PlayerEntity player) {
-        List<DO2Run> allRuns = DatabaseManager.getRunsByCriteria(List.of("runners = \"" + player.getUuidAsString()+"\""));
-        DO2Run fastestRun = null;
-        for (DO2Run run : allRuns) {
-            if (!run.run_type.equalsIgnoreCase("testing") && run.getSuccess() && run.difficulty==Main.currentRun.difficulty&& run.getCompassLevel() == Main.currentRun.getCompassLevel() && Main.currentRun.getCompassLevel() != -1) {
-                if (fastestRun == null) {
-                    fastestRun = run;
-                    continue;
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    public static Future<DO2Run> getFastestPlayerRunMatchingCurrent(PlayerEntity player) {
+        boolean isSpeedrun = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("true");
+        Callable<DO2Run> task = () -> {
+            List<DO2Run> allRuns = DatabaseManager.getRunsByCriteria(List.of("runners = \"" + player.getUuidAsString()+"\""));
+            DO2Run fastestRun = null;
+            for (DO2Run run : allRuns) {
+                if (!run.run_type.equalsIgnoreCase("testing") && run.getSuccess() && run.difficulty==Main.currentRun.difficulty&& run.getCompassLevel() == Main.currentRun.getCompassLevel() && Main.currentRun.getCompassLevel() != -1) {
+                    if (fastestRun == null) {
+                        fastestRun = run;
+                        continue;
+                    }
+                    if (run.run_length <= fastestRun.run_length) fastestRun = run;
                 }
-                if (run.run_length <= fastestRun.run_length) fastestRun = run;
             }
-        }
-        return fastestRun;
+            Main.speedrun = fastestRun;
+            if (isSpeedrun) {
+                OtherUtils.broadcastMessage(player.getServer(), Text.translatable("§6This speedrun will be compared with " + player.getEntityName() + "'s fastest "+Main.currentRun.getFormattedDifficulty()+" level " + Main.currentRun.getCompassLevel()+"§6 run."));
+            }
+            return fastestRun;
+        };
+        return executor.submit(task);
     }
     public static List<PlayerEntity> getCurrentRunners(MinecraftServer server) {
         List<PlayerEntity> runners = new ArrayList<>();
@@ -200,7 +210,7 @@ public class RunInfoParser {
         List<PlayerEntity> aliveRunners = new ArrayList<>();
         if (runners.isEmpty()) return aliveRunners;
         for (PlayerEntity runner : runners) {
-            if (!isValidRunner(runner)) {
+            if (isValidRunner(runner)) {
                 aliveRunners.add(runner);
             }
         }
@@ -258,6 +268,14 @@ public class RunInfoParser {
     public static boolean isEmber(ItemStack itemStack) {
         if (!ItemManager.getItemId(itemStack).equalsIgnoreCase("minecraft:iron_nugget")) return false;
         return ItemManager.getModelData(itemStack) == 3;
+    }
+    public static boolean isCrown(ItemStack itemStack) {
+        if (!ItemManager.getItemId(itemStack).equalsIgnoreCase("minecraft:iron_nugget")) return false;
+        return ItemManager.getModelData(itemStack) == 2;
+    }
+    public static boolean isCoin(ItemStack itemStack) {
+        if (!ItemManager.getItemId(itemStack).equalsIgnoreCase("minecraft:iron_nugget")) return false;
+        return ItemManager.getModelData(itemStack) == 1;
     }
     public static int getArtifactWorth(ItemStack itemStack) {
         if (!isDungeonArtifact(itemStack)) return 0;

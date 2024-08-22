@@ -8,6 +8,7 @@ import net.mat0u5.do2manager.gui.GuiInventoryClick;
 import net.mat0u5.do2manager.queue.QueueEvents;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
+import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.ItemConvertor;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
@@ -105,15 +106,11 @@ public class PlayerEvents {
         try {
             if (!RunInfoParser.getCurrentRunners(player.getServer()).contains(player)) return;
             if (RunInfoParser.isDungeonCompass(itemStack) && Main.currentRun.compass_item == null) {
-                boolean isSpeedrun = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("true");
                 Main.currentRun.compass_item = itemStack;
 
                 List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(player.getServer());
                 if (!runners.isEmpty()) {
-                    if (runners.size() == 1) Main.speedrun = RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(player.getServer()).get(0));
-                }
-                if (isSpeedrun) {
-                    OtherUtils.broadcastMessage(player.getServer(), Text.translatable("§6This speedrun will be compared with " + player.getEntityName() + "'s fastest "+Main.currentRun.getFormattedDifficulty()+" level " + Main.currentRun.getCompassLevel()+"§6 run."));
+                    if (runners.size() == 1) RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(player.getServer()).get(0));
                 }
             }
             if (RunInfoParser.isDungeonArtifact(itemStack) && Main.currentRun.artifact_item == null) {
