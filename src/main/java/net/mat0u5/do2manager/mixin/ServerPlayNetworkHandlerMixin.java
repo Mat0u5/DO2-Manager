@@ -41,7 +41,7 @@ public class ServerPlayNetworkHandlerMixin {
             Text finalMessage = Text.empty().append("<").append(playerNameWithFormatting).append("> ").append(formattedContentText);
 
             OtherUtils.broadcastMessage(player.getServer(), finalMessage);
-            DiscordUtils.sendMessageToDiscord(TextUtils.formatEmotesForDiscord(originalContent),player.getEntityName(),"https://mc-heads.net/avatar/"+player.getUuidAsString());
+            DiscordUtils.sendMessageToDiscord(TextUtils.formatEmotesForDiscord(originalContent),"[Server] "+player.getEntityName(),"https://mc-heads.net/avatar/"+player.getUuidAsString());
             ci.cancel();
         }
     }

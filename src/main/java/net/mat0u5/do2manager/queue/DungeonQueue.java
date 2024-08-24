@@ -11,13 +11,15 @@ import java.util.*;
 public class DungeonQueue {
     private final LinkedList<String> queue = new LinkedList<>();
 
-    public void addToQueue(PlayerEntity player) {
+    public void addToQueue(PlayerEntity player, boolean forced) {
         String playerName = player.getEntityName();
         if (containsPlayer(player)) {
             return;
         }
         queue.add(playerName);
-        queueUpdated("§b"+playerName + "§7 has joined the queue!");
+        String msg = "§b"+playerName + "§7 has joined the queue!";
+        if (forced) msg = "§b"+playerName + "§7 has been added to the queue!";
+        queueUpdated(msg);
     }
     public void putAtEnd(PlayerEntity player) {
         putAtEnd(player,true);
@@ -40,7 +42,7 @@ public class DungeonQueue {
         }
         queueUpdated("§b"+ String.join(", ", playersList)+ "§7 "+(playersList.size()>1?"have":"has")+" finished a run!");
     }
-    public void skipTurns(PlayerEntity player, int turnsNum) {
+    public void skipTurns(PlayerEntity player, int turnsNum, boolean forced) {
         String playerName = player.getEntityName();
         if (!containsPlayer(player)) {
             return;
@@ -49,7 +51,9 @@ public class DungeonQueue {
         queue.remove(playerName);
         index = Math.min(queue.size(),index);
         queue.add(index,playerName);
-        queueUpdated("§b"+playerName + "§7 has skipped " + turnsNum + " of their turns!");
+        String msg = "§b"+playerName + "§7 has skipped " + turnsNum + " of their turns!";
+        if (forced) msg = "§b"+playerName + "§7's turn has been skipped!";
+        queueUpdated(msg);
     }
 
     public void removeFromQueue(PlayerEntity player) {
@@ -65,7 +69,7 @@ public class DungeonQueue {
             return;
         }
         queue.remove(playerName);
-        queueUpdated("§b"+playerName + "§7 has left the queue!");
+        queueUpdated("§b"+playerName + "§7 has been removed the queue!");
     }
     public void removeFromOffline(String playerName) {
         if (!queue.contains(playerName)) {

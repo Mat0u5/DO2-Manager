@@ -498,6 +498,18 @@ public class Command {
                             )
                         )
                     )
+                    .then(CommandManager.argument("player", player())
+                        .requires(source -> source.hasPermissionLevel(2))
+                        .executes(context -> QueueCommand.skipTurnOther(
+                            context.getSource(),getPlayer(context,"player"),1
+                        ))
+                        .then(CommandManager.argument("skipTurns", IntegerArgumentType.integer(1))
+                            .executes(context -> QueueCommand.skipTurnOther(
+                                            context.getSource(),getPlayer(context,"player"),IntegerArgumentType.getInteger(context,"skipTurns")
+                                    )
+                            )
+                        )
+                    )
                 )
                 .then(literal("finishRun")
                     .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))

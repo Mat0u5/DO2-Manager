@@ -17,7 +17,7 @@ public class QueueCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        dungeonQueue.addToQueue(self);
+        dungeonQueue.addToQueue(self,false);
         return 1;
     }
 
@@ -33,7 +33,14 @@ public class QueueCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        dungeonQueue.skipTurns(self, skipTurns);
+        dungeonQueue.skipTurns(self, skipTurns,false);
+        return 1;
+    }
+    public static int skipTurnOther(ServerCommandSource source, ServerPlayerEntity target,int skipTurns) {
+        MinecraftServer server = source.getServer();
+        final PlayerEntity self = source.getPlayer();
+
+        dungeonQueue.skipTurns(target, skipTurns,true);
         return 1;
     }
     public static int runFinish(ServerCommandSource source, Collection<? extends ServerPlayerEntity> targets) {
@@ -50,7 +57,7 @@ public class QueueCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        dungeonQueue.addToQueue(target);
+        dungeonQueue.addToQueue(target,true);
         return 1;
     }
 
