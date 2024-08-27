@@ -8,6 +8,8 @@ import net.dv8tion.jda.api.exceptions.RateLimitedException;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 import java.util.Timer;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class DiscordBot extends ListenerAdapter {
     private JDA jda;
@@ -33,14 +35,15 @@ public class DiscordBot extends ListenerAdapter {
                 .build();
     }
 
+    private static final ExecutorService executor = Executors.newSingleThreadExecutor();
     public void updateChannelDescription(String newDescription) {
-        new Thread(() -> {
+        executor.submit(() -> {
             if (channelId.isEmpty()) return;
             TextChannel channel = jda.getTextChannelById(channelId);
             if (channel != null) {
                 channel.getManager().setTopic(newDescription).queue();
             }
-        }).start();
+        });
     }
 
     @Override
