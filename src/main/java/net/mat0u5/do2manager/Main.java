@@ -52,7 +52,6 @@ public class Main implements ModInitializer {
 
 		dungeonQueue.loadQueueFromConfig();
 		DatabaseManager.fetchAllPlayers();
-		Runtime.getRuntime().addShutdownHook(new Thread(Main::saveRunInfoToConfig));
 	}
 
 	public static void resetRunInfo() {
@@ -64,6 +63,7 @@ public class Main implements ModInitializer {
 	public static void saveRunInfoToConfig() {
 		config.setProperty("current_run",currentRun.serialize());
 		config.setProperty("current_queue",dungeonQueue.getQueueAsString());
+		System.out.println("Shutting Down DO2-Manager..");
 	}
 	public static void loadRunInfoFromConfig() {
 		currentRun = new DO2Run().deserialize(config.getProperty("current_run"));

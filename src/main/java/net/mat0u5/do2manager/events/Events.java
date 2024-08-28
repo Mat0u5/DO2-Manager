@@ -55,6 +55,7 @@ import java.util.concurrent.TimeUnit;
 
 public class Events {
 
+    private static boolean isServerShuttingDown = false;
     public static long clickEventCooldown = 0;
     public static long lastPlayerLogoutTime = -1;
     public static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -62,9 +63,12 @@ public class Events {
 
     public static void register() {
         ServerLifecycleEvents.SERVER_STARTING.register(Events::onServerStart);
+        ServerLifecycleEvents.SERVER_STOPPING.register(Events::onServerStopping);
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> PlayerEvents.onPlayerJoin(server, handler.getPlayer()));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-            scheduler.schedule(() -> PlayerEvents.onPlayerDisconnect(server, handler.getPlayer()), 1, TimeUnit.SECONDS);
+            if (!isServerShuttingDown) {
+                scheduler.schedule(() -> PlayerEvents.onPlayerDisconnect(server, handler.getPlayer()), 1, TimeUnit.SECONDS);
+            }
         });
         ServerTickEvents.END_SERVER_TICK.register(Events::onServerTickEnd);
 
@@ -84,9 +88,14 @@ public class Events {
                 }
             }
         });
-
     }
 
+    // Method to handle the server stopping event
+    private static void onServerStopping(MinecraftServer server) {
+        System.out.println("[DO2-Manager] - Detected Server Shutdown");
+        isServerShuttingDown = true;
+        Main.saveRunInfoToConfig();
+    }
     private static void onServerTickEnd(MinecraftServer server) {
         try {
             QueueEvents.onTickEnd();
@@ -105,7 +114,6 @@ public class Events {
         }catch (Exception e) {
             e.printStackTrace();
         }
-
     }
     private static void onServerStart(MinecraftServer server) {
         Main.server = server;
