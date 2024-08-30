@@ -78,6 +78,13 @@ public class DungeonQueue {
         queue.remove(playerName);
         queueUpdated("§b"+playerName + "§7 has been removed from the queue, because they have been offline for 2.5 minutes!");
     }
+    public void removeFromOfflineFirst(String playerName) {
+        if (!queue.contains(playerName)) {
+            return;
+        }
+        queue.remove(playerName);
+        queueUpdated("§b"+playerName + "§7 has been removed from the queue, because they are offline and it's their turn!");
+    }
     public boolean queueHasOnlinePlayer() {
         for (String playerName : queue) {
             if (OtherUtils.isPlayerOnline(playerName)) {
@@ -94,7 +101,7 @@ public class DungeonQueue {
             return;
         }
         if (!QueueEvents.disconnectTimes.containsKey(playerName)) {
-            removeFromOffline(playerName);
+            removeFromOfflineFirst(playerName);
             return;
         }
         if (!queueHasOnlinePlayer()) {
