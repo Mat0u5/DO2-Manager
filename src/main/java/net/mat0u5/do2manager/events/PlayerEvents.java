@@ -2,6 +2,7 @@ package net.mat0u5.do2manager.events;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.sun.management.OperatingSystemMXBean;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiInventoryClick;
@@ -37,6 +38,7 @@ import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,7 +112,8 @@ public class PlayerEvents {
 
                 List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(player.getServer());
                 if (!runners.isEmpty()) {
-                    if (runners.size() == 1) RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(player.getServer()).get(0));
+                    boolean isSpeedrun = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("true");
+                    if (runners.size() == 1 && isSpeedrun) RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(player.getServer()).get(0));
                 }
             }
             if (RunInfoParser.isDungeonArtifact(itemStack) && Main.currentRun.artifact_item == null) {

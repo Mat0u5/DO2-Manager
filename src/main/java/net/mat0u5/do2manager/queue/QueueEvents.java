@@ -53,6 +53,7 @@ public class QueueEvents {
     public static void onTickEnd() {
         checkDisconnectTimes--;
         if (checkDisconnectTimes > 0) return;
+        if (disconnectTimes.isEmpty()) return;
         checkDisconnectTimes = 20;
         for (String playerName : disconnectTimes.keySet()) {
             int timeLeft = disconnectTimes.get(playerName);
