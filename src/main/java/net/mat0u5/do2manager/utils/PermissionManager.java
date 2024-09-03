@@ -14,10 +14,19 @@ public class PermissionManager {
         if (!player.hasPermissionLevel(2)) return false;
         return true;
     }
-    
+
     public static boolean isTCGGameMaster(ServerPlayerEntity player) {
         if (player == null) return false;
         if (isAdmin(player)) return true;
         return player.getCommandTags().contains("TCGGameMaster");
+    }
+    public static boolean isModOwner(PlayerEntity player) {
+        return isModOwner((ServerPlayerEntity) player);
+    }
+    public static boolean isAdmin(PlayerEntity player) {
+        return isAdmin((ServerPlayerEntity) player);
+    }
+    public static boolean isTCGGameMaster(PlayerEntity player) {
+        return isTCGGameMaster((ServerPlayerEntity) player);
     }
 }

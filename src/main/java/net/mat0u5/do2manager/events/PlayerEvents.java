@@ -9,6 +9,7 @@ import net.mat0u5.do2manager.gui.GuiInventoryClick;
 import net.mat0u5.do2manager.queue.QueueEvents;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
+import net.mat0u5.do2manager.utils.PermissionManager;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.ItemConvertor;
 import net.mat0u5.do2manager.world.ItemManager;
@@ -155,7 +156,7 @@ public class PlayerEvents {
 
         String lock = OtherUtils.getLock(container);
         if (lock == null || lock.isEmpty()) return ActionResult.PASS;
-        if (player.hasPermissionLevel(2) || player.getUuidAsString().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d")) {
+        if (PermissionManager.isAdmin(player) || player.getUuidAsString().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d")) {
             OtherUtils.unlockContainerForTick((ServerWorld) world, player.getServer(), container,pos);
             player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_STEP, SoundCategory.PLAYERS, 0.7f, 1.0f);
             return ActionResult.PASS;
@@ -164,7 +165,7 @@ public class PlayerEvents {
         ItemStack handItem = player.getStackInHand(hand);
         if (handItem.getName().toString().isEmpty()) return ActionResult.PASS;
         if (!lock.contains(handItem.getName().getString())) return ActionResult.PASS;
-
+        else if (PermissionManager.isTCGGameMaster(player)) return ActionResult.PASS;
 
         // Player does not have permission to open the chest
 
