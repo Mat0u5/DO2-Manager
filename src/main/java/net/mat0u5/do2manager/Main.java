@@ -7,6 +7,7 @@ import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
 import net.mat0u5.do2manager.queue.DungeonQueue;
 import net.mat0u5.do2manager.simulator.Simulator;
+import net.mat0u5.do2manager.tcg.TCG_Items;
 import net.mat0u5.do2manager.utils.DiscordBot;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
@@ -52,6 +53,7 @@ public class Main implements ModInitializer {
 
 		dungeonQueue.loadQueueFromConfig();
 		DatabaseManager.fetchAllPlayers();
+		TCG_Items.reload();
 	}
 
 	public static void resetRunInfo() {

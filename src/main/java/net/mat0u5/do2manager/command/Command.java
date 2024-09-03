@@ -7,12 +7,16 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.mat0u5.do2manager.gui.GuiInventory_ChestFramework;
 import net.mat0u5.do2manager.queue.QueueCommand;
+import net.mat0u5.do2manager.tcg.TCG_Commands;
+import net.mat0u5.do2manager.utils.PermissionManager;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 
+import static net.mat0u5.do2manager.utils.PermissionManager.isModOwner;
+import static net.mat0u5.do2manager.utils.PermissionManager.isTCGGameMaster;
 import static net.minecraft.command.argument.EntityArgumentType.getPlayer;
 import static net.minecraft.command.argument.EntityArgumentType.player;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -537,5 +541,63 @@ public class Command {
                     .executes(QueueCommand::moveQueue))
         );
 
+        dispatcher.register(
+            literal("tcg")
+
+                .then(literal("generateBundle")
+                    .requires(source -> (isTCGGameMaster(source.getPlayer())))
+                    .then(literal("hermit")
+                        .executes(context -> TCG_Commands.generateDeck(
+                                context.getSource(), "hermit"
+                            )
+                        )
+                    )
+                    .then(literal("booster")
+                        .executes(context -> TCG_Commands.generateDeck(
+                                context.getSource(), "booster"
+                            )
+                        )
+                    )
+                    .then(literal("starter")
+                        .executes(context -> TCG_Commands.generateDeck(
+                                context.getSource(), "starter"
+                            )
+                        )
+                    )
+                    .then(literal("alterEgo")
+                        .executes(context -> TCG_Commands.generateDeck(
+                                context.getSource(), "alterEgo"
+                            )
+                        )
+                    )
+                    .then(literal("effect")
+                        .executes(context -> TCG_Commands.generateDeck(
+                                context.getSource(), "effect"
+                            )
+                        )
+                    )
+                    .then(literal("item")
+                        .executes(context -> TCG_Commands.generateDeck(
+                                context.getSource(), "item"
+                            )
+                        )
+                    )
+                )
+
+                .then(literal("_database_update_items")
+                    .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
+                    .executes(context -> TCG_Commands.databaseUpdate(
+                            context.getSource()
+                        )
+                    )
+                )
+                .then(literal("reload")
+                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
+                        .executes(context -> TCG_Commands.reload(
+                            context.getSource()
+                        )
+                    )
+                )
+        );
     }
 }

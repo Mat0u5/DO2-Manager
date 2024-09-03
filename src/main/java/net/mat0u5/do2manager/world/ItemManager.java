@@ -72,6 +72,24 @@ public class ItemManager {
         if (hasNbtEntry(itemStack, "CustomModelData")) return nbt.getInt("CustomModelData");
         return -1;
     }
+    public static int getMapId(ItemStack itemStack) {
+        NbtCompound nbt = itemStack.getNbt();
+        if (hasNbtEntry(itemStack, "map")) return nbt.getInt("map");
+        return -1;
+    }
+    public static NbtCompound createItemEntry(Item item, int count) {
+        ItemStack stack = new ItemStack(item, count);
+        NbtCompound entry = new NbtCompound();
+        stack.writeNbt(entry);
+        entry.putByte("Count", (byte) count);  // Set the item count
+        return entry;
+    }
+    public static NbtCompound createItemStackEntry(ItemStack stack) {
+        NbtCompound entry = new NbtCompound();
+        stack.writeNbt(entry);  // Write the ItemStack's NBT data to the entry
+        entry.putByte("Count", (byte) stack.getCount());  // Set the item count
+        return entry;
+    }
 
     public static List<ItemStack> getHopperItems(ServerWorld world, BlockPos hopperPos) {
         BlockEntity blockEntity = world.getBlockEntity(hopperPos);

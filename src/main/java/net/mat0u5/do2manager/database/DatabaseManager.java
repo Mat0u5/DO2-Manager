@@ -13,12 +13,12 @@ import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.mat0u5.do2manager.world.CommandBlockData;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.DO2_GSON;
-import net.mat0u5.do2manager.world.RunInfoParser;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
 public class DatabaseManager {
-    public static final String DB_VERSION = "v.1.0.6";
+    public static final String DB_VERSION = "v.1.0.7";
 
     private static final String FOLDER_PATH = "./config/"+ Main.MOD_ID;
     private static final String FILE_PATH = FOLDER_PATH+"/"+Main.MOD_ID+".db";
@@ -30,12 +30,15 @@ public class DatabaseManager {
             try (Connection connection = DriverManager.getConnection(URL)) {
                 if (connection != null) {
                     System.out.println("Connection established successfully.");
-                    createRunsTable(connection);
-                    createRunsDetailedTable(connection);
-                    createRunsSpeedrunsTable(connection);
-                    createCommandBlocksTable(connection);
-                    createFunctionsTable(connection);
-                    createPlayersTable(connection);
+                    if (isFirstStartup()) {
+                        createRunsTable(connection);
+                        createRunsDetailedTable(connection);
+                        createRunsSpeedrunsTable(connection);
+                        createCommandBlocksTable(connection);
+                        createFunctionsTable(connection);
+                        createPlayersTable(connection);
+                        createTCGTable(connection);
+                    }
                     System.out.println("Database initialized.");
                 } else {
                     System.err.println("Failed to establish connection.");
@@ -49,7 +52,14 @@ public class DatabaseManager {
             e.printStackTrace();
         }
     }
-
+    public static boolean isFirstStartup() {
+        String lastRecordedDBVersion = Main.config.getProperty("db_version");
+        if (DB_VERSION.equalsIgnoreCase(lastRecordedDBVersion)) return false;
+        if (lastRecordedDBVersion == null || lastRecordedDBVersion.isEmpty()) {
+            return true;
+        }
+        return false;
+    }
     public static void checkForDBUpdates() {
         String lastRecordedDBVersion = Main.config.getProperty("db_version");
         if (DB_VERSION.equalsIgnoreCase(lastRecordedDBVersion)) return;
@@ -157,6 +167,11 @@ public class DatabaseManager {
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.executeUpdate();
     }
+    private static void createTCGTable(Connection connection) throws SQLException {
+        String sql = "CREATE TABLE \"tcg_items\" (\"id\" INTEGER,\"db_version\" TEXT,\"item\" TEXT,PRIMARY KEY(\"id\" AUTOINCREMENT));";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.executeUpdate();
+    }
     public static void updateTable() throws SQLException {
         String old_db_ver = Main.config.getProperty("db_version");
         HashMap<List<String>,List<String>> versionUpdates = new HashMap<>();
@@ -165,7 +180,7 @@ public class DatabaseManager {
         versionUpdates.put(List.of("v.1.0.3"),List.of("v.1.0.4",""));
         versionUpdates.put(List.of("v.1.0.4"),List.of("v.1.0.5","ALTER TABLE runsDetailed ADD loot_drops TEXT; ALTER TABLE runsDetailed ADD special_events TEXT;"));
         versionUpdates.put(List.of("v.1.0.5"),List.of("v.1.0.6","ALTER TABLE runs ADD crowns_counted INTEGER;"));
-
+        versionUpdates.put(List.of("v.1.0.6"),List.of("v.1.0.7","CREATE TABLE \"tcg_items\" (\"id\" INTEGER,\"db_version\" TEXT,\"item\" TEXT,PRIMARY KEY(\"id\" AUTOINCREMENT));"));
         //
         try (Connection connection = DriverManager.getConnection(URL)) {
             if (connection != null) {
@@ -202,6 +217,15 @@ public class DatabaseManager {
     }
     public static void deleteAllFunctions() {
         String sql = "DELETE FROM functions";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void deleteTCGItems() {
+        String sql = "DELETE FROM tcg_items";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.executeUpdate();
@@ -344,6 +368,35 @@ public class DatabaseManager {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    public static void addTCGItem(ItemStack itemStack) {
+        String sql = "INSERT INTO tcg_items(db_version, item) VALUES(?, ?)";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, DB_VERSION);
+            statement.setString(2, DO2_GSON.serializeItemStack(itemStack));
+
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static List<ItemStack> getAllTCGItems() {
+        List<ItemStack> result = new ArrayList<>();
+        String sql = "SELECT * from tcg_items";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                String itemStr = resultSet.getString("item");
+                result.add(DO2_GSON.deserializeItemStack(itemStr));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 
     private static List<DO2Run> fetchRuns(String sql, List<Object> parameters) {
