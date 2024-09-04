@@ -15,6 +15,19 @@ public class TCG_Items {
     private static List<String> hermits_rare = List.of("Hypno ★ rare ★ Miner Type", "Bdubs ★ rare ★ Balanced Type", "Cubfan ★ rare ★ Speedrunner Type", "DocM ★ rare ★ Farm Type", "Etho ★ rare ★ Redstone Type", "False ★ rare ★ Builder Type", "Gem ★ rare ★ Terraform Type", "Grian ★ rare ★ Prankster Type", "Iskall ★ rare ★ Farm Type", "Joe Hills ★ rare ★ Farm Type", "Keralis ★ rare ★ Terraform Type", "Pearl ★ rare ★ Terraform Type", "Rendog ★ rare ★ Builder Type", "Scar ★ rare ★ Builder Type", "Impulse ★ rare ★ Redstone Type", "Jevin ★ rare ★ Speedrunner Type", "TFC ★ rare ★ Miner Type", "Stress ★ rare ★ Prankster Type", "Tango ★ rare ★ Farm Type", "Beef ★ rare ★ Builder Type", "Wels ★ rare ★ PVP Type", "Mumbo ★ rare ★ Prankster Type", "xB ★ rare ★ Explorer Type", "Xisuma ★ rare ★ Redstone Type", "Zedaph ★ rare ★ Explorer Type", "Cleo ★ rare ★ PVP Type");
     private static List<String> hermits_common = List.of("Rendog ■ common ■ Balanced Type", "Bdubs ■ common ■ Builder Type", "DocM ■ common ■ Redstone Type", "Hypno ■ common ■ Balanced Type", "False ■ common ■ PVP Type", "Gem ■ common ■ Builder Type", "Grian ■ common ■ Builder Type", "Etho ■ common ■ Balanced Type", "Jevin ■ common ■ Explorer Type", "Joe Hills ■ common ■ Explorer Type", "Mumbo ■ common ■ Redstone Type", "Cubfan ■ common ■ Balanced Type", "Scar ■ common ■ Terraform Type", "Impulse ■ common ■ Farm Type", "Iskall ■ common ■ Balanced Type", "Stress ■ common ■ Builder Type", "Beef ■ common ■ Balanced Type", "Tango ■ common ■ Redstone Type", "TFC ■ common ■ Miner Type", "Wels ■ common ■ Builder Type", "Pearl ■ common ■ Builder Type", "Keralis ■ common ■ Builder Type", "xB ■ common ■ PVP Type", "Xisuma ■ common ■ Farm Type", "Zedaph ■ common ■ Redstone Type", "Cleo ■ common ■ Builder Type");
     private static List<String> hermits_alter_ego = List.of("Llamadad ★ rare ★ Balanced Type", "Evil Jevin ■ common ■ Miner Type", "Potato Boy ★ rare ★ Farm Type", "Poultry Man ■ common ■ Prankster Type", "Renbob ★ rare ★ Explorer Type", "Jingler ★ rare ★ Speedrunner Type", "Hotguy ★ rare ★ Explorer Type", "Beetlejhost ■ common ■ Speedrunner Type", "Goatfather ★ rare ★ Prankster Type", "Human Cleo ★ rare ★ PVP Type", "Evil X ★ rare ★ Balanced Type", "Helsknight ★ rare ★ PVP Type");
+    private static List<String> hermits_alter_ego_rare = List.of("Helsknight ★ rare ★ PVP Type", "Evil X ★ rare ★ Balanced Type", "Human Cleo ★ rare ★ PVP Type", "Llamadad ★ rare ★ Balanced Type", "Goatfather ★ rare ★ Prankster Type", "Hotguy ★ rare ★ Explorer Type", "Jingler ★ rare ★ Speedrunner Type", "Renbob ★ rare ★ Explorer Type", "Potato Boy ★ rare ★ Farm Type");
+    private static List<String> hermits_alter_ego_common = List.of("Beetlejhost ■ common ■ Speedrunner Type", "Evil Jevin ■ common ■ Miner Type", "Poultry Man ■ common ■ Prankster Type");
+
+    private static List<String> type_miner = List.of("TFC ★ rare ★ Miner Type", "Hypno ★ rare ★ Miner Type", "TFC ■ common ■ Miner Type", "TFC ★ ultra rare ★ Miner Type", "Evil Jevin ■ common ■ Miner Type", "Miner", "Miner ★ double ★");
+    private static List<String> type_speedrunner = List.of("Cubfan ★ rare ★ Speedrunner Type", "Jevin ★ rare ★ Speedrunner Type", "Beetlejhost ■ common ■ Speedrunner Type", "Jingler ★ rare ★ Speedrunner Type", "Speedrunner", "Speedrunner ★ double ★");
+    private static List<String> type_balanced = List.of("Bdubs ★ rare ★ Balanced Type", "Rendog ■ common ■ Balanced Type", "Hypno ■ common ■ Balanced Type", "Etho ■ common ■ Balanced Type", "Cubfan ■ common ■ Balanced Type", "Iskall ■ common ■ Balanced Type", "Beef ■ common ■ Balanced Type", "Evil X ★ rare ★ Balanced Type", "Llamadad ★ rare ★ Balanced Type", "Balanced", "Balanced ★ double ★");
+    private static List<String> type_builder = List.of("False ★ rare ★ Builder Type", "Rendog ★ rare ★ Builder Type", "Scar ★ rare ★ Builder Type", "Beef ★ rare ★ Builder Type", "Bdubs ■ common ■ Builder Type", "Wels ■ common ■ Builder Type", "Cleo ■ common ■ Builder Type", "Stress ■ common ■ Builder Type", "Pearl ■ common ■ Builder Type", "Keralis ■ common ■ Builder Type", "Grian ■ common ■ Builder Type", "Gem ■ common ■ Builder Type", "Builder", "Builder ★ double ★");
+    private static List<String> type_redstoner = List.of("Tango ■ common ■ Redstone Type", "DocM ■ common ■ Redstone Type", "Mumbo ■ common ■ Redstone Type", "Zedaph ■ common ■ Redstone Type", "Etho ★ rare ★ Redstone Type", "Impulse ★ rare ★ Redstone Type", "Xisuma ★ rare ★ Redstone Type", "Redstone", "Redstone ★ double ★");
+    private static List<String> type_farm = List.of("Potato Boy ★ rare ★ Farm Type", "DocM ★ rare ★ Farm Type", "Joe Hills ★ rare ★ Farm Type", "Iskall ★ rare ★ Farm Type", "Tango ★ rare ★ Farm Type", "Impulse ■ common ■ Farm Type", "Xisuma ■ common ■ Farm Type", "Farm", "Farm ★ double ★");
+    private static List<String> type_prankster = List.of("Mumbo ★ rare ★ Prankster Type", "Stress ★ rare ★ Prankster Type", "Grian ★ rare ★ Prankster Type", "Goatfather ★ rare ★ Prankster Type", "Poultry Man ■ common ■ Prankster Type", "Prankster", "Prankster ★ double ★");
+    private static List<String> type_terraform = List.of("Gem ★ rare ★ Terraform Type", "Keralis ★ rare ★ Terraform Type", "Pearl ★ rare ★ Terraform Type", "Scar ■ common ■ Terraform Type", "Terraform", "Terraform ★ double ★");
+    private static List<String> type_pvp = List.of("Cleo ★ rare ★ PVP Type", "Wels ★ rare ★ PVP Type", "xB ■ common ■ PVP Type", "False ■ common ■ PVP Type", "Etho ★ ultra rare ★ PVP Type", "Human Cleo ★ rare ★ PVP Type", "Helsknight ★ rare ★ PVP Type", "PVP", "PVP ★ double ★");
+    private static List<String> type_explorer = List.of("Zedaph ★ rare ★ Explorer Type", "xB ★ rare ★ Explorer Type", "Joe Hills ■ common ■ Explorer Type", "Jevin ■ common ■ Explorer Type", "Beef ★ ultra rare ★ Explorer Type", "Hotguy ★ rare ★ Explorer Type", "Renbob ★ rare ★ Explorer Type", "Explorer", "Explorer ★ double ★");
 
     private static List<String> effects = new ArrayList<>();
     private static List<String> effects_ultra_rare = List.of("Mending ★ ultra rare ★ Single Use", "Fortune ★ ultra rare ★ Single Use", "Clock ★ ultra rare ★ Single Use", "Totem Of Undying ★ ultra rare ★ Attach", "Fishing Rod ★ ultra rare ★ Single Use", "Netherite Sword ★ ultra rare ★ Single Use", "Bed ★ ultra rare ★ Attach", "Golden Apple ★ ultra rare ★ Single Use", "Netherite Armour ★ ultra rare ★ Attach", "Armour Stand ★ ultra rare ★ Attach", "Sweeping Edge ★ ultra rare ★ Single Use", "Thorns III ★ ultra rare ★ Attach", "Ladder ★ ultra rare ★ Single Use");
@@ -69,8 +82,11 @@ public class TCG_Items {
         return list.get(rnd.nextInt(list.size()));
     }
     private static List<ItemStack> getMatchingCard(List<String> validNames) {
+        return getMatchingCard(allCards, validNames);
+    }
+    private static List<ItemStack> getMatchingCard(List<ItemStack> cards, List<String> validNames) {
         List<ItemStack> result = new ArrayList<>();
-        for (ItemStack card : allCards) {
+        for (ItemStack card : cards) {
             String name = card.getName().getString();
             if (validNames.contains(name)) {
                 result.add(card.copy());
@@ -81,13 +97,68 @@ public class TCG_Items {
 
 
 
+
     public static List<ItemStack> getAllCards() {
         return allCards;
     }
     public static ItemStack getRandomCard() {
         return randomElement(getAllCards());
     }
+    ///
+    public static List<String> getTypeFilter(String type) {
+        if (type.equalsIgnoreCase("miner")) return type_miner;
+        if (type.equalsIgnoreCase("speedrunner")) return type_speedrunner;
+        if (type.equalsIgnoreCase("balanced")) return type_balanced;
+        if (type.equalsIgnoreCase("builder")) return type_builder;
+        if (type.equalsIgnoreCase("redstoner")) return type_redstoner;
+        if (type.equalsIgnoreCase("farm")) return type_farm;
+        if (type.equalsIgnoreCase("prankster")) return type_prankster;
+        if (type.equalsIgnoreCase("terraform")) return type_terraform;
+        if (type.equalsIgnoreCase("pvp")) return type_pvp;
+        if (type.equalsIgnoreCase("explorer")) return type_explorer;
+        return null;
+    }
+    public static String getRandomType(List<String> exclude) {
+        List<String> list = new ArrayList<>(List.of(
+                "miner", "speedrunner", "balanced", "builder", "redstoner",
+                "farm", "prankster", "terraform", "pvp", "explorer"
+        ));
+        for (String s : exclude) {
+            list.remove(s);
+        }
+        return list.get(rnd.nextInt(list.size()));
+    }
+    public static String getRandomType() {
+        return getRandomType(List.of());
+    }
 
+    ///
+
+    public static ItemStack getRandomTypeHermit(String type) {
+        return randomElement(getMatchingCard(getAllHermits(),getTypeFilter(type)));
+    }
+    public static ItemStack getRandomTypeUltraRareHermit(String type) {
+        return randomElement(getMatchingCard(getUltraRareHermits(),getTypeFilter(type)));
+    }
+    public static ItemStack getRandomTypeRareHermit(String type, boolean includeAlterEgo) {
+        List<ItemStack> hermits = getRareHermits();
+        if (includeAlterEgo) hermits.addAll(getMatchingCard(hermits_alter_ego_rare));
+        return randomElement(getMatchingCard(hermits,getTypeFilter(type)));
+    }
+    public static ItemStack getRandomTypeCommonHermit(String type, boolean includeAlterEgo) {
+        List<ItemStack> hermits = getCommonHermits();
+        if (includeAlterEgo) hermits.addAll(getMatchingCard(hermits_alter_ego_common));
+        return randomElement(getMatchingCard(hermits,getTypeFilter(type)));
+    }
+    public static ItemStack getRandomTypeItem(String type) {
+        return randomElement(getMatchingCard(getAllItems(),getTypeFilter(type)));
+    }
+    public static ItemStack getRandomTypeRareItem(String type) {
+        return randomElement(getMatchingCard(getRareItems(),getTypeFilter(type)));
+    }
+    public static ItemStack getRandomTypeCommonItem(String type) {
+        return randomElement(getMatchingCard(getCommonItems(),getTypeFilter(type)));
+    }
 
     ///
     public static List<ItemStack> getAllHermits() {

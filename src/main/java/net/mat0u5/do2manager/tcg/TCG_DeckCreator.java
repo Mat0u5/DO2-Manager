@@ -10,6 +10,8 @@ import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static net.mat0u5.do2manager.world.ItemManager.createItemStackEntry;
@@ -158,7 +160,53 @@ public class TCG_DeckCreator {
 
         NbtCompound nbt = itemStack.getOrCreateNbt();
         NbtList itemsList = new NbtList();
-        itemsList.add(createItemStackEntry(new ItemStack(Items.BEDROCK)));
+        String type1 = TCG_Items.getRandomType(List.of("prankster","speedrunner","terraform"));
+        String type2 = TCG_Items.getRandomType(List.of(type1));
+        String type3 = TCG_Items.getRandomType(List.of(type1, type2));
+        if (type2.equalsIgnoreCase(type1) || type3.equalsIgnoreCase(type2) || type3.equalsIgnoreCase(type1)) {
+            System.out.println("ERROR_02");
+            return null;
+        }
+        int randomRares = rnd.nextInt(8);
+        int randomRares2 = rnd.nextInt(8);
+        while (randomRares2 == randomRares) randomRares2 = rnd.nextInt(8);
+
+        if (randomRares==0 || randomRares2==0) itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeRareHermit(type1, true)));
+        else itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeCommonHermit(type1, true)));
+        if (randomRares==1 || randomRares2==1) itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeRareHermit(type1, true)));
+        else itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeCommonHermit(type1, true)));
+        if (randomRares==2 || randomRares2==2) itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeRareHermit(type1, true)));
+        else itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeCommonHermit(type1, true)));
+        if (randomRares==3 || randomRares2==3) itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeRareHermit(type1, true)));
+        else itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeCommonHermit(type1, true)));
+
+        if (randomRares==4 || randomRares2==4) itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeRareHermit(type2, true)));
+        else itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeCommonHermit(type2, true)));
+        if (randomRares==5 || randomRares2==5) itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeRareHermit(type2, true)));
+        else itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeCommonHermit(type2, true)));
+
+        if (randomRares==6 || randomRares2==6) itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeRareHermit(type3, true)));
+        else itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeCommonHermit(type3, true)));
+        if (randomRares==7 || randomRares2==7) itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeRareHermit(type3, true)));
+        else itemsList.add(createItemStackEntry(TCG_Items.getRandomTypeCommonHermit(type3, true)));
+
+
+        ItemStack item1 = TCG_Items.getRandomTypeCommonItem(type1);
+        ItemStack item2 = TCG_Items.getRandomTypeCommonItem(type2);
+        ItemStack item3 = TCG_Items.getRandomTypeCommonItem(type3);
+        item1.setCount(13);
+        item2.setCount(7);
+        item3.setCount(7);
+        itemsList.add(createItemStackEntry(item1));
+        itemsList.add(createItemStackEntry(item2));
+        itemsList.add(createItemStackEntry(item3));
+        for (int i = 0; i < 6; i++) {
+            itemsList.add(createItemStackEntry(TCG_Items.getRandomCommonEffect()));
+        }
+        itemsList.add(createItemStackEntry(TCG_Items.getRandomRareEffect()));
+        
+        
+
         nbt.put("Items", itemsList);
         itemStack.setNbt(nbt);
 

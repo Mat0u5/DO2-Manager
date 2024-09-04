@@ -546,39 +546,77 @@ public class Command {
 
                 .then(literal("generateBundle")
                     .requires(source -> (isTCGGameMaster(source.getPlayer())))
+
+
                     .then(literal("hermit")
                         .executes(context -> TCG_Commands.generateDeck(
-                                context.getSource(), "hermit"
+                                context.getSource(), "hermit",1
+                            )
+                        )
+                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(1,27))
+                            .executes(context -> TCG_Commands.generateDeck(
+                                    context.getSource(), "hermit",IntegerArgumentType.getInteger(context,"amount")
+                                )
                             )
                         )
                     )
                     .then(literal("booster")
                         .executes(context -> TCG_Commands.generateDeck(
-                                context.getSource(), "booster"
+                                context.getSource(), "booster",1
+                            )
+                        )
+                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(1,27))
+                            .executes(context -> TCG_Commands.generateDeck(
+                                    context.getSource(), "booster",IntegerArgumentType.getInteger(context,"amount")
+                                )
                             )
                         )
                     )
                     .then(literal("starter")
                         .executes(context -> TCG_Commands.generateDeck(
-                                context.getSource(), "starter"
+                                context.getSource(), "starter",1
+                            )
+                        )
+                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(1,27))
+                            .executes(context -> TCG_Commands.generateDeck(
+                                    context.getSource(), "starter",IntegerArgumentType.getInteger(context,"amount")
+                                )
                             )
                         )
                     )
                     .then(literal("alterEgo")
                         .executes(context -> TCG_Commands.generateDeck(
-                                context.getSource(), "alterEgo"
+                                context.getSource(), "alterEgo",1
+                            )
+                        )
+                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(1,27))
+                            .executes(context -> TCG_Commands.generateDeck(
+                                    context.getSource(), "alterEgo",IntegerArgumentType.getInteger(context,"amount")
+                                )
                             )
                         )
                     )
                     .then(literal("effect")
                         .executes(context -> TCG_Commands.generateDeck(
-                                context.getSource(), "effect"
+                                context.getSource(), "effect",1
+                            )
+                        )
+                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(1,27))
+                            .executes(context -> TCG_Commands.generateDeck(
+                                    context.getSource(), "effect",IntegerArgumentType.getInteger(context,"amount")
+                                )
                             )
                         )
                     )
                     .then(literal("item")
                         .executes(context -> TCG_Commands.generateDeck(
-                                context.getSource(), "item"
+                                context.getSource(), "item",1
+                            )
+                        )
+                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(1,27))
+                            .executes(context -> TCG_Commands.generateDeck(
+                                    context.getSource(), "item",IntegerArgumentType.getInteger(context,"amount")
+                                )
                             )
                         )
                     )
