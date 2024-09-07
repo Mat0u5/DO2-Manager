@@ -38,6 +38,7 @@ public abstract class MSPTUtils {
                     Thread.sleep(sleep);
                 }
             } catch (InterruptedException e) {
+                System.out.println("Interrupting thread");
                 Thread.currentThread().interrupt();
             }
         }

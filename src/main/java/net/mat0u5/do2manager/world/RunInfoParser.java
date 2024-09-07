@@ -171,9 +171,9 @@ public class RunInfoParser {
     }
     private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 
-    public static Future<DO2Run> getFastestPlayerRunMatchingCurrent(PlayerEntity player) {
+    public static void getFastestPlayerRunMatchingCurrent(PlayerEntity player) {
         boolean isSpeedrun = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("true");
-        Callable<DO2Run> task = () -> {
+        executor.submit(()  -> {
             List<DO2Run> allRuns = DatabaseManager.getRunsByCriteria(List.of("runners = \"" + player.getUuidAsString()+"\""));
             DO2Run fastestRun = null;
             for (DO2Run run : allRuns) {
@@ -190,8 +190,7 @@ public class RunInfoParser {
                 OtherUtils.broadcastMessage(player.getServer(), Text.translatable("§6This speedrun will be compared with " + player.getEntityName() + "'s fastest "+Main.currentRun.getFormattedDifficulty()+" level " + Main.currentRun.getCompassLevel()+"§6 run."));
             }
             return fastestRun;
-        };
-        return executor.submit(task);
+        });
     }
     public static List<PlayerEntity> getCurrentRunners(MinecraftServer server) {
         List<PlayerEntity> runners = new ArrayList<>();

@@ -7,7 +7,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class TextUtils {
-    public static HashMap<List<String>, List<String>> emotes = new HashMap<List<String>, List<String>>();
+    private static HashMap<List<String>, List<String>> emotes = new HashMap<List<String>, List<String>>();
+    private static final List<String> maxOne = List.of("warden", "warden_pointing", "warden_pointing_right"
+            , "warden_pointing_left", "warden_scream", "ravager");
     public static void setEmotes() {
         emotes.put(List.of("coin"), List.of("\uE0A1", "1259207562687942816"));
         emotes.put(List.of("crown"), List.of("\uE0A2", "1259207563988307988"));
@@ -89,6 +91,12 @@ public class TextUtils {
         emotes.put(List.of("ravager"), List.of("\uE0E1"));
     }
     public static String replaceEmotes(String input) {
+        for (String maxOneEmote : maxOne) {
+            if (!input.contains(maxOneEmote)) continue;
+            input = input.replaceFirst(":"+maxOneEmote+":", "_"+maxOneEmote+"_");
+            input = input.replaceAll(":"+maxOneEmote+":", "");
+            input = input.replaceFirst("_"+maxOneEmote+"_", ":"+maxOneEmote+":");
+        }
         for (Map.Entry<List<String>, List<String>> entry : emotes.entrySet()) {
             if (entry.getValue().size()==0) continue;
             String emoteValue = entry.getValue().get(0);

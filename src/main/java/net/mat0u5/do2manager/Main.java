@@ -21,6 +21,8 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 public class Main implements ModInitializer {
@@ -71,18 +73,16 @@ public class Main implements ModInitializer {
 		currentRun = new DO2Run().deserialize(config.getProperty("current_run"));
 	}
 
+	private static final ExecutorService executor = Executors.newSingleThreadExecutor();
 	public static CompletableFuture<Void> reloadAllRunsAsync() {
 		return CompletableFuture.runAsync(() -> {
-			allRuns = DatabaseManager.getRunsByCriteria(new ArrayList<>());
-			Collections.sort(allRuns, new Comparator<DO2Run>() {
-				@Override
-				public int compare(DO2Run run1, DO2Run run2) {
-					return Integer.compare(run2.getRunNum(), run1.getRunNum());
-				}
-			});
-			System.out.println("Runs Reloaded.");
-			reloadedRuns = true;
-		});
+			synchronized (Main.class) { // Synchronize to handle concurrent access
+				allRuns = DatabaseManager.getRunsByCriteria(new ArrayList<>());
+				Collections.sort(allRuns, Comparator.comparingInt(DO2Run::getRunNum).reversed());
+				System.out.println("Runs Reloaded.");
+				reloadedRuns = true;
+			}
+		}, executor);
 	}
 	public static void addRun(DO2Run run) {
 		if (run.date==null||run.date.isEmpty()) {

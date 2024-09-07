@@ -22,8 +22,6 @@ import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class BlockScanner extends MSPTUtils {
     static List<Integer> percentCompleted = new ArrayList<>();
@@ -86,8 +84,7 @@ public class BlockScanner extends MSPTUtils {
             stop();
         }
         else {
-            // Process a batch of 10000 positions
-            int batchSize = 10_000;
+            int batchSize = 100_000;
             int batchEndPos = Math.min(listPos + batchSize, positionsToCheckInt);
             for (int i = listPos; i < batchEndPos; i++) {
                 processPosition(i);
@@ -164,7 +161,6 @@ public class BlockScanner extends MSPTUtils {
         }
     }
 
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
     @Override
     protected void stoppedFunction() {
         player.sendMessage(Text.of("§aBlock scan complete."));
