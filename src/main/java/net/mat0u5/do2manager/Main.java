@@ -54,7 +54,6 @@ public class Main implements ModInitializer {
 		simulator = new Simulator();
 
 		dungeonQueue.loadQueueFromConfig();
-		DatabaseManager.fetchAllPlayers();
 		TCG_Items.reload();
 	}
 

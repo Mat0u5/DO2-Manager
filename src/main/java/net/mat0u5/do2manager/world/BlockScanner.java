@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 
 public class BlockScanner extends MSPTUtils {
-    static List<Integer> percentCompleted = new ArrayList<>();
+    List<Integer> percentCompleted = new ArrayList<>();
     static String scanType = "";
     static String blockPassword = "";
     static int lockOrUnlock=0;
@@ -100,6 +100,10 @@ public class BlockScanner extends MSPTUtils {
                     if (scanType.contains("lock_block")) player.sendMessage(Text.of("-Modified " + lockOrUnlock + " blocks."));
                     System.out.println("[Block Database Searcher] Processed " + percent + "% of positions.");
                 }
+            }
+            try {
+                Thread.sleep(100);
+            }catch(Exception e) {
             }
         }
     }
