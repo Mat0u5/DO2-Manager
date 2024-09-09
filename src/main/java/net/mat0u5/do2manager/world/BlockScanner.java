@@ -25,10 +25,10 @@ import java.util.Set;
 
 public class BlockScanner extends MSPTUtils {
     List<Integer> percentCompleted = new ArrayList<>();
-    static String scanType = "";
-    static String blockPassword = "";
-    static int lockOrUnlock=0;
-    static int listPos=0;
+    String scanType = "";
+    String blockPassword = "";
+    int lockOrUnlock=0;
+    int listPos=0;
 
     Integer positionsToCheckInt;
     ServerWorld world = null;
@@ -84,7 +84,7 @@ public class BlockScanner extends MSPTUtils {
             stop();
         }
         else {
-            int batchSize = 100_000;
+            int batchSize = 10_000;
             int batchEndPos = Math.min(listPos + batchSize, positionsToCheckInt);
             for (int i = listPos; i < batchEndPos; i++) {
                 processPosition(i);
@@ -101,9 +101,10 @@ public class BlockScanner extends MSPTUtils {
                     System.out.println("[Block Database Searcher] Processed " + percent + "% of positions.");
                 }
             }
-            try {
-                Thread.sleep(100);
-            }catch(Exception e) {
+
+            if (!commandBlocksList.isEmpty()) {
+                DatabaseManager.addCommandBlocks(commandBlocksList);
+                commandBlocksList.clear();
             }
         }
     }
@@ -178,7 +179,7 @@ public class BlockScanner extends MSPTUtils {
     }
     private void addCommandBlockData() {
         player.sendMessage(Text.of("§aSaving Data to database."));
-        DatabaseManager.addCommandBlocks(commandBlocksList);
+        if (!commandBlocksList.isEmpty()) DatabaseManager.addCommandBlocks(commandBlocksList);
         player.sendMessage(Text.of("§aData saved."));
     }
 }

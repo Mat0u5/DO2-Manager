@@ -19,7 +19,7 @@ public class PlayerManagerMixin {
 
     @Inject(method = "broadcast", at = @At("HEAD"), cancellable = true)
     private void onBroadcast(Text message, boolean actionBar, CallbackInfo ci) {
-        if (!message.getString().matches("§3\\[.+ on Discord§3\\] §r.+")) return;
+        if (!message.getString().matches("<§9\\[Discord§9\\] .+> §r.+")) return;
         List<Text> siblings = message.getSiblings();
         String originalMessage = siblings.get(2).getString();
         if (siblings.size() != 3) return;

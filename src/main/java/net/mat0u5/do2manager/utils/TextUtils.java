@@ -116,6 +116,8 @@ public class TextUtils {
             for (String emote : entry.getKey()) {
                 String emoteCode = "<:" + emote + ":"+emoteID+">";
                 input = replaceCaseInsensitive(input, emoteCode, emoteValue);
+                String emoteCode2 = ":" + emote + ":";
+                input = replaceCaseInsensitive(input, emoteCode2, emoteValue);
             }
             if (!input.contains(":")) return input;
         }
