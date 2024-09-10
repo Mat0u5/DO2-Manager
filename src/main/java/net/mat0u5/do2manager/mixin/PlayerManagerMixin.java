@@ -25,7 +25,7 @@ public class PlayerManagerMixin {
         if (siblings.size() != 3) return;
         String modifiedMessage = TextUtils.replaceEmotesDiscord(originalMessage);
         if (!originalMessage.equals(modifiedMessage)) {
-            OtherUtils.broadcastMessage(Main.server, Text.translatable("§3[§r"+siblings.get(0).getString()).append(siblings.get(1)).append(Text.translatable(modifiedMessage)));
+            OtherUtils.broadcastMessage(Main.server, Text.translatable("<§9[Discord§9] "+siblings.get(0).getString()).append(siblings.get(1)).append(Text.translatable(modifiedMessage)));
             ci.cancel();
         }
     }
