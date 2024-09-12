@@ -11,6 +11,7 @@ import net.mat0u5.do2manager.tcg.TCG_Items;
 import net.mat0u5.do2manager.utils.DiscordBot;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
+import net.mat0u5.do2manager.world.DO2RunAbridged;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
@@ -33,13 +34,13 @@ public class Main implements ModInitializer {
 	public static DO2Run currentRun = new DO2Run();
 	public static DO2Run speedrun = new DO2Run();
 	public static List<DO2Run> allRuns = new ArrayList<>();
+	public static List<DO2RunAbridged> allAbridgedRuns = new ArrayList<>();
 	public static HashMap<PlayerEntity, GuiPlayerSpecific> openGuis = new HashMap<>();
 	public static HashMap<String, String> allPlayers = new HashMap<>();
 	public static MinecraftServer server;
 	public static boolean reloadedRuns = false;
 	public static Simulator simulator;
 	public static DungeonQueue dungeonQueue = new DungeonQueue();
-	public static DiscordBot discordBot = null;
 
 	@Override
 	public void onInitialize() {
@@ -76,10 +77,17 @@ public class Main implements ModInitializer {
 	public static CompletableFuture<Void> reloadAllRunsAsync() {
 		return CompletableFuture.runAsync(() -> {
 			synchronized (Main.class) { // Synchronize to handle concurrent access
+				/*System.out.println("Loading All Runs...");
 				allRuns = DatabaseManager.getRunsByCriteria(new ArrayList<>());
 				Collections.sort(allRuns, Comparator.comparingInt(DO2Run::getRunNum).reversed());
-				System.out.println("Runs Reloaded.");
+				System.out.println("Runs Reloaded.");*/
 				reloadedRuns = true;
+
+
+				System.out.println("Loading All Abridged Runs...");
+				allAbridgedRuns = DatabaseManager.getAbridgedRunsByCriteria(new ArrayList<>());
+				Collections.sort(allAbridgedRuns, Comparator.comparingInt(DO2RunAbridged::getRunNum).reversed());
+				System.out.println("Abridged Runs Reloaded.");
 			}
 		}, executor);
 	}
@@ -90,9 +98,16 @@ public class Main implements ModInitializer {
 			run.date = now.format(formatter);
 		}
 		allRuns.add(run);
+		allAbridgedRuns.add(run.getAbridgedRun());
 		Collections.sort(allRuns, new Comparator<DO2Run>() {
 			@Override
 			public int compare(DO2Run run1, DO2Run run2) {
+				return Integer.compare(run2.getRunNum(), run1.getRunNum());
+			}
+		});
+		Collections.sort(allAbridgedRuns, new Comparator<DO2RunAbridged>() {
+			@Override
+			public int compare(DO2RunAbridged run1, DO2RunAbridged run2) {
 				return Integer.compare(run2.getRunNum(), run1.getRunNum());
 			}
 		});

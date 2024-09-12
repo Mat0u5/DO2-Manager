@@ -51,6 +51,20 @@ public class DO2Run {
     public int timestamp_artifact = -1;
 
     private static final Gson GSON = new Gson();
+    public DO2RunAbridged getAbridgedRun() {
+        DO2RunAbridged run = new DO2RunAbridged();
+        run.run_number = run_number;
+        run.run_type = run_type;
+        run.runners = runners;
+        run.run_length = run_length;
+        run.embers_counted = embers_counted;
+        run.crowns_counted = crowns_counted;
+        run.difficulty = difficulty;
+        run.successful = getSuccess();
+        run.compass_level = getCompassLevel();
+
+        return run;
+    }
     public boolean isLackey() {
         if (runners == null) return false;
         if (runners.isEmpty()) return false;

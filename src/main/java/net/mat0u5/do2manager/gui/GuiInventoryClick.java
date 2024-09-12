@@ -9,7 +9,6 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
@@ -22,106 +21,108 @@ public class GuiInventoryClick {
 
         NbtCompound nbt = clickedItem.getNbt();
         String tag = nbt.getString("GUI_ITEM");
+        GuiPlayerSpecific gui = Main.openGuis.get(player);
+        GuiInventory_Database guiDatabase = gui.guiDatabase;
         if (guiName.equalsIgnoreCase("DatabaseGUI")) {
             if (tag.equalsIgnoreCase("next_page")) {
-                if (button == 0) Main.openGuis.get(player).guiDatabase.current_page += 1;
-                else if (button == 1) Main.openGuis.get(player).guiDatabase.current_page = (int) Math.ceil(Main.openGuis.get(player).guiDatabase.runsSearch.size()/21)+1;
-                Main.openGuis.get(player).guiDatabase.populateRunInventory();
+                if (button == 0) guiDatabase.current_page += 1;
+                else if (button == 1) guiDatabase.current_page = (int) Math.ceil(guiDatabase.runsSearchAbridged.size()/21)+1;
+                guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("previous_page")) {
-                if (Main.openGuis.get(player).guiDatabase.current_page <= 1) return;
-                if (button == 0) Main.openGuis.get(player).guiDatabase.current_page -= 1;
-                else if (button == 1) Main.openGuis.get(player).guiDatabase.current_page = 1;
-                Main.openGuis.get(player).guiDatabase.populateRunInventory();
+                if (guiDatabase.current_page <= 1) return;
+                if (button == 0) guiDatabase.current_page -= 1;
+                else if (button == 1) guiDatabase.current_page = 1;
+                guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("next_page_custom_list")) {
-                Main.openGuis.get(player).guiDatabase.current_page_custom_list += 1;
-                Main.openGuis.get(player).guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
+                guiDatabase.current_page_custom_list += 1;
+                guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
             }else if (tag.equalsIgnoreCase("previous_page_custom_list")) {
-                if (Main.openGuis.get(player).guiDatabase.current_page_custom_list <= 1) return;
-                Main.openGuis.get(player).guiDatabase.current_page_custom_list -= 1;
-                Main.openGuis.get(player).guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
+                if (guiDatabase.current_page_custom_list <= 1) return;
+                guiDatabase.current_page_custom_list -= 1;
+                guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
             }
             else if (tag.equalsIgnoreCase("filter_success")) {
-                Main.openGuis.get(player).guiDatabase.filter_success++;
-                if (Main.openGuis.get(player).guiDatabase.filter_success > 2) Main.openGuis.get(player).guiDatabase.filter_success =0;
-                Main.openGuis.get(player).guiDatabase.updateSearch();
-                Main.openGuis.get(player).guiDatabase.populateRunInventory();
+                guiDatabase.filter_success++;
+                if (guiDatabase.filter_success > 2) guiDatabase.filter_success =0;
+                guiDatabase.updateSearch();
+                guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("filter_difficulty")) {
                 if (button == 0) {
-                    Main.openGuis.get(player).guiDatabase.filter_difficulty++;
-                    if (Main.openGuis.get(player).guiDatabase.filter_difficulty > 5) Main.openGuis.get(player).guiDatabase.filter_difficulty =0;
+                    guiDatabase.filter_difficulty++;
+                    if (guiDatabase.filter_difficulty > 5) guiDatabase.filter_difficulty =0;
                 }
                 else if (button == 1) {
-                    Main.openGuis.get(player).guiDatabase.filter_level++;
-                    if (Main.openGuis.get(player).guiDatabase.filter_level > 4) Main.openGuis.get(player).guiDatabase.filter_level =0;
+                    guiDatabase.filter_level++;
+                    if (guiDatabase.filter_level > 4) guiDatabase.filter_level =0;
                 }
-                Main.openGuis.get(player).guiDatabase.updateSearch();
-                Main.openGuis.get(player).guiDatabase.populateRunInventory();
+                guiDatabase.updateSearch();
+                guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("filter_run_type")) {
-                Main.openGuis.get(player).guiDatabase.filter_run_type++;
-                if (Main.openGuis.get(player).guiDatabase.filter_run_type > 2) Main.openGuis.get(player).guiDatabase.filter_run_type =0;
-                Main.openGuis.get(player).guiDatabase.updateSearch();
-                Main.openGuis.get(player).guiDatabase.populateRunInventory();
+                guiDatabase.filter_run_type++;
+                if (guiDatabase.filter_run_type > 2) guiDatabase.filter_run_type =0;
+                guiDatabase.updateSearch();
+                guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("filter_player")) {
                 if (button == 0) FakeSign.openFakeSign((ServerPlayerEntity) player);
                 else if (button == 1) {
-                    Main.openGuis.get(player).guiDatabase.filter_player = new ArrayList<>();
-                    Main.openGuis.get(player).guiDatabase.filter_player_uuid = new ArrayList<>();
-                    Main.openGuis.get(player).guiDatabase.updateSearch();
-                    Main.openGuis.get(player).guiDatabase.populateRunInventory();
+                    guiDatabase.filter_player = new ArrayList<>();
+                    guiDatabase.filter_player_uuid = new ArrayList<>();
+                    guiDatabase.updateSearch();
+                    guiDatabase.populateRunInventory();
                 }
             } else if (tag.equalsIgnoreCase("sort_by")) {
                 if (button == 0) {
-                    String current_sort = Main.openGuis.get(player).guiDatabase.sort_by;
+                    String current_sort = guiDatabase.sort_by;
                     if (current_sort.equalsIgnoreCase("run_number")) {
-                        Main.openGuis.get(player).guiDatabase.sort_by = "run_length";
+                        guiDatabase.sort_by = "run_length";
                     }
                     else if (current_sort.equalsIgnoreCase("run_length")) {
-                        Main.openGuis.get(player).guiDatabase.sort_by = "difficulty";
+                        guiDatabase.sort_by = "difficulty";
                     }
                     else if (current_sort.equalsIgnoreCase("difficulty")) {
-                        Main.openGuis.get(player).guiDatabase.sort_by = "embers";
+                        guiDatabase.sort_by = "embers";
                     }
                     else if (current_sort.equalsIgnoreCase("embers")) {
-                        Main.openGuis.get(player).guiDatabase.sort_by = "crowns";
+                        guiDatabase.sort_by = "crowns";
                     }
                     else if (current_sort.equalsIgnoreCase("crowns")) {
-                        Main.openGuis.get(player).guiDatabase.sort_by = "run_number";
+                        guiDatabase.sort_by = "run_number";
                     }
                     else {//Just to be safe
-                        Main.openGuis.get(player).guiDatabase.sort_by = "run_number";
+                        guiDatabase.sort_by = "run_number";
                     }
                 }
                 else if (button == 1) {
-                    Main.openGuis.get(player).guiDatabase.sort_by_descending = !Main.openGuis.get(player).guiDatabase.sort_by_descending;
+                    guiDatabase.sort_by_descending = !guiDatabase.sort_by_descending;
                 }
-                Main.openGuis.get(player).guiDatabase.updateSearch();
-                Main.openGuis.get(player).guiDatabase.populateRunInventory();
+                guiDatabase.updateSearch();
+                guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("toggle_heads")) {
-                Main.openGuis.get(player).guiDatabase.showRunsAsHeads = !Main.openGuis.get(player).guiDatabase.showRunsAsHeads;
-                Main.openGuis.get(player).guiDatabase.populateRunInventory();
+                guiDatabase.showRunsAsHeads = !guiDatabase.showRunsAsHeads;
+                guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("run") || tag.equalsIgnoreCase("back_to_run")) {
-                Main.openGuis.get(player).guiDatabase.detailedRunInventory(nbt.getInt("run_number"));
+                guiDatabase.detailedRunInventory(nbt.getInt("run_number"));
             } else if (tag.equalsIgnoreCase("back_to_main")) {
-                Main.openGuis.get(player).guiDatabase.populateRunInventory();
+                guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("card_plays")) {
-                Main.openGuis.get(player).guiDatabase.current_page_custom_list = 1;
-                Main.openGuis.get(player).guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
+                guiDatabase.current_page_custom_list = 1;
+                guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
             } else if (tag.equalsIgnoreCase("inventory_save")) {
-                Main.openGuis.get(player).guiDatabase.current_page_custom_list = 1;
-                Main.openGuis.get(player).guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
+                guiDatabase.current_page_custom_list = 1;
+                guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
             } else if (tag.equalsIgnoreCase("items_bought")) {
-                Main.openGuis.get(player).guiDatabase.current_page_custom_list = 1;
-                Main.openGuis.get(player).guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
+                guiDatabase.current_page_custom_list = 1;
+                guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
             } else if (tag.equalsIgnoreCase("reset_all")) {
                 serverPlayer.closeHandledScreen();
-                Main.openGuis.get(player).invId="";
+                gui.invId="";
                 new GuiInventory_Database().openRunInventory(serverPlayer);
             }
         }
         else if (guiName.equalsIgnoreCase("custom")) {
             boolean openNewInv = false;
             if (!Main.openGuis.containsKey(player)) openNewInv = true;
-            else if (!Main.openGuis.get(player).invOpen) openNewInv = true;
+            else if (!gui.invOpen) openNewInv = true;
 
             if (nbt.contains("GUI_ChangeToItem")) {
                 String leadsToChest = nbt.getString("GUI_ChangeToItem");
@@ -132,10 +133,10 @@ public class GuiInventoryClick {
                     if (split.length==3) invSize=54;
 
                     if (!openNewInv) {
-                        int oldInvsize = Main.openGuis.get(player).inventory.size();
+                        int oldInvsize = gui.inventory.size();
                         if (oldInvsize > 27) oldInvsize = 54;
                         else oldInvsize = 27;
-                        if (oldInvsize == invSize) Main.openGuis.get(player).guiItems.populateInventory(player, Main.server.getOverworld(), leadsToChest, false);
+                        if (oldInvsize == invSize) gui.guiItems.populateInventory(player, Main.server.getOverworld(), leadsToChest, false);
                         else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,false);
                     }
                     else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,false);
@@ -145,10 +146,10 @@ public class GuiInventoryClick {
                 String leadsToChest = nbt.getString("GUI_ChangeTo");
                 int invSize = leadsToChest.contains(";")?54:27;
                 if (!openNewInv) {
-                    int oldInvsize = Main.openGuis.get(player).inventory.size();
+                    int oldInvsize = gui.inventory.size();
                     if (oldInvsize > 27) oldInvsize = 54;
                     else oldInvsize = 27;
-                    if (oldInvsize == invSize) Main.openGuis.get(player).guiItems.populateInventory(player, Main.server.getOverworld(), leadsToChest, false);
+                    if (oldInvsize == invSize) gui.guiItems.populateInventory(player, Main.server.getOverworld(), leadsToChest, false);
                     else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,false);
                 }
                 else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,false);
@@ -157,10 +158,10 @@ public class GuiInventoryClick {
                 String leadsToChest = nbt.getString("GUI_ChangeTo_OpenContainer");
                 int invSize = leadsToChest.contains(";")?54:27;
                 if (!openNewInv) {
-                    int oldInvsize = Main.openGuis.get(player).inventory.size();
+                    int oldInvsize = gui.inventory.size();
                     if (oldInvsize > 27) oldInvsize = 54;
                     else oldInvsize = 27;
-                    if (oldInvsize == invSize) Main.openGuis.get(player).guiItems.populateInventory(player, Main.server.getOverworld(), leadsToChest, true);
+                    if (oldInvsize == invSize) gui.guiItems.populateInventory(player, Main.server.getOverworld(), leadsToChest, true);
                     else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,true);
                 }
                 else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,true);

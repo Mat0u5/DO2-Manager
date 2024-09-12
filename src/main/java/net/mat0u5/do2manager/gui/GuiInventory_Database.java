@@ -3,8 +3,8 @@ package net.mat0u5.do2manager.gui;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.world.DO2Run;
+import net.mat0u5.do2manager.world.DO2RunAbridged;
 import net.mat0u5.do2manager.world.ItemManager;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.GenericContainerScreenHandler;
@@ -15,7 +15,7 @@ import net.minecraft.text.Text;
 
 import java.util.*;
 
-import static net.mat0u5.do2manager.Main.allRuns;
+import static net.mat0u5.do2manager.Main.allAbridgedRuns;
 
 public class GuiInventory_Database extends GuiPlayerSpecific {
     private final int INVENTORY_SIZE = 54;
@@ -44,7 +44,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         return 1;
     }
     public void openRunInventoryAfterLoad(ServerPlayerEntity player) {
-        runsSearch = List.copyOf(allRuns);
+        runsSearchAbridged = List.copyOf(allAbridgedRuns);
         populateRunInventory();
 
         openRunInventoryNoUpdate(player);
@@ -73,7 +73,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         }
     }
     public void addFiltersNStuff() {
-        int totalPages = (int) Math.ceil(runsSearch.size()/21)+1;
+        int totalPages = (int) Math.ceil(runsSearchAbridged.size()/21)+1;
 
         setOrReplaceNbt(45, GuiItems_Database.toggleHeads(showRunsAsHeads));
         if (current_page != 1) setOrReplaceNbt(46, GuiItems_Database.page(false,current_page,totalPages)); // Previous page
@@ -101,7 +101,20 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         }
     }
     public void addRunItems() {
-        int runIndex = (current_page-1)*21;
+        if (runsSearch.isEmpty() && !runsSearchAbridged.isEmpty()) {
+            updateSearch();
+        }
+        loadFullRuns();
+        /*
+        for (int i = 0; i < 21; i++) {
+            if (runsSearch.size() <= i) {
+                inventory.setStack(i, GuiItems_Database.fillerLight());
+                continue;
+            }
+            inventory.setStack(i, GuiItems_Database.run(runsSearch.get(i), showRunsAsHeads));
+        }*/
+
+        int runIndex = 0;//(current_page-1)*21
         for (int y = 0; y < 6; y++) {
         for (int x = 0; x < 9; x++) {
             int pos = x+y*9;
@@ -117,19 +130,20 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
     }
 
     public void updateSearch() {
+        runsSearchAbridged = new ArrayList<>();
         runsSearch = new ArrayList<>();
-        for (DO2Run run : allRuns) {
-            if (filter_success == 1 && !run.getSuccess()) continue;
-            if (filter_success == 2 && run.getSuccess()) continue;
+        for (DO2RunAbridged run : allAbridgedRuns) {
+            if (filter_success == 1 && !run.successful) continue;
+            if (filter_success == 2 && run.successful) continue;
             if (filter_difficulty == 1 && run.difficulty != 1) continue;
             if (filter_difficulty == 2 && run.difficulty != 2) continue;
             if (filter_difficulty == 3 && run.difficulty != 3) continue;
             if (filter_difficulty == 4 && run.difficulty != 4) continue;
             if (filter_difficulty == 5 && run.difficulty != 5) continue;
-            if (filter_level == 1 && run.getCompassLevel() != 1) continue;
-            if (filter_level == 2 && run.getCompassLevel() != 2) continue;
-            if (filter_level == 3 && run.getCompassLevel() != 3) continue;
-            if (filter_level == 4 && run.getCompassLevel() != 4) continue;
+            if (filter_level == 1 && run.compass_level != 1) continue;
+            if (filter_level == 2 && run.compass_level != 2) continue;
+            if (filter_level == 3 && run.compass_level != 3) continue;
+            if (filter_level == 4 && run.compass_level != 4) continue;
             if (filter_run_type == 1 && !run.run_type.equalsIgnoreCase("casual")) continue;
             if (filter_run_type == 2 && !run.run_type.equalsIgnoreCase("phase")) continue;
             if (!filter_player_uuid.isEmpty()) {
@@ -139,22 +153,32 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
             }
 
 
-            runsSearch.add(run);
+            runsSearchAbridged.add(run);
         }
         sortRuns();
-        int totalPages = (int) Math.ceil(runsSearch.size()/21)+1;
+        int totalPages = (int) Math.ceil(runsSearchAbridged.size()/21)+1;
         if (current_page > totalPages) {
             current_page = totalPages;
         }
-
+    }
+    public void loadFullRuns() {
+        int showFrom = (current_page-1)*21;
+        int showTo = showFrom+21;
+        List<Integer> getRuns = new ArrayList<>();
+        for (int i = showFrom; i <= showTo; i++) {
+            if (runsSearchAbridged.size() <= i) continue;
+            getRuns.add(runsSearchAbridged.get(i).run_number);
+        }
+        System.out.println(showFrom+"_"+showTo+"__"+getRuns);
+        runsSearch = DatabaseManager.getRunsByRunNumbers(getRuns);
     }
     public void sortRuns() {
-        if (runsSearch == null) return;
-        if (runsSearch.size() <= 1) return;
+        if (runsSearchAbridged == null) return;
+        if (runsSearchAbridged.size() <= 1) return;
 
-        Collections.sort(runsSearch, new Comparator<DO2Run>() {
+        Collections.sort(runsSearchAbridged, new Comparator<DO2RunAbridged>() {
             @Override
-            public int compare(DO2Run run1, DO2Run run2) {
+            public int compare(DO2RunAbridged run1, DO2RunAbridged run2) {
                 if (sort_by.equalsIgnoreCase("run_number")) {
                     return Integer.compare(run2.getRunNum(), run1.getRunNum());
                 }
@@ -174,7 +198,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
             }
         });
         if (!sort_by_descending) {
-            Collections.reverse(runsSearch);
+            Collections.reverse(runsSearchAbridged);
         }
     }
     public DO2Run getRunFromNum(int run_number) {

@@ -7,13 +7,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.mat0u5.do2manager.world.CommandBlockData;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.DO2_GSON;
+import net.mat0u5.do2manager.world.DO2RunAbridged;
+import net.mat0u5.do2manager.world.ItemManager;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 
@@ -399,6 +403,47 @@ public class DatabaseManager {
         return result;
     }
 
+    private static List<DO2RunAbridged> fetchAbridgedRuns(String sql, List<Object> parameters) {
+        List<DO2RunAbridged> runsDictionary = new ArrayList<>();
+
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            // Set the parameters
+            for (int i = 0; i < parameters.size(); i++) {
+                statement.setObject(i + 1, parameters.get(i));
+            }
+
+            ResultSet resultSet = statement.executeQuery();
+
+            while (resultSet.next()) {
+                DO2RunAbridged run = new DO2RunAbridged();
+                run.run_number = resultSet.getInt("run_number");
+                run.run_type = resultSet.getString("run_type");
+                run.runners = List.of(resultSet.getString("runners").split(","));
+                run.run_length = resultSet.getInt("run_length");
+                run.embers_counted = resultSet.getInt("embers_counted");
+                run.crowns_counted = resultSet.getInt("crowns_counted");
+                run.difficulty = resultSet.getInt("difficulty");
+                run.successful = !String.join("",List.of(resultSet.getString("finishers").split(","))).isEmpty();
+
+                ItemStack compass_item = DO2_GSON.deserializeItemStack(resultSet.getString("compass_item"));
+                if (compass_item != null)  {
+                    NbtCompound nbt = compass_item.getNbt();
+                    if (ItemManager.hasNbtEntry(compass_item, "Level")) {
+                        run.compass_level = nbt.getInt("Level");
+                    }
+                }
+
+                runsDictionary.add(run);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return runsDictionary;
+    }
     private static List<DO2Run> fetchRuns(String sql, List<Object> parameters) {
         List<DO2Run> runsDictionary = new ArrayList<>();
 
@@ -466,6 +511,34 @@ public class DatabaseManager {
         List<DO2Run> runs = fetchRuns(sql, List.of(runNumber));
         return runs.isEmpty() ? null : runs.get(0); // Return the first run, or null if none found
     }
+    public static List<DO2Run> getRunsByRunNumbers(List<Integer> runNumbers) {
+        if (runNumbers == null || runNumbers.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Convert the list of run numbers to a comma-separated string
+        String runNumbersString = runNumbers.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining(", "));
+
+        // Construct the CASE statement for ordering
+        StringBuilder orderByClause = new StringBuilder("ORDER BY CASE");
+        for (int i = 0; i < runNumbers.size(); i++) {
+            orderByClause.append(" WHEN r.run_number = ").append(runNumbers.get(i)).append(" THEN ").append(i);
+        }
+        orderByClause.append(" END");
+
+        // Construct the SQL query
+        String sql = "SELECT r.*, rd.*, rs.* FROM runs r " +
+                "LEFT JOIN runsDetailed rd ON r.run_number = rd.run_number " +
+                "LEFT JOIN runsSpeedruns rs ON r.run_number = rs.run_number " +
+                "WHERE r.run_number IN (" + runNumbersString + ") " +
+                orderByClause;
+
+        // Execute the query and fetch the results
+        return fetchRuns(sql, new ArrayList<>()); // No additional parameters needed
+    }
+
     public static List<DO2Run> getRunsByCriteria(List<String> criteria) {
         String sql = "SELECT r.*, rd.*, rs.* FROM runs r " +
                 "LEFT JOIN runsDetailed rd ON r.run_number = rd.run_number " +
@@ -473,6 +546,13 @@ public class DatabaseManager {
                 (criteria.isEmpty() ? "" : "WHERE " + String.join(" AND ", criteria));
 
         return fetchRuns(sql, new ArrayList<>()); // No additional parameters needed
+    }
+    public static List<DO2RunAbridged> getAbridgedRunsByCriteria(List<String> criteria) {
+        String sql = "SELECT r.*, rd.* FROM runs r " +
+                "LEFT JOIN runsDetailed rd ON r.run_number = rd.run_number " +
+                (criteria.isEmpty() ? "" : "WHERE " + String.join(" AND ", criteria));
+
+        return fetchAbridgedRuns(sql, new ArrayList<>()); // No additional parameters needed
     }
 
     public static void addCommandBlocks(List<CommandBlockData> commandBlocks) {
