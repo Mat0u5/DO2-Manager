@@ -7,6 +7,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import net.mat0u5.do2manager.Main;
@@ -20,6 +21,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
+import org.sqlite.SQLiteErrorCode;
 
 public class DatabaseManager {
     public static final String DB_VERSION = "v.1.0.7";
@@ -444,13 +446,68 @@ public class DatabaseManager {
 
         return runsDictionary;
     }
-    private static List<DO2Run> fetchRuns(String sql, List<Object> parameters) {
-        List<DO2Run> runsDictionary = new ArrayList<>();
+    public static DO2Run getRunByRunNumber(int runNumber) {
+        String sql = "SELECT r.*, rd.*, rs.* FROM runs r " +
+                "LEFT JOIN runsDetailed rd ON r.run_number = rd.run_number " +
+                "LEFT JOIN runsSpeedruns rs ON r.run_number = rs.run_number " +
+                "WHERE r.run_number = ?";
 
+        List<DO2Run> runs = fetchRuns(sql, List.of(runNumber));
+        return runs.isEmpty() ? null : runs.get(0); // Return the first run, or null if none found
+    }
+    public static List<DO2Run> getRunsByAbridgedRuns(List<DO2RunAbridged> runNumbers,
+                                                     AtomicReference<PreparedStatement> currentStatementRef) {
+        if (runNumbers == null || runNumbers.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        StringBuilder whereClause = new StringBuilder("WHERE ");
+        for (int i = 0; i < runNumbers.size(); i++) {
+            DO2RunAbridged abridged = runNumbers.get(i);
+            whereClause.append("(r.run_number = ")
+                    .append(abridged.run_number)
+                    .append(" AND r.run_length = ")
+                    .append(abridged.run_length)
+                    .append(")");
+            if (i < runNumbers.size() - 1) {
+                whereClause.append(" OR ");
+            }
+        }
+
+        StringBuilder orderByClause = new StringBuilder("ORDER BY CASE");
+        for (int i = 0; i < runNumbers.size(); i++) {
+            orderByClause.append(" WHEN r.run_number = ").append(runNumbers.get(i).run_number)
+                    .append(" AND r.run_length = ").append(runNumbers.get(i).run_length)
+                    .append(" THEN ").append(i);
+        }
+        orderByClause.append(" END");
+
+        String sql = "SELECT r.*, rd.*, rs.* FROM runs r " +
+                "LEFT JOIN runsDetailed rd ON r.run_number = rd.run_number " +
+                "LEFT JOIN runsSpeedruns rs ON r.run_number = rs.run_number " +
+                whereClause.toString() + " " +
+                orderByClause.toString();
+
+        return fetchRuns(sql, new ArrayList<>(), currentStatementRef);
+    }
+
+    // Original method without cancellation support
+    public static List<DO2Run> getRunsByAbridgedRuns(List<DO2RunAbridged> runNumbers) {
+        return getRunsByAbridgedRuns(runNumbers, null);
+    }
+
+    // Overloaded method with cancellation support
+    private static List<DO2Run> fetchRuns(String sql, List<Object> parameters,
+                                          AtomicReference<PreparedStatement> currentStatementRef) {
+        List<DO2Run> runsDictionary = new ArrayList<>();
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
 
-            // Set the parameters
+            // Store the current statement if cancellation is supported
+            if (currentStatementRef != null) {
+                currentStatementRef.set(statement);
+            }
+
             for (int i = 0; i < parameters.size(); i++) {
                 statement.setObject(i + 1, parameters.get(i));
             }
@@ -497,57 +554,23 @@ public class DatabaseManager {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
-        return runsDictionary;
-    }
-    public static DO2Run getRunByRunNumber(int runNumber) {
-        String sql = "SELECT r.*, rd.*, rs.* FROM runs r " +
-                "LEFT JOIN runsDetailed rd ON r.run_number = rd.run_number " +
-                "LEFT JOIN runsSpeedruns rs ON r.run_number = rs.run_number " +
-                "WHERE r.run_number = ?";
-
-        List<DO2Run> runs = fetchRuns(sql, List.of(runNumber));
-        return runs.isEmpty() ? null : runs.get(0); // Return the first run, or null if none found
-    }
-    public static List<DO2Run> getRunsByAbridgedRuns(List<DO2RunAbridged> runNumbers) {
-        if (runNumbers == null || runNumbers.isEmpty()) {
-            return new ArrayList<>();
-        }
-
-        // Construct the WHERE clause for matching run_number and run_length
-        StringBuilder whereClause = new StringBuilder("WHERE ");
-        for (int i = 0; i < runNumbers.size(); i++) {
-            DO2RunAbridged abridged = runNumbers.get(i);
-            whereClause.append("(r.run_number = ")
-                    .append(abridged.run_number)
-                    .append(" AND r.run_length = ")
-                    .append(abridged.run_length)
-                    .append(")");
-            if (i < runNumbers.size() - 1) {
-                whereClause.append(" OR ");
+            if (e.getErrorCode() == SQLiteErrorCode.SQLITE_INTERRUPT.code) {
+                System.out.println("Query was interrupted.");
+            } else {
+                e.printStackTrace(); // Handle other SQLExceptions as needed
+            }
+        } finally {
+            // Clear the reference after execution if cancellation is supported
+            if (currentStatementRef != null) {
+                currentStatementRef.set(null);
             }
         }
+        return runsDictionary;
+    }
 
-        // Construct the CASE statement for ordering
-        StringBuilder orderByClause = new StringBuilder("ORDER BY CASE");
-        for (int i = 0; i < runNumbers.size(); i++) {
-            orderByClause.append(" WHEN r.run_number = ").append(runNumbers.get(i).run_number)
-                    .append(" AND r.run_length = ").append(runNumbers.get(i).run_length)
-                    .append(" THEN ").append(i);
-        }
-        orderByClause.append(" END");
-
-        // Construct the SQL query
-        String sql = "SELECT r.*, rd.*, rs.* FROM runs r " +
-                "LEFT JOIN runsDetailed rd ON r.run_number = rd.run_number " +
-                "LEFT JOIN runsSpeedruns rs ON r.run_number = rs.run_number " +
-                whereClause.toString() + " " +
-                orderByClause.toString();
-
-        // Execute the query and fetch the results
-        return fetchRuns(sql, new ArrayList<>()); // No additional parameters needed
+    // Original method without cancellation support
+    private static List<DO2Run> fetchRuns(String sql, List<Object> parameters) {
+        return fetchRuns(sql, parameters, null);
     }
 
 

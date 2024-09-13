@@ -174,10 +174,10 @@ public class RunInfoParser {
     public static void getFastestPlayerRunMatchingCurrent(PlayerEntity player) {
         boolean isSpeedrun = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("true");
         executor.submit(()  -> {
-            List<DO2Run> allRuns = DatabaseManager.getRunsByCriteria(List.of("runners = \"" + player.getUuidAsString()+"\""));
-            DO2Run fastestRun = null;
-            for (DO2Run run : allRuns) {
-                if (!run.run_type.equalsIgnoreCase("testing") && run.getSuccess() && run.difficulty==Main.currentRun.difficulty&& run.getCompassLevel() == Main.currentRun.getCompassLevel() && Main.currentRun.getCompassLevel() != -1) {
+            List<DO2RunAbridged> allRunsAbridged = DatabaseManager.getAbridgedRunsByCriteria(List.of("runners = \"" + player.getUuidAsString()+"\""));
+            DO2RunAbridged fastestRun = null;
+            for (DO2RunAbridged run : allRunsAbridged) {
+                if (!run.run_type.equalsIgnoreCase("testing") && run.successful && run.difficulty==Main.currentRun.difficulty&& run.compass_level == Main.currentRun.getCompassLevel() && Main.currentRun.getCompassLevel() != -1) {
                     if (fastestRun == null) {
                         fastestRun = run;
                         continue;
@@ -185,9 +185,14 @@ public class RunInfoParser {
                     if (run.run_length <= fastestRun.run_length) fastestRun = run;
                 }
             }
-            Main.speedrun = fastestRun;
-            if (isSpeedrun) {
-                OtherUtils.broadcastMessage(player.getServer(), Text.translatable("§6This speedrun will be compared with " + player.getEntityName() + "'s fastest "+Main.currentRun.getFormattedDifficulty()+" level " + Main.currentRun.getCompassLevel()+"§6 run."));
+            if (fastestRun != null) {
+                List<DO2Run> finalSpeedrun = DatabaseManager.getRunsByAbridgedRuns(List.of(fastestRun));
+                if (finalSpeedrun.size() == 1) {
+                    Main.speedrun = finalSpeedrun.get(0);
+                    if (isSpeedrun) {
+                        OtherUtils.broadcastMessage(player.getServer(), Text.translatable("§6This speedrun will be compared with " + player.getEntityName() + "'s fastest "+Main.currentRun.getFormattedDifficulty()+" level " + Main.currentRun.getCompassLevel()+"§6 run."));
+                    }
+                }
             }
             return fastestRun;
         });

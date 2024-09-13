@@ -13,12 +13,21 @@ import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static net.mat0u5.do2manager.Main.allAbridgedRuns;
 
 public class GuiInventory_Database extends GuiPlayerSpecific {
     private final int INVENTORY_SIZE = 54;
+    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private AtomicReference<CompletableFuture<Void>> currentFuture = new AtomicReference<>();
+    private AtomicReference<PreparedStatement> currentStatement = new AtomicReference<>();
 
 
 
@@ -103,21 +112,22 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         if (runsSearch.isEmpty() && !runsSearchAbridged.isEmpty()) {
             updateSearch();
         }
-        loadFullRuns();
-
-        int runIndex = 0;
-        for (int y = 0; y < 6; y++) {
-        for (int x = 0; x < 9; x++) {
-            int pos = x+y*9;
-            if (!(x > 0 && x < 8 && y > 0 && y < 4)) continue;
-            if (runsSearch.size() <= runIndex) {
-                inventory.setStack(pos, GuiItems_Database.fillerLight());
-                continue;
+        loadFullRuns().thenRun(() -> {
+            int runIndex = 0;
+            for (int y = 0; y < 6; y++) {
+                for (int x = 0; x < 9; x++) {
+                    int pos = x+y*9;
+                    if (!(x > 0 && x < 8 && y > 0 && y < 4)) continue;
+                    if (runsSearch.size() <= runIndex) {
+                        inventory.setStack(pos, GuiItems_Database.fillerLight());
+                        continue;
+                    }
+                    inventory.setStack(pos, GuiItems_Database.run(runsSearch.get(runIndex), showRunsAsHeads));
+                    runIndex++;
+                }
             }
-            inventory.setStack(pos, GuiItems_Database.run(runsSearch.get(runIndex), showRunsAsHeads));
-            runIndex++;
-        }
-        }
+
+        });
     }
 
     public void updateSearch() {
@@ -152,15 +162,42 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
             current_page = totalPages;
         }
     }
-    public void loadFullRuns() {
-        int showFrom = (current_page-1)*21;
-        int showTo = showFrom+21;
-        List<DO2RunAbridged> getRuns = new ArrayList<>();
-        for (int i = showFrom; i <= showTo; i++) {
-            if (runsSearchAbridged.size() <= i) continue;
-            getRuns.add(runsSearchAbridged.get(i));
+    public CompletableFuture<Void> loadFullRuns() {
+        // Cancel the previous future if it exists
+        CompletableFuture<Void> previousFuture = currentFuture.getAndSet(null);
+        if (previousFuture != null && !previousFuture.isDone()) {
+            previousFuture.cancel(true);
         }
-        runsSearch = DatabaseManager.getRunsByAbridgedRuns(getRuns);
+        // Cancel the previous statement if it exists
+        PreparedStatement previousStatement = currentStatement.getAndSet(null);
+        if (previousStatement != null) {
+            try {
+                previousStatement.cancel();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+
+        // Create and run a new future
+        CompletableFuture<Void> newFuture = CompletableFuture.runAsync(() -> {
+            synchronized (GuiInventory_Database.class) {
+                int showFrom = (current_page - 1) * 21;
+                int showTo = showFrom + 21;
+                List<DO2RunAbridged> getRuns = new ArrayList<>();
+                for (int i = showFrom; i <= showTo; i++) {
+                    if (runsSearchAbridged.size() <= i) continue;
+                    getRuns.add(runsSearchAbridged.get(i));
+                }
+
+                // Fetch runs with optional cancellation support
+                runsSearch = DatabaseManager.getRunsByAbridgedRuns(getRuns, currentStatement);
+            }
+        }, executor);
+
+        // Update the reference with the new future
+        currentFuture.set(newFuture);
+
+        return newFuture;
     }
     public void sortRuns() {
         if (runsSearchAbridged == null) return;
