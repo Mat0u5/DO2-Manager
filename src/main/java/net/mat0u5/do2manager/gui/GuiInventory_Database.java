@@ -53,12 +53,11 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         current_page_custom_list=1;
         Main.openGuis.put(player,this);
     }
-    public int openRunInventoryNoUpdate(ServerPlayerEntity player) {
+    public void openRunInventoryNoUpdate(ServerPlayerEntity player) {
         player.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
             return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, syncId, inv, inventory, INVENTORY_SIZE / 9);
         }, Text.of("Run History")));
         invOpen = true;
-        return 1;
     }
 
     public void populateRunInventory() {
@@ -73,7 +72,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         }
     }
     public void addFiltersNStuff() {
-        int totalPages = (int) Math.ceil(runsSearchAbridged.size()/21)+1;
+        int totalPages = (int) Math.ceil((double) runsSearchAbridged.size() /21);
 
         setOrReplaceNbt(45, GuiItems_Database.toggleHeads(showRunsAsHeads));
         if (current_page != 1) setOrReplaceNbt(46, GuiItems_Database.page(false,current_page,totalPages)); // Previous page
@@ -105,16 +104,8 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
             updateSearch();
         }
         loadFullRuns();
-        /*
-        for (int i = 0; i < 21; i++) {
-            if (runsSearch.size() <= i) {
-                inventory.setStack(i, GuiItems_Database.fillerLight());
-                continue;
-            }
-            inventory.setStack(i, GuiItems_Database.run(runsSearch.get(i), showRunsAsHeads));
-        }*/
 
-        int runIndex = 0;//(current_page-1)*21
+        int runIndex = 0;
         for (int y = 0; y < 6; y++) {
         for (int x = 0; x < 9; x++) {
             int pos = x+y*9;
@@ -156,7 +147,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
             runsSearchAbridged.add(run);
         }
         sortRuns();
-        int totalPages = (int) Math.ceil(runsSearchAbridged.size()/21)+1;
+        int totalPages = (int) Math.ceil((double) runsSearchAbridged.size() /21);
         if (current_page > totalPages) {
             current_page = totalPages;
         }
@@ -164,34 +155,29 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
     public void loadFullRuns() {
         int showFrom = (current_page-1)*21;
         int showTo = showFrom+21;
-        List<Integer> getRuns = new ArrayList<>();
+        List<DO2RunAbridged> getRuns = new ArrayList<>();
         for (int i = showFrom; i <= showTo; i++) {
             if (runsSearchAbridged.size() <= i) continue;
-            getRuns.add(runsSearchAbridged.get(i).run_number);
+            getRuns.add(runsSearchAbridged.get(i));
         }
-        System.out.println(showFrom+"_"+showTo+"__"+getRuns);
-        runsSearch = DatabaseManager.getRunsByRunNumbers(getRuns);
+        runsSearch = DatabaseManager.getRunsByAbridgedRuns(getRuns);
     }
     public void sortRuns() {
         if (runsSearchAbridged == null) return;
         if (runsSearchAbridged.size() <= 1) return;
 
-        Collections.sort(runsSearchAbridged, new Comparator<DO2RunAbridged>() {
+        runsSearchAbridged.sort(new Comparator<DO2RunAbridged>() {
             @Override
             public int compare(DO2RunAbridged run1, DO2RunAbridged run2) {
                 if (sort_by.equalsIgnoreCase("run_number")) {
                     return Integer.compare(run2.getRunNum(), run1.getRunNum());
-                }
-                else if (sort_by.equalsIgnoreCase("run_length")) {
+                } else if (sort_by.equalsIgnoreCase("run_length")) {
                     return Integer.compare(run2.run_length, run1.run_length);
-                }
-                else if (sort_by.equalsIgnoreCase("difficulty")) {
+                } else if (sort_by.equalsIgnoreCase("difficulty")) {
                     return Integer.compare(run2.difficulty, run1.difficulty);
-                }
-                else if (sort_by.equalsIgnoreCase("embers")) {
+                } else if (sort_by.equalsIgnoreCase("embers")) {
                     return Integer.compare(run2.embers_counted, run1.embers_counted);
-                }
-                else if (sort_by.equalsIgnoreCase("crowns")) {
+                } else if (sort_by.equalsIgnoreCase("crowns")) {
                     return Integer.compare(run2.crowns_counted, run1.crowns_counted);
                 }
                 return Integer.compare(run2.getRunNum(), run1.getRunNum());
@@ -236,7 +222,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         if (fillType.equalsIgnoreCase("inventory_save")) items = List.copyOf(run.inventory_save);
         if (fillType.equalsIgnoreCase("items_bought")) items = List.copyOf(run.items_bought);
 
-        int totalPages = (int) Math.ceil(items.size()/21)+1;
+        int totalPages = (int) Math.ceil((double) items.size() /21);
 
         if (current_page_custom_list != 1) setOrReplaceNbt(46, GuiItems_Database.pageCustom(false,current_page_custom_list,totalPages, fillType,run_number)); // Previous page
         if (current_page_custom_list  < totalPages) setOrReplaceNbt(52, GuiItems_Database.pageCustom(true,current_page_custom_list,totalPages, fillType,run_number)); // Next page

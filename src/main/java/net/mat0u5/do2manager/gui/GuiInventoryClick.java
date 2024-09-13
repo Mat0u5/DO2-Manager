@@ -26,7 +26,7 @@ public class GuiInventoryClick {
         if (guiName.equalsIgnoreCase("DatabaseGUI")) {
             if (tag.equalsIgnoreCase("next_page")) {
                 if (button == 0) guiDatabase.current_page += 1;
-                else if (button == 1) guiDatabase.current_page = (int) Math.ceil(guiDatabase.runsSearchAbridged.size()/21)+1;
+                else if (button == 1) guiDatabase.current_page = (int) Math.ceil((double) guiDatabase.runsSearchAbridged.size() /21);
                 guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("previous_page")) {
                 if (guiDatabase.current_page <= 1) return;
