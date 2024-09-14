@@ -2,6 +2,7 @@ package net.mat0u5.do2manager.gui;
 
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.DO2Run;
+import net.mat0u5.do2manager.world.DO2RunAbridged;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -12,6 +13,8 @@ import net.minecraft.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static net.mat0u5.do2manager.utils.OtherUtils.roundToNPlaces;
 
 public class GuiItems_Database {
     private static ItemStack createGuiItem(ItemStack itemStack, String tag, String displayName) {
@@ -39,11 +42,9 @@ public class GuiItems_Database {
 
         return createGuiItem(itemStack, (isNextPage?"next":"previous")+"_page_custom_list", "§a"+(isNextPage?"Next":"Previous")+" Page", List.of(Text.of("§7(" + currentPage + "/" + totalPages + ")"), Text.of(""), Text.of("§eClick to turn page!")));
     }
-
     public static ItemStack searchItem() {
         return createGuiItem(new ItemStack(Items.OAK_SIGN, 1), "search_item", "Search");
     }
-
     public static ItemStack run(DO2Run run, boolean showRunsAsHeads) {
         if (run == null) return createGuiItem(new ItemStack(Items.BARRIER, 1), "run", "§4Run Is Null.");
         ItemStack itemStack;
@@ -232,7 +233,7 @@ public class GuiItems_Database {
         String itemName = "§aFrost Embers";
         lore.add(Text.of(""));
 
-        lore.add(Text.of("§7Embers Counted: §c" + run.embers_counted));
+        lore.add(Text.of("§7Embers Counted: §3" + run.embers_counted));
         return createGuiItem(itemStack, "death_info", itemName, lore);
     }
     public static ItemStack getCrowns(DO2Run run) {
@@ -288,5 +289,71 @@ public class GuiItems_Database {
         lore.add(Text.of("§eClick view the bought items in this run!"));
 
         return createGuiItem(itemStack, "items_bought", "§7Bought Items", lore);
+    }
+    public static ItemStack itemInfo(List<DO2RunAbridged> runsSearchAbridged) {
+
+        int runsNum = runsSearchAbridged.size();
+        int successfulRuns = 0;
+        int unsuccessfulRuns = 0;
+        int totalEmbers = 0;
+        int totalCrowns = 0;
+        int totalPlayTime = 0;
+        int biggestWinStreak = 0;
+        int biggestLossStreak = 0;
+        int biggestWinStreakPos = 0;
+        int biggestLossStreakPos = 0;
+
+        int currentWinStreak = 0;
+        int currentLossStreak = 0;
+        for (DO2RunAbridged run : runsSearchAbridged) {
+            if (run.successful) {
+                successfulRuns++;
+                totalEmbers += run.embers_counted;
+                totalCrowns += run.crowns_counted;
+                currentLossStreak = 0;
+                currentWinStreak++;
+                if (currentWinStreak > biggestWinStreak) {
+                    biggestWinStreak = currentWinStreak;
+                    biggestWinStreakPos = run.run_number;
+                }
+            }
+            else {
+                unsuccessfulRuns++;
+                currentWinStreak = 0;
+                currentLossStreak++;
+                if (currentLossStreak > biggestLossStreak) {
+                    biggestLossStreak = currentLossStreak;
+                    biggestLossStreakPos = run.run_number;
+                }
+            }
+            totalPlayTime += run.run_length;
+        }
+
+        double winPercentage = roundToNPlaces(((double)successfulRuns*100d)/runsNum,3);
+        double averageEmbers = roundToNPlaces((double)totalEmbers/successfulRuns,2);
+        double averageCrowns = roundToNPlaces((double)totalCrowns/successfulRuns,2);
+        double averageRunLength = roundToNPlaces((double)totalPlayTime/runsNum,0);
+
+        ItemStack itemStack = new ItemStack(Items.IRON_NUGGET, 1);
+        List<Text> lore = new ArrayList<>();
+        NbtCompound nbt = itemStack.getOrCreateNbt();
+        nbt.putInt("CustomModelData", 47);
+        String itemName = "§aRuns Info";
+        lore.add(Text.of(""));
+        lore.add(Text.of("§7Runs: §b" + runsNum));
+        lore.add(Text.of("§7Successful Runs: §a" + successfulRuns));
+        lore.add(Text.of("§7Unsuccessful Runs: §c" + unsuccessfulRuns));
+        lore.add(Text.of("§7 -> Win Percentage: " + winPercentage+"%"));
+        lore.add(Text.of("§7Biggest Win Streak: §a" + biggestWinStreak  + " §8[@ #"+biggestWinStreakPos+"]"));
+        lore.add(Text.of("§7Biggest Loss Streak: §c" + biggestLossStreak + " §8[@ #"+biggestLossStreakPos+"]"));
+        lore.add(Text.of(""));
+        lore.add(Text.of("§7Total Play Time: §6" + OtherUtils.convertTicksToClockTime(totalPlayTime,false)));
+        lore.add(Text.of("§7Total Embers: §3" + totalEmbers));
+        lore.add(Text.of("§7Total Crowns: §6" + totalCrowns));
+        lore.add(Text.of("§7Average Run Time: §6" + OtherUtils.convertTicksToClockTime((long) averageRunLength,false)));
+        lore.add(Text.of("§7Average Embers: §3" + averageEmbers));
+        lore.add(Text.of("§7Average Crowns: §6" + averageCrowns));
+
+        return createGuiItem(itemStack, "runs_info", itemName, lore);
     }
 }

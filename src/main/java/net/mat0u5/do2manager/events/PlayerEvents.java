@@ -68,7 +68,12 @@ public class PlayerEvents {
 
             //Add the player to the database
             DatabaseManager.addPlayer(player.getUuidAsString(),player.getEntityName());
-            DatabaseManager.fetchAllPlayers();
+            if (Main.allPlayers.isEmpty()) {
+                DatabaseManager.fetchAllPlayers();
+            }
+            else {
+                Main.allPlayers.put(player.getUuidAsString(),player.getEntityName());
+            }
             lastPlayerLogoutTime = -1;
 
             //Item Conversions

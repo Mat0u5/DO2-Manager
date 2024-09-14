@@ -86,6 +86,15 @@ public class Main implements ModInitializer {
 				System.out.println("Loading All Abridged Runs...");
 				allAbridgedRuns = DatabaseManager.getAbridgedRunsByCriteria(new ArrayList<>());
 				Collections.sort(allAbridgedRuns, Comparator.comparingInt(DO2RunAbridged::getRunNum).reversed());
+
+				List<DO2RunAbridged> testingRuns = new ArrayList<>();
+				for (DO2RunAbridged run : allAbridgedRuns) {
+					if (run.run_type.equalsIgnoreCase("testing")) {
+						testingRuns.add(run);
+					}
+				}
+				allAbridgedRuns.removeAll(testingRuns);
+
 				System.out.println("Abridged Runs Reloaded.");
 				reloadedRuns = true;
 			}

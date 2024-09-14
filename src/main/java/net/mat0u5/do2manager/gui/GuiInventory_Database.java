@@ -70,7 +70,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
     }
 
     public void populateRunInventory() {
-        fillWithFillerItems(GuiItems_Database.filler(), List.of(45,46,47,48,50,51,52));
+        fillWithFillerItems(GuiItems_Database.filler(), List.of(4,45,46,47,48,50,51,52));
         addRunItems();
         addFiltersNStuff();
     }
@@ -83,6 +83,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
     public void addFiltersNStuff() {
         int totalPages = (int) Math.ceil((double) runsSearchAbridged.size() /21);
 
+        setOrReplaceNbt(4, GuiItems_Database.itemInfo(runsSearchAbridged));
         setOrReplaceNbt(45, GuiItems_Database.toggleHeads(showRunsAsHeads));
         if (current_page != 1) setOrReplaceNbt(46, GuiItems_Database.page(false,current_page,totalPages)); // Previous page
         else setIsNotMatching(46, GuiItems_Database.filler());

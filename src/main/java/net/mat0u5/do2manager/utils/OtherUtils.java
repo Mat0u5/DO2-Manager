@@ -54,6 +54,10 @@ import java.util.UUID;
 
 public class OtherUtils {
 
+    public static double roundToNPlaces(double value, int n) {
+        double pow = Math.pow(10,n);
+        return (double)Math.round(value * pow) / pow;
+    }
     public static String convertSecondsToReadableTime(int totalSeconds) {
         int hours = totalSeconds / 3600;
         int minutes = (totalSeconds % 3600) / 60;
