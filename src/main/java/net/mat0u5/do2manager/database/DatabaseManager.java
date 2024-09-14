@@ -8,7 +8,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;
@@ -239,18 +238,6 @@ public class DatabaseManager {
             e.printStackTrace();
         }
     }
-    public static void updateEmbersCounted(int run_number, int embers_counted) {
-        String sql = "UPDATE runs SET embers_counted = ? WHERE run_number = ?";
-        try (Connection connection = DriverManager.getConnection(URL);
-             PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setInt(1, embers_counted);
-            statement.setInt(2, run_number);
-
-            statement.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
     public static void addRun(DO2Run run) {
         String sql = "INSERT INTO runs(db_version, run_number, date, run_type, runners, finishers, run_length, embers_counted, crowns_counted) VALUES(?, ?, datetime('now'), ?, ?, ?, ?, ?, ?)";
         try (Connection connection = DriverManager.getConnection(URL);
@@ -314,7 +301,7 @@ public class DatabaseManager {
         }
     }
     public static void updateRunRun(DO2Run run) {
-        String sql = "UPDATE runs SET run_type = ?, runners = ?, finishers = ?, run_length = ?, embers_counted = ?, crowns_counted = ? WHERE run_number = ?";
+        String sql = "UPDATE runs SET run_type = ?, runners = ?, finishers = ?, run_length = ?, embers_counted = ?, crowns_counted = ? WHERE id = ?";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, DB_VERSION);
@@ -324,7 +311,7 @@ public class DatabaseManager {
             statement.setInt(5, run.run_length);
             statement.setInt(6, run.embers_counted);
             statement.setInt(7, run.crowns_counted);
-            statement.setInt(8, run.run_number);  // Use run_number in WHERE clause
+            statement.setInt(8, run.id);  // Use id in WHERE clause
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -332,7 +319,7 @@ public class DatabaseManager {
         }
     }
     public static void updateRunDetailed(DO2Run run) {
-        String sql = "UPDATE runsDetailed SET card_plays = ?, difficulty = ?, compass_item = ?, artifact_item = ?, deck_item = ?, inventory_save = ?, items_bought = ?, death_pos = ?, death_message = ?, loot_drops = ?, special_events = ? WHERE run_number = ?";
+        String sql = "UPDATE runsDetailed SET card_plays = ?, difficulty = ?, compass_item = ?, artifact_item = ?, deck_item = ?, inventory_save = ?, items_bought = ?, death_pos = ?, death_message = ?, loot_drops = ?, special_events = ? WHERE id = ?";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, DB_VERSION);
@@ -347,7 +334,7 @@ public class DatabaseManager {
             statement.setString(10, run.death_message);
             statement.setString(11, String.join(",", run.loot_drops));
             statement.setString(12, String.join(",", run.special_events));
-            statement.setInt(13, run.run_number);  // Use run_number in WHERE clause
+            statement.setInt(13, run.id);  // Use id in WHERE clause
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -355,7 +342,7 @@ public class DatabaseManager {
         }
     }
     public static void updateRunSpeedrun(DO2Run run) {
-        String sql = "UPDATE runsSpeedruns SET timestamp_lvl2_entry = ?, timestamp_lvl3_entry = ?, timestamp_lvl4_entry = ?, timestamp_lvl4_exit = ?, timestamp_lvl3_exit = ?, timestamp_lvl2_exit = ?, timestamp_lvl1_exit = ?, timestamp_artifact = ?, run_length = ? WHERE run_number = ?";
+        String sql = "UPDATE runsSpeedruns SET timestamp_lvl2_entry = ?, timestamp_lvl3_entry = ?, timestamp_lvl4_entry = ?, timestamp_lvl4_exit = ?, timestamp_lvl3_exit = ?, timestamp_lvl2_exit = ?, timestamp_lvl1_exit = ?, timestamp_artifact = ?, run_length = ? WHERE id = ?";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, DB_VERSION);
@@ -368,7 +355,7 @@ public class DatabaseManager {
             statement.setInt(8, run.timestamp_lvl1_exit);
             statement.setInt(9, run.timestamp_artifact);
             statement.setInt(10, run.run_length);
-            statement.setInt(11, run.run_number);  // Use run_number in WHERE clause
+            statement.setInt(11, run.id);  // Use id in WHERE clause
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -420,6 +407,7 @@ public class DatabaseManager {
 
             while (resultSet.next()) {
                 DO2RunAbridged run = new DO2RunAbridged();
+                run.id = resultSet.getInt("id");
                 run.run_number = resultSet.getInt("run_number");
                 run.run_type = resultSet.getString("run_type");
                 run.runners = List.of(resultSet.getString("runners").split(","));
@@ -446,17 +434,16 @@ public class DatabaseManager {
 
         return runsDictionary;
     }
-    public static DO2Run getRunByRunNumber(int runNumber) {
+    public static DO2Run getRunByRunId(int id) {
         String sql = "SELECT r.*, rd.*, rs.* FROM runs r " +
-                "LEFT JOIN runsDetailed rd ON r.run_number = rd.run_number " +
-                "LEFT JOIN runsSpeedruns rs ON r.run_number = rs.run_number " +
-                "WHERE r.run_number = ?";
+                "LEFT JOIN runsDetailed rd ON r.id = rd.id " +
+                "LEFT JOIN runsSpeedruns rs ON r.id = rs.id " +
+                "WHERE r.id = ?";
 
-        List<DO2Run> runs = fetchRuns(sql, List.of(runNumber));
+        List<DO2Run> runs = fetchRuns(sql, List.of(id));
         return runs.isEmpty() ? null : runs.get(0); // Return the first run, or null if none found
     }
-    public static List<DO2Run> getRunsByAbridgedRuns(List<DO2RunAbridged> runNumbers,
-                                                     AtomicReference<PreparedStatement> currentStatementRef) {
+    public static List<DO2Run> getRunsByAbridgedRuns(List<DO2RunAbridged> runNumbers, AtomicReference<PreparedStatement> currentStatementRef) {
         if (runNumbers == null || runNumbers.isEmpty()) {
             return new ArrayList<>();
         }
@@ -464,10 +451,8 @@ public class DatabaseManager {
         StringBuilder whereClause = new StringBuilder("WHERE ");
         for (int i = 0; i < runNumbers.size(); i++) {
             DO2RunAbridged abridged = runNumbers.get(i);
-            whereClause.append("(r.run_number = ")
-                    .append(abridged.run_number)
-                    .append(" AND r.run_length = ")
-                    .append(abridged.run_length)
+            whereClause.append("(r.id = ")
+                    .append(abridged.id)
                     .append(")");
             if (i < runNumbers.size() - 1) {
                 whereClause.append(" OR ");
@@ -476,15 +461,14 @@ public class DatabaseManager {
 
         StringBuilder orderByClause = new StringBuilder("ORDER BY CASE");
         for (int i = 0; i < runNumbers.size(); i++) {
-            orderByClause.append(" WHEN r.run_number = ").append(runNumbers.get(i).run_number)
-                    .append(" AND r.run_length = ").append(runNumbers.get(i).run_length)
+            orderByClause.append(" WHEN r.id = ").append(runNumbers.get(i).id)
                     .append(" THEN ").append(i);
         }
         orderByClause.append(" END");
 
         String sql = "SELECT r.*, rd.*, rs.* FROM runs r " +
-                "LEFT JOIN runsDetailed rd ON r.run_number = rd.run_number " +
-                "LEFT JOIN runsSpeedruns rs ON r.run_number = rs.run_number " +
+                "LEFT JOIN runsDetailed rd ON r.id = rd.id " +
+                "LEFT JOIN runsSpeedruns rs ON r.id = rs.id " +
                 whereClause.toString() + " " +
                 orderByClause.toString();
 
@@ -516,6 +500,7 @@ public class DatabaseManager {
 
             while (resultSet.next()) {
                 DO2Run run = new DO2Run();
+                run.id = resultSet.getInt("id");
                 run.run_number = resultSet.getInt("run_number");
                 run.date = resultSet.getString("date");
                 run.run_type = resultSet.getString("run_type");
@@ -576,17 +561,16 @@ public class DatabaseManager {
 
     public static List<DO2Run> getRunsByCriteria(List<String> criteria) {
         String sql = "SELECT r.*, rd.*, rs.* FROM runs r " +
-                "LEFT JOIN runsDetailed rd ON r.run_number = rd.run_number " +
-                "LEFT JOIN runsSpeedruns rs ON r.run_number = rs.run_number " +
+                "LEFT JOIN runsDetailed rd ON r.id = rd.id " +
+                "LEFT JOIN runsSpeedruns rs ON r.id = rs.id " +
                 (criteria.isEmpty() ? "" : "WHERE " + String.join(" AND ", criteria));
 
         return fetchRuns(sql, new ArrayList<>()); // No additional parameters needed
     }
     public static List<DO2RunAbridged> getAbridgedRunsByCriteria(List<String> criteria) {
         String sql = "SELECT r.*, rd.* FROM runs r " +
-                "LEFT JOIN runsDetailed rd ON r.run_number = rd.run_number " +
+                "LEFT JOIN runsDetailed rd ON r.id = rd.id " +
                 (criteria.isEmpty() ? "" : "WHERE " + String.join(" AND ", criteria));
-
         return fetchAbridgedRuns(sql, new ArrayList<>()); // No additional parameters needed
     }
 
@@ -698,7 +682,7 @@ public class DatabaseManager {
             DatabaseManager.updateRunRun(run);
             DatabaseManager.updateRunDetailed(run);
             DatabaseManager.updateRunDetailed(run);
-            System.out.println("Run #"+run.run_number+" has been updated in the database.");
+            System.out.println("Run ID:"+run.run_number+" has been updated in the database.");
         }catch(Exception e) {
             System.out.println(e);
         }

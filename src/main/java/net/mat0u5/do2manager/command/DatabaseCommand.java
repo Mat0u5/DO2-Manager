@@ -21,11 +21,11 @@ import java.util.HashMap;
 import java.util.List;
 
 public class DatabaseCommand {
-    public static int executeGetFromDB(ServerCommandSource source, int runNum, String query) {
+    public static int executeGetFromDB(ServerCommandSource source, int runId, String query) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        DO2Run run = DatabaseManager.getRunByRunNumber(runNum);
+        DO2Run run = DatabaseManager.getRunByRunId(runId);
         if (run == null) {
             self.sendMessage(Text.translatable("No run found!"));
             return -1;

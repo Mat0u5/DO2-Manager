@@ -6,6 +6,7 @@ import java.util.List;
 public class DO2RunAbridged {
     public String run_type = null;
     public List<String> runners = new ArrayList<>();
+    public int id = -1;
     public int difficulty = -1;
     public int run_number = -1;
     public int run_length = -1;

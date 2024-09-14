@@ -141,11 +141,11 @@ public class Command {
                         )
                     )
                     .then(literal("getRaw")
-                        .then(CommandManager.argument("runNum", IntegerArgumentType.integer())
+                        .then(CommandManager.argument("runId", IntegerArgumentType.integer())
                             .then(CommandManager.argument("var_name", StringArgumentType.string())
                                 .executes(context -> DatabaseCommand.executeGetFromDB(
                                     context.getSource(),
-                                    IntegerArgumentType.getInteger(context, "runNum"),
+                                    IntegerArgumentType.getInteger(context, "runId"),
                                     StringArgumentType.getString(context, "var_name"))
                                 )
                             )
