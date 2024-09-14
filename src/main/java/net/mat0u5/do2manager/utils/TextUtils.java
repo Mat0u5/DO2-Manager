@@ -110,14 +110,19 @@ public class TextUtils {
     }
     public static String replaceEmotesDiscord(String input) {
         for (Map.Entry<List<String>, List<String>> entry : emotes.entrySet()) {
-            if (entry.getValue().size() <=1) continue;
+            if (entry.getValue().isEmpty()) continue;
             String emoteValue = entry.getValue().get(0);
-            String emoteID = entry.getValue().get(1);
+
+            if (entry.getValue().size() > 1) {
+                String emoteID = entry.getValue().get(1);
+                for (String emote : entry.getKey()) {
+                    String emoteCode = "<:" + emote + ":"+emoteID+">";
+                    input = replaceCaseInsensitive(input, emoteCode, emoteValue);
+                }
+            }
             for (String emote : entry.getKey()) {
-                String emoteCode = "<:" + emote + ":"+emoteID+">";
+                String emoteCode = ":" + emote + ":";
                 input = replaceCaseInsensitive(input, emoteCode, emoteValue);
-                String emoteCode2 = ":" + emote + ":";
-                input = replaceCaseInsensitive(input, emoteCode2, emoteValue);
             }
             if (!input.contains(":")) return input;
         }
