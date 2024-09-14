@@ -22,16 +22,47 @@ public class PlayerInventoryScanner {
             ItemStack itemStack = inventory.getStack(i);
             if (itemStack == null) continue;
             if (itemStack.isEmpty()) continue;
-            if (ItemManager.isShulkerBox(itemStack)) {
-                result.addAll(ItemManager.getShulkerItemContents(itemStack));
-                if (!includeContainersThemselves) continue;
-            }
-            if (ItemManager.isBundle(itemStack)) {
-                result.addAll(ItemManager.getBundleItemContents(itemStack));
-                if (!includeContainersThemselves) continue;
-            }
             result.add(itemStack);
         }
+        int iterations = 0;
+        List<ItemStack> shulkersAndBundles = new ArrayList<>();
+        while((containsShulkerBox(result) || containsBundle(result)) && iterations < 10) {
+            iterations++;
+            List<ItemStack> toRemove = new ArrayList<>();
+            List<ItemStack> toAdd = new ArrayList<>();
+            for (ItemStack itemStack : result) {
+                if (itemStack == null) continue;
+                if (itemStack.isEmpty()) continue;
+                if (ItemManager.isShulkerBox(itemStack)) {
+                    shulkersAndBundles.add(itemStack);
+                    toAdd.addAll(ItemManager.getShulkerItemContents(itemStack));
+                    toRemove.add(itemStack);
+                }
+                if (ItemManager.isBundle(itemStack)) {
+                    shulkersAndBundles.add(itemStack);
+                    toAdd.addAll(ItemManager.getBundleItemContents(itemStack));
+                    toRemove.add(itemStack);
+                }
+            }
+            result.removeAll(toRemove);
+            result.addAll(toAdd);
+        }
+        if (includeContainersThemselves) {
+            result.addAll(shulkersAndBundles);
+        }
+
         return result;
+    }
+    public static boolean containsShulkerBox(List<ItemStack> list) {
+        for (ItemStack itemStack : list) {
+            if (ItemManager.isShulkerBox(itemStack)) return true;
+        }
+        return false;
+    }
+    public static boolean containsBundle(List<ItemStack> list) {
+        for (ItemStack itemStack : list) {
+            if (ItemManager.isBundle(itemStack)) return true;
+        }
+        return false;
     }
 }
