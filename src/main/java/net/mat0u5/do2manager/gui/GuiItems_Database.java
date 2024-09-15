@@ -45,12 +45,13 @@ public class GuiItems_Database {
     public static ItemStack searchItem() {
         return createGuiItem(new ItemStack(Items.OAK_SIGN, 1), "search_item", "Search");
     }
-    public static ItemStack run(DO2Run run, boolean showRunsAsHeads) {
+    public static ItemStack run(DO2Run run, boolean showRunsAsHeads, List<String> filter_player_uuid) {
         if (run == null) return createGuiItem(new ItemStack(Items.BARRIER, 1), "run", "§4Run Is Null.");
         ItemStack itemStack;
         List<Text> lore = new ArrayList<>();
         lore.add(Text.of(""));
-        if (run.getSuccess()) {
+        boolean successfulRun = run.getSuccessAdvanced(filter_player_uuid);
+        if (successfulRun) {
             if (run.run_type.equalsIgnoreCase("phase")) itemStack = new ItemStack(Items.GREEN_STAINED_GLASS);
             else itemStack = new ItemStack(Items.GREEN_WOOL);
         }
@@ -60,7 +61,7 @@ public class GuiItems_Database {
         }
         if (showRunsAsHeads) {
             itemStack = run.getRunnerSkull();
-            if (run.getSuccess()) itemStack.setCount(2);
+            if (successfulRun) itemStack.setCount(2);
         }
 
         lore.add(Text.of("§7Runners: §3" + run.getRunnersName()));
@@ -77,7 +78,7 @@ public class GuiItems_Database {
 
         NbtCompound nbt = itemStack.getOrCreateNbt();
         nbt.putInt("run_number", run.run_number);
-        return createGuiItem(itemStack, "run", (run.getSuccess()?"§a":"§c")+"Run #" + run.run_number,lore);
+        return createGuiItem(itemStack, "run", (successfulRun?"§a":"§c")+"Run #" + run.run_number,lore);
     }
     public static ItemStack sort_by(String sort_by, boolean sort_by_descending) {
         ItemStack itemStack = new ItemStack(Items.HOPPER, 1);
@@ -290,7 +291,7 @@ public class GuiItems_Database {
 
         return createGuiItem(itemStack, "items_bought", "§7Bought Items", lore);
     }
-    public static ItemStack itemInfo(List<DO2RunAbridged> runsSearchAbridged) {
+    public static ItemStack itemInfo(List<DO2RunAbridged> runsSearchAbridged, List<String> filter_player_uuid) {
 
         int runsNum = runsSearchAbridged.size();
         int successfulRuns = 0;
@@ -306,7 +307,7 @@ public class GuiItems_Database {
         int currentWinStreak = 0;
         int currentLossStreak = 0;
         for (DO2RunAbridged run : runsSearchAbridged) {
-            if (run.getSuccess()) {
+            if (run.getSuccessAdvanced(filter_player_uuid)) {
                 successfulRuns++;
                 totalEmbers += run.embers_counted;
                 totalCrowns += run.crowns_counted;

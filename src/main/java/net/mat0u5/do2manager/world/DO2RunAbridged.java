@@ -23,6 +23,18 @@ public class DO2RunAbridged {
     public boolean getSuccessFor(String uuid) {
         return finishers.contains(uuid);
     }
+    public boolean getSuccessAdvanced(List<String> filter_player_uuid) {
+        boolean currentSuccess = getSuccess();
+        if (!currentSuccess) return false;
+        if (filter_player_uuid.isEmpty()) return currentSuccess;
+        if (!isLackey()) return currentSuccess;
+
+        for (String uuid : filter_player_uuid) {
+            if (getSuccessFor(uuid)) return true;
+        }
+
+        return false;
+    }
     public boolean isLackey() {
         if (runners == null) return false;
         if (runners.isEmpty()) return false;

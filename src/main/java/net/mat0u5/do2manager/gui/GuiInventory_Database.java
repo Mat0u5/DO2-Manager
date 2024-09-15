@@ -83,7 +83,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
     public void addFiltersNStuff() {
         int totalPages = (int) Math.ceil((double) runsSearchAbridged.size() /21);
 
-        setOrReplaceNbt(4, GuiItems_Database.itemInfo(runsSearchAbridged));
+        setOrReplaceNbt(4, GuiItems_Database.itemInfo(runsSearchAbridged, filter_player_uuid));
         setOrReplaceNbt(45, GuiItems_Database.toggleHeads(showRunsAsHeads));
         if (current_page != 1) setOrReplaceNbt(46, GuiItems_Database.page(false,current_page,totalPages)); // Previous page
         else setIsNotMatching(46, GuiItems_Database.filler());
@@ -123,7 +123,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
                         inventory.setStack(pos, GuiItems_Database.fillerLight());
                         continue;
                     }
-                    inventory.setStack(pos, GuiItems_Database.run(runsSearch.get(runIndex), showRunsAsHeads));
+                    inventory.setStack(pos, GuiItems_Database.run(runsSearch.get(runIndex), showRunsAsHeads, filter_player_uuid));
                     runIndex++;
                 }
             }
@@ -135,8 +135,8 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         runsSearchAbridged = new ArrayList<>();
         runsSearch = new ArrayList<>();
         for (DO2RunAbridged run : allAbridgedRuns) {
-            if (filter_success == 1 && !run.getSuccess()) continue;
-            if (filter_success == 2 && run.getSuccess()) continue;
+            if (filter_success == 1 && !run.getSuccessAdvanced(filter_player_uuid)) continue;
+            if (filter_success == 2 && run.getSuccessAdvanced(filter_player_uuid)) continue;
             if (filter_difficulty == 1 && run.difficulty != 1) continue;
             if (filter_difficulty == 2 && run.difficulty != 2) continue;
             if (filter_difficulty == 3 && run.difficulty != 3) continue;
@@ -152,13 +152,6 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
                 List<String> remainingFilters = new ArrayList<>(List.copyOf(filter_player_uuid));
                 remainingFilters.removeAll(run.runners);
                 if (!String.join("",remainingFilters).isEmpty()) continue;
-                if (run.isLackey() && filter_success == 1) {
-                    boolean successForFilter = false;
-                    for (String uuid : filter_player_uuid) {
-                        if (run.getSuccessFor(uuid)) successForFilter = true;
-                    }
-                    if (!successForFilter) continue;
-                }
             }
 
 
