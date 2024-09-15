@@ -2,7 +2,6 @@ package net.mat0u5.do2manager.events;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.sun.management.OperatingSystemMXBean;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiInventoryClick;
@@ -10,7 +9,6 @@ import net.mat0u5.do2manager.queue.QueueEvents;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.PermissionManager;
-import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.ItemConvertor;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
@@ -29,7 +27,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvents;
-import net.minecraft.text.Text;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -39,7 +36,6 @@ import net.minecraft.world.GameMode;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -113,7 +109,7 @@ public class PlayerEvents {
     public static void invPickupOrDropItem(PlayerEntity player, ItemStack itemStack) {
         try {
             if (!RunInfoParser.getCurrentRunners(player.getServer()).contains(player)) return;
-            if (RunInfoParser.isDungeonCompass(itemStack) && Main.currentRun.compass_item == null) {
+            if (ItemManager.isDungeonCompass(itemStack) && Main.currentRun.compass_item == null) {
                 Main.currentRun.compass_item = itemStack;
 
                 List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(player.getServer());
@@ -122,7 +118,7 @@ public class PlayerEvents {
                     if (runners.size() == 1 && isSpeedrun) RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(player.getServer()).get(0));
                 }
             }
-            if (RunInfoParser.isDungeonArtifact(itemStack) && Main.currentRun.artifact_item == null) {
+            if (ItemManager.isDungeonArtifact(itemStack) && Main.currentRun.artifact_item == null) {
                 if (ItemManager.getModelData(itemStack) == 36) {
                     OtherUtils.executeCommand(player.getServer(),"function dom:mat0u5/gui/other/mug_maniac_activate");
                 }

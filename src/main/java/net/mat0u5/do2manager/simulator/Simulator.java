@@ -1,9 +1,7 @@
 package net.mat0u5.do2manager.simulator;
 
-import com.sun.jna.platform.win32.Winspool;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.EntityUtils;
-import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
@@ -17,7 +15,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -152,7 +149,7 @@ public class Simulator {
             for (ItemStack item : diveItems) {
                 if (item == null) continue;
                 if (item.isEmpty()) continue;
-                if (RunInfoParser.isEmber(item)) {
+                if (ItemManager.isEmber(item)) {
                     diveEmbers+=item.getCount();
                 }
             }
@@ -201,7 +198,7 @@ public class Simulator {
             for (ItemStack item : inv) {
                 if (item == null) continue;
                 if (item.isEmpty()) continue;
-                if (RunInfoParser.isEmber(item)) {
+                if (ItemManager.isEmber(item)) {
                     count += item.getCount();
                 }
             }
@@ -220,8 +217,8 @@ public class Simulator {
             for (ItemStack item : inv) {
                 if (item == null) continue;
                 if (item.isEmpty()) continue;
-                if (RunInfoParser.isDungeonArtifact(item)) {
-                    count += RunInfoParser.getArtifactWorth(item);
+                if (ItemManager.isDungeonArtifact(item)) {
+                    count += ItemManager.getArtifactWorth(item);
                 }
             }
         }
@@ -235,7 +232,7 @@ public class Simulator {
         for (ItemStack item : lvl4Items) {
             if (item == null) continue;
             if (item.isEmpty()) continue;
-            if (RunInfoParser.isEmber(item)) {
+            if (ItemManager.isEmber(item)) {
                 count += item.getCount();
             }
         }

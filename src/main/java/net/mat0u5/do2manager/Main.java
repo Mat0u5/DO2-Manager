@@ -66,7 +66,7 @@ public class Main implements ModInitializer {
 	public static void saveRunInfoToConfig() {
 		config.setProperty("current_run",currentRun.serialize());
 		config.setProperty("current_queue",dungeonQueue.getQueueAsString());
-		System.out.println("Shutting Down DO2-Manager..");
+		System.out.println("Run Info Saved To Config..");
 	}
 	public static void loadRunInfoFromConfig() {
 		currentRun = new DO2Run().deserialize(config.getProperty("current_run"));
@@ -98,6 +98,12 @@ public class Main implements ModInitializer {
 			LocalDateTime now = LocalDateTime.now();
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 			run.date = now.format(formatter);
+		}
+		if (reloadedRuns) {
+			if (!allAbridgedRuns.isEmpty()) {
+				int lastId = allAbridgedRuns.get(0).id;
+				run.id = lastId+1;
+			}
 		}
 		allAbridgedRuns.add(run.getAbridgedRun());
 		Collections.sort(allAbridgedRuns, new Comparator<DO2RunAbridged>() {

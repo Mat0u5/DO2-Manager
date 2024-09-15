@@ -21,6 +21,7 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
 
@@ -182,6 +183,52 @@ public class OtherCommand {
                 self.sendMessage(Text.of("Conversion complete."));
             }
         }
+        return 1;
+    }
+    public static int saveRunInfo(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final ServerPlayerEntity self = source.getPlayer();
+        Main.saveRunInfoToConfig();
+        return 1;
+    }
+    public static int makePhase(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final ServerPlayerEntity self = source.getPlayer();
+        if (self == null) return -1;
+
+        ItemStack holdingItem = ItemManager.getHoldingItem(self);
+        ItemManager.setRoleplayData(holdingItem,(byte) 2);
+        List<Text> lore = ItemManager.getLore(holdingItem);
+        boolean alreadyHasPhaseLore = false;
+        for (Text loreLine : lore) {
+            if (loreLine.getString().contains("-= Phase")) {
+                alreadyHasPhaseLore = true;
+                break;
+            }
+        }
+        if (!alreadyHasPhaseLore) {
+            String phaseLoreJson = String.format("{\"text\":\"-= Phase Item =-\",\"color\":\"%s\"}", Formatting.RED.getName());
+            if (ItemManager.isDungeonCard(holdingItem)) {
+                phaseLoreJson = String.format("{\"text\":\"-= Phase Card =-\",\"color\":\"%s\"}", Formatting.RED.getName());
+            }
+            ItemManager.addJsonLoreToItemStack(holdingItem,List.of(phaseLoreJson));
+        }
+
+        return 1;
+    }
+    public static int customModelData(ServerCommandSource source, boolean setNotGet, int setTo) {
+        MinecraftServer server = source.getServer();
+        final ServerPlayerEntity self = source.getPlayer();
+        if (self == null) return -1;
+        ItemStack holdingItem = ItemManager.getHoldingItem(self);
+        if (setNotGet) {
+            ItemManager.setModelData(holdingItem, setTo);
+            self.sendMessage(Text.of("The CustomModelData has been set to: "+setTo));
+        }
+        else {
+            self.sendMessage(Text.of("The CustomModelData of the item in your hand is: "+ ItemManager.getModelData(holdingItem)));
+        }
+
         return 1;
     }
 }

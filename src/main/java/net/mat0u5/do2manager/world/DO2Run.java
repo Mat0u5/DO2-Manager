@@ -9,7 +9,6 @@ import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.TextUtils;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -63,6 +62,7 @@ public class DO2Run {
         run.crowns_counted = crowns_counted;
         run.difficulty = difficulty;
         run.compass_level = getCompassLevel();
+        run.id = id;
 
         return run;
     }
@@ -78,11 +78,11 @@ public class DO2Run {
             if (item == null) continue;
             if (item.isEmpty()) continue;
             item = item.copy();
-            if (RunInfoParser.isEmber(item)) {
+            if (ItemManager.isEmber(item)) {
                 result += item.getCount();
             }
-            else if (RunInfoParser.isDungeonArtifact(item)) {
-                result += RunInfoParser.getArtifactWorth(item);
+            else if (ItemManager.isDungeonArtifact(item)) {
+                result += ItemManager.getArtifactWorth(item);
             }
         }
         return result;
@@ -94,10 +94,10 @@ public class DO2Run {
             if (item == null) continue;
             if (item.isEmpty()) continue;
             item = item.copy();
-            if (RunInfoParser.isCrown(item)) {
+            if (ItemManager.isCrown(item)) {
                 crowns += item.getCount();
             }
-            else if (RunInfoParser.isCoin(item)) {
+            else if (ItemManager.isCoin(item)) {
                 coins += item.getCount();
             }
         }
@@ -105,7 +105,7 @@ public class DO2Run {
         return total;
     }
     public String getArtifactEmote() {
-        return ":"+RunInfoParser.getArtifactName(artifact_item)+":";
+        return ":"+ ItemManager.getArtifactName(artifact_item)+":";
     }
     public void sendInfoToDiscord() {
         boolean run_success = getSuccess();

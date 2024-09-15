@@ -28,10 +28,141 @@ import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ItemManager {
+    public static final List<Integer> artiModelDataList = Arrays.asList(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58);
+    public static final HashMap<Integer, Integer> artifactWorth = new HashMap<Integer, Integer>() {{
+        put(53, 66);
+        put(48, 64);
+        put(54, 62);
+        put(37, 60);
+        put(46, 57);
+        put(36, 54);
+        put(38, 52);
+        put(14, 50);
+        put(44, 48);
+        put(11, 46);
+        put(16, 40);
+        put(58, 44);
+        put(52, 44);
+        put(39, 38);
+        put(50, 37);
+        put(10, 36);
+        put(19, 34);
+        put(49, 33);
+        put(15, 32);
+        put(31, 30);
+        put(56, 29);
+        put(47, 27);
+        put(51, 26);
+        put(57, 25);
+        put(20, 24);
+        put(41, 23);
+        put(35, 22);
+        put(18, 21);
+        put(40, 20);
+        put(12, 19);
+        put(13, 18);
+        put(32, 14);
+        put(34, 13);
+        put(29, 12);
+        put(28, 11);
+        put(30, 10);
+        put(33, 9);
+        put(17, 8);
+        put(43, 7);
+        put(42, 6);
+        put(55, 5);
+    }};
+    public static final HashMap<Integer, String> artifactNames = new HashMap<Integer, String>() {{
+        put(37, "key");
+        put(36, "mug");
+        put(38, "skadoodler");
+        put(14, "slab");
+        put(44, "staff");
+        put(11, "rocket");
+        put(16, "gem");
+        put(39, "pickaxe");
+        put(10, "watch");
+        put(19, "golden_eye");
+        put(15, "goggles");
+        put(31, "stache");
+        put(20, "bionic_eye");
+        put(41, "helm");
+        put(35, "wand");
+        put(18, "bandana");
+        put(40, "apron");
+        put(12, "chisel");
+        put(13, "goat");
+        put(32, "pearl");
+        put(34, "loop");
+        put(29, "tome");
+        put(28, "jar");
+        put(30, "slippers");
+        put(33, "shades");
+        put(17, "waffle");
+        put(43, "axe");
+        put(42, "hood");
+
+        put(55, "coin");
+        put(57, "payday");
+        put(51, "chip");
+        put(47, "notes");
+        put(56, "fist");
+        put(49, "tie");
+        put(50, "trigger");
+        put(52, "spanner");
+        put(58, "stopwatch");
+        put(46, "orb");
+        put(54, "laptop");
+        put(48, "cloak");
+        put(53, "mat");
+    }};
+    public static final LinkedHashMap<Integer, String> artifactNamesByValue = new LinkedHashMap<Integer, String>() {{
+        put(66,"mat");
+        put(64,"cloak");
+        put(62,"laptop");
+        put(60, "key");
+        put(57,"orb");
+        put(54, "mug");
+        put(52, "skadoodler");
+        put(50, "slab");
+        put(48, "staff");
+        put(46, "rocket");
+        put(44,"stopwatch");
+        //    put(44,"spanner");
+        put(40, "gem");
+        put(38, "pickaxe");
+        put(37,"trigger");
+        put(36, "watch");
+        put(34, "golden_eye");
+        put(33,"tie");
+        put(32, "goggles");
+        put(30, "stache");
+        put(29,"fist");
+        put(27,"notes");
+        put(26,"chip");
+        put(25,"payday");
+        put(24, "bionic_eye");
+        put(23, "helm");
+        put(22, "wand");
+        put(21, "bandana");
+        put(20, "apron");
+        put(19, "chisel");
+        put(18, "goat");
+        put(14, "pearl");
+        put(13, "loop");
+        put(12, "tome");
+        put(11, "jar");
+        put(10, "slippers");
+        put(9, "shades");
+        put(8, "waffle");
+        put(7, "axe");
+        put(6, "hood");
+        put(5,"coin");
+    }};
+
     public static void giveItemStack(PlayerEntity player, ItemStack itemStack) {
         if (!player.giveItemStack(itemStack)) {
             player.dropItem(itemStack, false);
@@ -71,6 +202,22 @@ public class ItemManager {
         NbtCompound nbt = itemStack.getNbt();
         if (hasNbtEntry(itemStack, "CustomModelData")) return nbt.getInt("CustomModelData");
         return -1;
+    }
+    public static void setModelData(ItemStack itemStack, int modelData) {
+        setNbtInt(itemStack, "CustomModelData", modelData);
+    }
+    public static void setRoleplayData(ItemStack itemStack, byte roleplayData) {
+        setNbtByte(itemStack, "CustomRoleplayData", roleplayData);
+    }
+    public static void setNbtInt(ItemStack itemStack, String subNbt, int setTo) {
+        NbtCompound nbt = itemStack.getOrCreateNbt();
+        nbt.putInt(subNbt, setTo);
+        itemStack.setNbt(nbt);
+    }
+    public static void setNbtByte(ItemStack itemStack, String subNbt, byte setTo) {
+        NbtCompound nbt = itemStack.getOrCreateNbt();
+        nbt.putByte(subNbt, setTo);
+        itemStack.setNbt(nbt);
     }
     public static int getMapId(ItemStack itemStack) {
         NbtCompound nbt = itemStack.getNbt();
@@ -272,6 +419,31 @@ public class ItemManager {
         // Update the display tag with the new lore list
         displayTag.put("Lore", loreList);
     }
+    public static void addJsonLoreToItemStack(ItemStack itemStack, List<String> lore) {
+        NbtCompound displayTag = itemStack.getOrCreateSubNbt("display");
+        NbtList loreList = displayTag.getList("Lore", 8); // 8 means it's a string tag type
+
+        // Convert each lore Text to string and add to NBT list
+        for (String jsonLine : lore) {
+            loreList.add(NbtString.of(jsonLine));
+        }
+
+        // Update the display tag with the new lore list
+        displayTag.put("Lore", loreList);
+    }
+    public static List<Text> getLore(ItemStack itemStack) {
+        List<Text> loreList = new ArrayList<>();
+
+        if (itemStack.hasNbt() && itemStack.getNbt().contains("display")) {
+            NbtList loreNbt = itemStack.getNbt().getCompound("display").getList("Lore", 8); // 8 is the NBT type for string
+            for (int i = 0; i < loreNbt.size(); i++) {
+                Text loreText = Text.Serializer.fromJson(loreNbt.getString(i));
+                loreList.add(loreText);
+            }
+        }
+
+        return loreList;
+    }
     public static boolean isShulkerBox(ItemStack itemStack) {
         return getItemId(itemStack).endsWith("shulker_box");
     }
@@ -360,5 +532,56 @@ public class ItemManager {
         }
 
         return combinedStacks;
+    }
+    public static ItemStack getHoldingItem(PlayerEntity player) {
+        ItemStack mainHandItem = player.getMainHandStack();
+        if (mainHandItem != null) {
+            if (!mainHandItem.isEmpty()) return mainHandItem;
+        }
+        ItemStack offHandItem = player.getOffHandStack();
+        return offHandItem;
+    }
+
+    public static boolean isDungeonCompass(ItemStack itemStack) {
+        if (!getItemId(itemStack).equalsIgnoreCase("minecraft:compass")) return false;
+        if (!hasNbtEntry(itemStack, "LodestoneTracked")) return false;
+        return true;
+    }
+    public static boolean isDungeonArtifact(ItemStack itemStack) {
+        if (!getItemId(itemStack).equalsIgnoreCase("minecraft:iron_nugget")) return false;
+        return artiModelDataList.contains(getModelData(itemStack));
+    }
+    public static boolean isEmber(ItemStack itemStack) {
+        if (!getItemId(itemStack).equalsIgnoreCase("minecraft:iron_nugget")) return false;
+        return getModelData(itemStack) == 3;
+    }
+    public static boolean isCrown(ItemStack itemStack) {
+        if (!getItemId(itemStack).equalsIgnoreCase("minecraft:iron_nugget")) return false;
+        return getModelData(itemStack) == 2;
+    }
+    public static boolean isCoin(ItemStack itemStack) {
+        if (!getItemId(itemStack).equalsIgnoreCase("minecraft:iron_nugget")) return false;
+        return getModelData(itemStack) == 1;
+    }
+    public static boolean isDungeonCard(ItemStack itemStack) {
+        if (!getItemId(itemStack).equalsIgnoreCase("minecraft:iron_nugget")) return false;
+        int modelData = getModelData(itemStack);
+        return modelData >= 101 && modelData <= 180;
+    }
+    public static int getArtifactWorth(ItemStack itemStack) {
+        if (!isDungeonArtifact(itemStack)) return 0;
+        if (artifactWorth.containsKey(getModelData(itemStack))) {
+            return artifactWorth.get(getModelData(itemStack));
+        }
+        return 0;
+    }
+    public static String getArtifactName(ItemStack itemStack) {
+        if (!isDungeonArtifact(itemStack)) return "";
+        int modelData = getModelData(itemStack);
+        if (modelData == -1) return "";
+        if (artifactNames.containsKey(modelData)) {
+            return artifactNames.get(modelData);
+        }
+        return "";
     }
 }

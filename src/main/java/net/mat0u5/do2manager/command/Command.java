@@ -34,6 +34,11 @@ public class Command {
                     )
                     .then(literal("database")
                         .then(literal("runTracking")
+                            .then(literal("saveRun")
+                                .executes(context -> OtherCommand.saveRunInfo(
+                                    context.getSource())
+                                )
+                            )
                             .then(literal("prepareForRun")
                                 .executes(context -> ConsoleCommand.database_runTracking_PrepareForRun(
                                     context.getSource())
@@ -643,6 +648,30 @@ public class Command {
                         .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
                         .executes(context -> TCG_Commands.reload(
                             context.getSource()
+                        )
+                    )
+                )
+        );
+
+        dispatcher.register(
+            literal("makephase")
+                .requires(source -> (isAdmin(source.getPlayer())))
+                .executes(context -> OtherCommand.makePhase(
+                        context.getSource())
+                )
+        );
+        dispatcher.register(
+            literal("cmd")
+                .requires(source -> (isAdmin(source.getPlayer())))
+                .then(literal("get")
+                    .executes(context -> OtherCommand.customModelData(
+                        context.getSource(),false, -1)
+                    )
+                )
+                .then(literal("set")
+                    .then(CommandManager.argument("cmd", IntegerArgumentType.integer())
+                        .executes(context -> OtherCommand.customModelData(
+                            context.getSource(),true, IntegerArgumentType.getInteger(context,"cmd"))
                         )
                     )
                 )
