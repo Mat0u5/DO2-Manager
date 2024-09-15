@@ -43,7 +43,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         invId = "runs";
         // Populate the inventory with run data
         if (!Main.reloadedRuns) {
-            Main.reloadAllRunsAsync().thenRun(() -> {
+            Main.reloadAllAbridgedRunsAsync().thenRun(() -> {
                 openRunInventoryAfterLoad(player);
             });
         }
@@ -135,8 +135,8 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         runsSearchAbridged = new ArrayList<>();
         runsSearch = new ArrayList<>();
         for (DO2RunAbridged run : allAbridgedRuns) {
-            if (filter_success == 1 && !run.successful) continue;
-            if (filter_success == 2 && run.successful) continue;
+            if (filter_success == 1 && !run.getSuccess()) continue;
+            if (filter_success == 2 && run.getSuccess()) continue;
             if (filter_difficulty == 1 && run.difficulty != 1) continue;
             if (filter_difficulty == 2 && run.difficulty != 2) continue;
             if (filter_difficulty == 3 && run.difficulty != 3) continue;
@@ -152,6 +152,13 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
                 List<String> remainingFilters = new ArrayList<>(List.copyOf(filter_player_uuid));
                 remainingFilters.removeAll(run.runners);
                 if (!String.join("",remainingFilters).isEmpty()) continue;
+                if (run.isLackey() && filter_success == 1) {
+                    boolean successForFilter = false;
+                    for (String uuid : filter_player_uuid) {
+                        if (run.getSuccessFor(uuid)) successForFilter = true;
+                    }
+                    if (!successForFilter) continue;
+                }
             }
 
 

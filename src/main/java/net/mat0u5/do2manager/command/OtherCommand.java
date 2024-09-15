@@ -62,7 +62,7 @@ public class OtherCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
         self.sendMessage(Text.of("Reloading database..."));
-        Main.reloadAllRunsAsync().thenRun(() -> {
+        Main.reloadAllAbridgedRunsAsync().thenRun(() -> {
             self.sendMessage(Text.of("Database Reloaded."));
         });
         return 1;
@@ -171,8 +171,16 @@ public class OtherCommand {
         final ServerPlayerEntity self = source.getPlayer();
 
         for (ServerPlayerEntity player : targets) {
-            if (scanType.equalsIgnoreCase("tagExpanded")) ItemConvertor.convertCustomItems(player,-1);
-            if (scanType.equalsIgnoreCase("removePhase")) ItemConvertor.convertPhaseItems(player,-1);
+            if (scanType.equalsIgnoreCase("tagExpanded")) {
+                self.sendMessage(Text.of("Tagging "+player.getEntityName()+"'s Custom Cards"));
+                ItemConvertor.convertCustomItems(player,-1);
+                self.sendMessage(Text.of("Tagging complete."));
+            }
+            if (scanType.equalsIgnoreCase("removePhase")) {
+                self.sendMessage(Text.of("Converting "+player.getEntityName()+"'s Items from phase to casual"));
+                ItemConvertor.convertPhaseItems(player,-1);
+                self.sendMessage(Text.of("Conversion complete."));
+            }
         }
         return 1;
     }

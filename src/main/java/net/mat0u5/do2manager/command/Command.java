@@ -15,8 +15,7 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 
-import static net.mat0u5.do2manager.utils.PermissionManager.isModOwner;
-import static net.mat0u5.do2manager.utils.PermissionManager.isTCGGameMaster;
+import static net.mat0u5.do2manager.utils.PermissionManager.*;
 import static net.minecraft.command.argument.EntityArgumentType.getPlayer;
 import static net.minecraft.command.argument.EntityArgumentType.player;
 import static net.minecraft.server.command.CommandManager.literal;
@@ -29,7 +28,7 @@ public class Command {
         dispatcher.register(
             literal("decked-out")
                 .then(literal("console-only")
-                    .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                    .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
                     .executes(context -> ConsoleCommand.execute(
                         context.getSource())
                     )
@@ -124,9 +123,9 @@ public class Command {
 
                 ////////
                 .then(literal("database")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
                     .then(literal("scanner")
-                        .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
                         .then(literal("crowns")
                             .executes(context -> DatabaseCommand.updateCrowns())
                         )
@@ -138,6 +137,9 @@ public class Command {
                         )
                         .then(literal("lackeys")
                                 .executes(context -> DatabaseCommand.updateLackeys())
+                        )
+                        .then(literal("boughtItems")
+                                .executes(context -> DatabaseCommand.updateBoughtItems())
                         )
                     )
                     .then(literal("getRaw")
@@ -185,7 +187,7 @@ public class Command {
                     )
                 )
                 .then(literal("gui")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(source -> (isAdmin(source.getPlayer())))
                     .executes(context -> new GuiInventory_Database().openRunInventory(
                         context.getSource().getPlayer())
                     )
@@ -218,7 +220,7 @@ public class Command {
                     )
                 )
                 .then(literal("testing")
-                    .requires(source -> source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()))
+                    .requires(source -> (isModOwner(source.getPlayer())))
                     .executes(context -> TestingCommand.execute(
                         context.getSource())
                     )
@@ -241,15 +243,15 @@ public class Command {
                     )
                 )
                 .then(literal("simulator")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
                     .then(literal("card_played")
-                        .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
                         .executes(context -> Main.simulator.cardPlayed(
                             context.getSource())
                         )
                     )
                     .then(literal("save_permanents")
-                        .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
                         .executes(context -> Main.simulator.saveHand(
                             context.getSource())
                         )
@@ -276,20 +278,20 @@ public class Command {
                         )
                     )
                     .then(literal("disable")
-                        .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
                         .executes(context -> Main.simulator.enOrDis(
                             context.getSource(),"false")
                         )
                     )
                     .then(literal("enable")
-                        .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
                         .executes(context -> Main.simulator.enOrDis(
                             context.getSource(),"true")
                         )
                     )
                 )
                 .then(literal("commandBlockSearch")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(source -> (isAdmin(source.getPlayer())))
                     .then(literal("containsString")
                         .then(CommandManager.argument("string", StringArgumentType.string())
                             .executes(context -> DatabaseCommand.executeCommandBlockSearch(
@@ -331,7 +333,7 @@ public class Command {
                         context.getSource())
                     )
                     .then(literal("advanced")
-                        .requires(source -> source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()))
+                        .requires(source -> (isModOwner(source.getPlayer())))
                         .executes(context -> OtherCommand.executeSpeedrunAdvanced(
                             context.getSource())
                         )
@@ -355,7 +357,7 @@ public class Command {
                     )
                 )
                 .then(literal("invScanner")
-                    .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
                         .then(CommandManager.argument("targets", EntityArgumentType.players())
                             .then(literal("tagExpanded")
                                 .executes(context -> OtherCommand.invScanner(
@@ -372,7 +374,7 @@ public class Command {
                         )
                 )
                 .then(literal("queueRestart")
-                    .requires(source -> source.hasPermissionLevel(2))
+                    .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
                     .executes(context -> RestartCommand.queueRestart(
                         context.getSource(),true)
                     )
@@ -383,7 +385,7 @@ public class Command {
                     )
                 )
                 .then(literal("blockLock")
-                    .requires(source -> source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()))
+                    .requires(source -> (isModOwner(source.getPlayer())))
                     .then(literal("startSearch")
                         .then(CommandManager.argument("fromX", IntegerArgumentType.integer())
                         .then(CommandManager.argument("fromY", IntegerArgumentType.integer())
@@ -422,6 +424,7 @@ public class Command {
                     )
                 )
                 .then(literal("reload")
+                    .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
                     .executes(context -> OtherCommand.reload()
                     )
                     .then(literal("database")
@@ -445,8 +448,15 @@ public class Command {
                 )
         );
         dispatcher.register(
+            literal("runs")
+                .requires(source -> (isAdmin(source.getPlayer())))
+                .executes(context -> new GuiInventory_Database().openRunInventory(
+                        context.getSource().getPlayer())
+                )
+        );
+        dispatcher.register(
             literal("items")
-                .requires(source -> source.hasPermissionLevel(2))
+                .requires(source -> (isAdmin(source.getPlayer())))
                 .executes(context -> new GuiInventory_ChestFramework().openChestInventory(
                         context.getSource().getPlayer(),
                         54,
@@ -503,7 +513,7 @@ public class Command {
                         )
                     )
                     .then(CommandManager.argument("player", player())
-                        .requires(source -> source.hasPermissionLevel(2))
+                        .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
                         .executes(context -> QueueCommand.skipTurnOther(
                             context.getSource(),getPlayer(context,"player"),1
                         ))
@@ -516,7 +526,7 @@ public class Command {
                     )
                 )
                 .then(literal("finishRun")
-                    .requires(source -> ((source.getEntity() instanceof ServerPlayerEntity &&"Mat0u5".equals(source.getName()) || (source.getEntity() == null))))
+                    .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
                     .then(CommandManager.argument("targets", EntityArgumentType.players())
                         .executes(context -> QueueCommand.runFinish(
                                 context.getSource(),
@@ -524,30 +534,30 @@ public class Command {
                         )
                     )
                 )
-                .then(literal("add").requires(source -> source.hasPermissionLevel(2))
+                .then(literal("add")
+                    .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
                     .then(CommandManager.argument("player", player())
                         .executes(context -> QueueCommand.addPlayerToQueue(
                             context.getSource(),getPlayer(context,"player")
                         ))
                     ))
-                .then(literal("remove").requires(source -> source.hasPermissionLevel(2))
+                .then(literal("remove")
+                    .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
                     .then(CommandManager.argument("target", StringArgumentType.string())
                         .suggests(QueueCommand.getQueuePlayersSuggestionProvider())
                         .executes(context -> QueueCommand.removePlayerFromQueue(
                             context.getSource(),StringArgumentType.getString(context,"target")
                         ))
                     ))
-                .then(literal("move").requires(source -> source.hasPermissionLevel(2))
+                .then(literal("move")
+                    .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
                     .executes(QueueCommand::moveQueue))
         );
 
         dispatcher.register(
             literal("tcg")
-
+                .requires(source -> ((isTCGGameMaster(source.getPlayer()) || (source.getEntity() == null))))
                 .then(literal("generateBundle")
-                    .requires(source -> (isTCGGameMaster(source.getPlayer())))
-
-
                     .then(literal("hermit")
                         .executes(context -> TCG_Commands.generateDeck(
                                 context.getSource(), "hermit",1
@@ -623,7 +633,7 @@ public class Command {
                 )
 
                 .then(literal("_database_update_items")
-                    .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
+                    .requires(source -> (isModOwner(source.getPlayer())))
                     .executes(context -> TCG_Commands.databaseUpdate(
                             context.getSource()
                         )

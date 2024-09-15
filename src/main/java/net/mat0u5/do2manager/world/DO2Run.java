@@ -57,11 +57,11 @@ public class DO2Run {
         run.run_number = run_number;
         run.run_type = run_type;
         run.runners = runners;
+        run.finishers = finishers;
         run.run_length = run_length;
         run.embers_counted = embers_counted;
         run.crowns_counted = crowns_counted;
         run.difficulty = difficulty;
-        run.successful = getSuccess();
         run.compass_level = getCompassLevel();
 
         return run;
@@ -227,6 +227,10 @@ public class DO2Run {
     }
     public boolean getSuccess() {
         return !String.join("",finishers).isEmpty();
+    }
+    public boolean getSuccessFor(String uuid) {
+        if (!getSuccess()) return false;
+        return finishers.contains(uuid);
     }
     public int getCompassLevel() {
         if (compass_item == null) return -1;

@@ -1,6 +1,7 @@
 package net.mat0u5.do2manager.command;
 
 import net.mat0u5.do2manager.Main;
+import net.mat0u5.do2manager.database.DO2RunIterator;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
@@ -42,6 +43,7 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
+
         self.sendMessage(Text.translatable("§6Command Worked.."));
         return 1;
     }
@@ -49,7 +51,8 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-
+        DO2RunIterator iterator = new DO2RunIterator();
+        iterator.start();
 
         return 1;
     }

@@ -268,7 +268,7 @@ public class DatabaseManager {
             statement.setString(6, DO2_GSON.serializeItemStack(run.artifact_item));
             statement.setString(7, DO2_GSON.serializeItemStack(run.deck_item));
             statement.setString(8, DO2_GSON.serializeListItemStack(run.inventory_save));
-            statement.setString(9, DO2_GSON.serializeListItemStack(run.items_bought));
+            statement.setString(9, DO2_GSON.serializeListItemStack(ItemManager.combineItemStacks(run.items_bought)));
             statement.setString(10, run.death_pos);
             statement.setString(11, run.death_message);
             statement.setString(12, String.join(",", run.loot_drops));
@@ -304,14 +304,13 @@ public class DatabaseManager {
         String sql = "UPDATE runs SET run_type = ?, runners = ?, finishers = ?, run_length = ?, embers_counted = ?, crowns_counted = ? WHERE id = ?";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, DB_VERSION);
-            statement.setString(2, run.run_type);
-            statement.setString(3, String.join(",", run.runners));
-            statement.setString(4, String.join(",", run.finishers));
-            statement.setInt(5, run.run_length);
-            statement.setInt(6, run.embers_counted);
-            statement.setInt(7, run.crowns_counted);
-            statement.setInt(8, run.id);  // Use id in WHERE clause
+            statement.setString(1, run.run_type);
+            statement.setString(2, String.join(",", run.runners));
+            statement.setString(3, String.join(",", run.finishers));
+            statement.setInt(4, run.run_length);
+            statement.setInt(5, run.embers_counted);
+            statement.setInt(6, run.crowns_counted);
+            statement.setInt(7, run.id);  // Use id in WHERE clause
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -322,19 +321,18 @@ public class DatabaseManager {
         String sql = "UPDATE runsDetailed SET card_plays = ?, difficulty = ?, compass_item = ?, artifact_item = ?, deck_item = ?, inventory_save = ?, items_bought = ?, death_pos = ?, death_message = ?, loot_drops = ?, special_events = ? WHERE id = ?";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, DB_VERSION);
-            statement.setString(2, DO2_GSON.serializeListItemStack(run.card_plays));
-            statement.setInt(3, run.difficulty);
-            statement.setString(4, DO2_GSON.serializeItemStack(run.compass_item));
-            statement.setString(5, DO2_GSON.serializeItemStack(run.artifact_item));
-            statement.setString(6, DO2_GSON.serializeItemStack(run.deck_item));
-            statement.setString(7, DO2_GSON.serializeListItemStack(run.inventory_save));
-            statement.setString(8, DO2_GSON.serializeListItemStack(run.items_bought));
-            statement.setString(9, run.death_pos);
-            statement.setString(10, run.death_message);
-            statement.setString(11, String.join(",", run.loot_drops));
-            statement.setString(12, String.join(",", run.special_events));
-            statement.setInt(13, run.id);  // Use id in WHERE clause
+            statement.setString(1, DO2_GSON.serializeListItemStack(run.card_plays));
+            statement.setInt(2, run.difficulty);
+            statement.setString(3, DO2_GSON.serializeItemStack(run.compass_item));
+            statement.setString(4, DO2_GSON.serializeItemStack(run.artifact_item));
+            statement.setString(5, DO2_GSON.serializeItemStack(run.deck_item));
+            statement.setString(6, DO2_GSON.serializeListItemStack(run.inventory_save));
+            statement.setString(7, DO2_GSON.serializeListItemStack(run.items_bought));
+            statement.setString(8, run.death_pos);
+            statement.setString(9, run.death_message);
+            statement.setString(10, String.join(",", run.loot_drops));
+            statement.setString(11, String.join(",", run.special_events));
+            statement.setInt(12, run.id);  // Use id in WHERE clause
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -345,17 +343,16 @@ public class DatabaseManager {
         String sql = "UPDATE runsSpeedruns SET timestamp_lvl2_entry = ?, timestamp_lvl3_entry = ?, timestamp_lvl4_entry = ?, timestamp_lvl4_exit = ?, timestamp_lvl3_exit = ?, timestamp_lvl2_exit = ?, timestamp_lvl1_exit = ?, timestamp_artifact = ?, run_length = ? WHERE id = ?";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, DB_VERSION);
-            statement.setInt(2, run.timestamp_lvl2_entry);
-            statement.setInt(3, run.timestamp_lvl3_entry);
-            statement.setInt(4, run.timestamp_lvl4_entry);
-            statement.setInt(5, run.timestamp_lvl4_exit);
-            statement.setInt(6, run.timestamp_lvl3_exit);
-            statement.setInt(7, run.timestamp_lvl2_exit);
-            statement.setInt(8, run.timestamp_lvl1_exit);
-            statement.setInt(9, run.timestamp_artifact);
-            statement.setInt(10, run.run_length);
-            statement.setInt(11, run.id);  // Use id in WHERE clause
+            statement.setInt(1, run.timestamp_lvl2_entry);
+            statement.setInt(2, run.timestamp_lvl3_entry);
+            statement.setInt(3, run.timestamp_lvl4_entry);
+            statement.setInt(4, run.timestamp_lvl4_exit);
+            statement.setInt(5, run.timestamp_lvl3_exit);
+            statement.setInt(6, run.timestamp_lvl2_exit);
+            statement.setInt(7, run.timestamp_lvl1_exit);
+            statement.setInt(8, run.timestamp_artifact);
+            statement.setInt(9, run.run_length);
+            statement.setInt(10, run.id);  // Use id in WHERE clause
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -411,11 +408,11 @@ public class DatabaseManager {
                 run.run_number = resultSet.getInt("run_number");
                 run.run_type = resultSet.getString("run_type");
                 run.runners = List.of(resultSet.getString("runners").split(","));
+                run.finishers = List.of(resultSet.getString("finishers").split(","));
                 run.run_length = resultSet.getInt("run_length");
                 run.embers_counted = resultSet.getInt("embers_counted");
                 run.crowns_counted = resultSet.getInt("crowns_counted");
                 run.difficulty = resultSet.getInt("difficulty");
-                run.successful = !String.join("",List.of(resultSet.getString("finishers").split(","))).isEmpty();
 
                 ItemStack compass_item = DO2_GSON.deserializeItemStack(resultSet.getString("compass_item"));
                 if (compass_item != null)  {
@@ -681,7 +678,7 @@ public class DatabaseManager {
         try {
             DatabaseManager.updateRunRun(run);
             DatabaseManager.updateRunDetailed(run);
-            DatabaseManager.updateRunDetailed(run);
+            DatabaseManager.updateRunSpeedrun(run);
             System.out.println("Run ID:"+run.run_number+" has been updated in the database.");
         }catch(Exception e) {
             System.out.println(e);

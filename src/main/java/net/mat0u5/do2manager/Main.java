@@ -33,7 +33,6 @@ public class Main implements ModInitializer {
 	public static ConfigManager lastInvUpdate;
 	public static DO2Run currentRun = new DO2Run();
 	public static DO2Run speedrun = new DO2Run();
-	public static List<DO2Run> allRuns = new ArrayList<>();
 	public static List<DO2RunAbridged> allAbridgedRuns = new ArrayList<>();
 	public static HashMap<PlayerEntity, GuiPlayerSpecific> openGuis = new HashMap<>();
 	public static HashMap<String, String> allPlayers = new HashMap<>();
@@ -74,15 +73,9 @@ public class Main implements ModInitializer {
 	}
 
 	private static final ExecutorService executor = Executors.newSingleThreadExecutor();
-	public static CompletableFuture<Void> reloadAllRunsAsync() {
+	public static CompletableFuture<Void> reloadAllAbridgedRunsAsync() {
 		return CompletableFuture.runAsync(() -> {
 			synchronized (Main.class) { // Synchronize to handle concurrent access
-				/*System.out.println("Loading All Runs...");
-				allRuns = DatabaseManager.getRunsByCriteria(new ArrayList<>());
-				Collections.sort(allRuns, Comparator.comparingInt(DO2Run::getRunNum).reversed());
-				System.out.println("Runs Reloaded.");*/
-
-
 				System.out.println("Loading All Abridged Runs...");
 				allAbridgedRuns = DatabaseManager.getAbridgedRunsByCriteria(new ArrayList<>());
 				Collections.sort(allAbridgedRuns, Comparator.comparingInt(DO2RunAbridged::getRunNum).reversed());
@@ -106,14 +99,7 @@ public class Main implements ModInitializer {
 			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 			run.date = now.format(formatter);
 		}
-		allRuns.add(run);
 		allAbridgedRuns.add(run.getAbridgedRun());
-		Collections.sort(allRuns, new Comparator<DO2Run>() {
-			@Override
-			public int compare(DO2Run run1, DO2Run run2) {
-				return Integer.compare(run2.getRunNum(), run1.getRunNum());
-			}
-		});
 		Collections.sort(allAbridgedRuns, new Comparator<DO2RunAbridged>() {
 			@Override
 			public int compare(DO2RunAbridged run1, DO2RunAbridged run2) {

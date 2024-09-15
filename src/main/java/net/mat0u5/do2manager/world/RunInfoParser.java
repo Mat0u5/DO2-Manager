@@ -177,7 +177,7 @@ public class RunInfoParser {
             List<DO2RunAbridged> allRunsAbridged = DatabaseManager.getAbridgedRunsByCriteria(List.of("runners = \"" + player.getUuidAsString()+"\""));
             DO2RunAbridged fastestRun = null;
             for (DO2RunAbridged run : allRunsAbridged) {
-                if (!run.run_type.equalsIgnoreCase("testing") && run.successful && run.difficulty==Main.currentRun.difficulty&& run.compass_level == Main.currentRun.getCompassLevel() && Main.currentRun.getCompassLevel() != -1) {
+                if (!run.run_type.equalsIgnoreCase("testing") && run.getSuccess() && run.difficulty==Main.currentRun.difficulty&& run.compass_level == Main.currentRun.getCompassLevel() && Main.currentRun.getCompassLevel() != -1) {
                     if (fastestRun == null) {
                         fastestRun = run;
                         continue;

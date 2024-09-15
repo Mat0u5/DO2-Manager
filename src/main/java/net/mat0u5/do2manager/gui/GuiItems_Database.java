@@ -306,7 +306,7 @@ public class GuiItems_Database {
         int currentWinStreak = 0;
         int currentLossStreak = 0;
         for (DO2RunAbridged run : runsSearchAbridged) {
-            if (run.successful) {
+            if (run.getSuccess()) {
                 successfulRuns++;
                 totalEmbers += run.embers_counted;
                 totalCrowns += run.crowns_counted;

@@ -326,4 +326,39 @@ public class ItemManager {
         }
         return count;
     }
+
+    public static List<ItemStack> combineItemStacks(List<ItemStack> inputStacks) {
+        if (inputStacks == null) return new ArrayList<>();
+        if (inputStacks.isEmpty()) return new ArrayList<>();
+
+        List<ItemStack> combinedStacks = new ArrayList<>();
+        for (ItemStack inputStack : List.copyOf(inputStacks)) {
+            if (inputStack.isEmpty()) {
+                continue;
+            }
+
+            boolean merged = false;
+
+            // Try to merge with existing stacks in the combined list
+            for (ItemStack combinedStack : combinedStacks) {
+                if (ItemStack.canCombine(inputStack, combinedStack)) {
+                    int combinedAmount = Math.min(combinedStack.getMaxCount() - combinedStack.getCount(), inputStack.getCount());
+                    combinedStack.increment(combinedAmount);
+                    inputStack.decrement(combinedAmount);
+
+                    if (inputStack.isEmpty()) {
+                        merged = true;
+                        break;
+                    }
+                }
+            }
+
+            // If the inputStack couldn't be merged, add it to the combined list
+            if (!merged) {
+                combinedStacks.add(inputStack.copy());
+            }
+        }
+
+        return combinedStacks;
+    }
 }
