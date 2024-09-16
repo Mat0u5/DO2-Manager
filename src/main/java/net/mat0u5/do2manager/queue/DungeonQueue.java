@@ -134,6 +134,7 @@ public class DungeonQueue {
     }
 
     public String getNextPlayer() {
+        if (queue.isEmpty()) return "";
         return queue.peek();  // Returns the next player without removing them
     }
 
