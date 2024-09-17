@@ -1,5 +1,7 @@
 package net.mat0u5.do2manager.command;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DO2RunIterator;
 import net.mat0u5.do2manager.database.DatabaseManager;
@@ -51,8 +53,6 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        DO2RunIterator iterator = new DO2RunIterator();
-        iterator.start();
 
         return 1;
     }

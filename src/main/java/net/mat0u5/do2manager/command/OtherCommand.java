@@ -3,6 +3,7 @@ package net.mat0u5.do2manager.command;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.simulator.Simulator;
+import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.TextUtils;
 import net.mat0u5.do2manager.world.BlockScanner;
@@ -228,6 +229,18 @@ public class OtherCommand {
         else {
             self.sendMessage(Text.of("The CustomModelData of the item in your hand is: "+ ItemManager.getModelData(holdingItem)));
         }
+
+        return 1;
+    }
+    public static int pushChange(ServerCommandSource source, String change, String reason, String affected) {
+        MinecraftServer server = source.getServer();
+        final ServerPlayerEntity self = source.getPlayer();
+        String name = "null";
+        if (self != null) {
+            name = self.getEntityName();
+            self.sendMessage(Text.of("Discord message has been sent."));
+        }
+        DiscordUtils.sendChangeInfo(name,change,reason,affected);
 
         return 1;
     }

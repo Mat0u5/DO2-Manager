@@ -1,5 +1,6 @@
 package net.mat0u5.do2manager.utils;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.mat0u5.do2manager.Main;
 
@@ -59,11 +60,42 @@ public class DiscordUtils {
             e.printStackTrace();
         }
     }
+    public static void sendMessageToDiscordFromAggroNet(JsonObject json, String channelId) {
+        try {
+            // Discord API URL for sending messages
+            String apiUrl = "https://discord.com/api/v10/channels/" + channelId + "/messages";
+            URL url = new URL(apiUrl);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setDoOutput(true);
+            connection.setRequestMethod("POST");
+
+            // Set authorization header with the bot token
+            connection.setRequestProperty("Authorization", "Bot " + getWebhookToken());
+            connection.setRequestProperty("Content-Type", "application/json");
+
+            // Send the JSON payload
+            try (OutputStream os = connection.getOutputStream()) {
+                byte[] input = json.toString().getBytes("utf-8");
+                os.write(input, 0, input.length);
+            }
+
+            // Get the response
+            int responseCode = connection.getResponseCode();
+            if (responseCode != 200 && responseCode != 201) {
+                throw new RuntimeException("Failed to send message to Discord: " + responseCode);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
     public static String getWebhookURL() {
         return Main.config.getProperty("webhook_url");
     }
     public static String getWebhookStaffURL() {
         return Main.config.getProperty("webhook_url_staff");
+    }
+    public static String getWebhookPatchNotesURL() {
+        return Main.config.getProperty("webhook_url_patch_notes");
     }
     public static String getWebhookToken() {
         return Main.config.getProperty("webhook_token");
@@ -71,6 +103,7 @@ public class DiscordUtils {
     public static String getChatChannelId() {
         return Main.config.getProperty("server_chat_channel_id");
     }
+
     public void updateDiscordChannelDescription() {
         List<ServerPlayerEntity> players = Main.server.getPlayerManager().getPlayerList();
         List<String> playerNames = new ArrayList<>();
@@ -81,5 +114,23 @@ public class DiscordUtils {
         String description = "Players online (" + playerNames.size() + "): " + String.join(", ",playerNames);
         DiscordBot discordBot = new DiscordBot();
         discordBot.startBot(getWebhookToken(), getChatChannelId(),true,description);
+    }
+    public static void sendChangeInfo(String from, String change, String reason, String affected) {
+        long timestamp = System.currentTimeMillis() / 1000;
+        JsonObject json = DiscordUtils.getDefaultJSON();
+        JsonObject embed = new JsonObject();
+        embed.addProperty("description", "__**New Patch:**__   *(From "+from+")*" +
+                "\n\n**Change**: "+change+
+                (reason.isEmpty()?"":("\n**Reason**: "+reason)) +
+                (affected.isEmpty()?"":("\n**Affected Gameplay**: "+affected))+
+                "\n\n**Date**: <t:"+timestamp+":f>"
+        );
+        embed.addProperty("color", 5419198);
+        JsonArray embeds = new JsonArray();
+        embeds.add(embed);
+        json.add("embeds", embeds);
+        json.addProperty("username", from);
+        json.addProperty("avatar_url", "https://mc-heads.net/avatar/"+from);
+        sendMessageToDiscord(json,getWebhookPatchNotesURL());
     }
 }

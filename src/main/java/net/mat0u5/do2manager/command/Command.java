@@ -225,7 +225,7 @@ public class Command {
                     )
                 )
                 .then(literal("testing")
-                    .requires(source -> (isModOwner(source.getPlayer())))
+                    .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
                     .executes(context -> TestingCommand.execute(
                         context.getSource())
                     )
@@ -672,6 +672,27 @@ public class Command {
                     .then(CommandManager.argument("cmd", IntegerArgumentType.integer())
                         .executes(context -> OtherCommand.customModelData(
                             context.getSource(),true, IntegerArgumentType.getInteger(context,"cmd"))
+                        )
+                    )
+                )
+        );
+        dispatcher.register(
+            literal("patch")
+                .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
+                .then(CommandManager.argument("change", StringArgumentType.string())
+                    .executes(context -> OtherCommand.pushChange(
+                        context.getSource(),StringArgumentType.getString(context,"change"),"",""
+                    ))
+                    .then(CommandManager.argument("reason", StringArgumentType.string())
+                        .executes(context -> OtherCommand.pushChange(
+                            context.getSource(),StringArgumentType.getString(context,"change"),
+                            StringArgumentType.getString(context,"reason"),""
+                        ))
+                        .then(CommandManager.argument("affected", StringArgumentType.string())
+                            .executes(context -> OtherCommand.pushChange(
+                                context.getSource(),StringArgumentType.getString(context,"change"),
+                                StringArgumentType.getString(context,"reason"), StringArgumentType.getString(context,"affected")
+                            ))
                         )
                     )
                 )

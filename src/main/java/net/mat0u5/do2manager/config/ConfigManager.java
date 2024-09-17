@@ -38,11 +38,11 @@ public class ConfigManager {
                     properties.setProperty("current_run_is_speedrun","false");
                     properties.setProperty("webhook_url","");
                     properties.setProperty("webhook_url_staff","");
+                    properties.setProperty("webhook_url_patch_notes","");
                     properties.setProperty("webhook_token","");
                     properties.setProperty("block_password","");
                     properties.setProperty("simulator_enabled","false");
                     properties.setProperty("server_chat_channel_id","");
-
 
                     properties.store(output, null);
                 }
