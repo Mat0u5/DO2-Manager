@@ -54,6 +54,7 @@ public class DO2Run {
     public DO2RunAbridged getAbridgedRun() {
         DO2RunAbridged run = new DO2RunAbridged();
         run.run_number = run_number;
+        run.date = date;
         run.run_type = run_type;
         run.runners = runners;
         run.finishers = finishers;
@@ -189,6 +190,12 @@ public class DO2Run {
         LocalDateTime dateTime = LocalDateTime.parse(date, inputFormatter);
         DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy  HH:mm", Locale.ENGLISH);
         return dateTime.format(outputFormatter);
+    }
+    public int timestampDate() {
+        if (date==null || date.isEmpty()) return -1;
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime dateTime = LocalDateTime.parse(date, inputFormatter);
+        return dateTime.getSecond();
     }
     public int getRunNum() {
         return run_number;

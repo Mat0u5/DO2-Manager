@@ -26,4 +26,6 @@ public abstract class GuiPlayerSpecific {
     public boolean showRunsAsHeads = true;
     public List<String> filter_player = new ArrayList<>();
     public List<String> filter_player_uuid = new ArrayList<>();
+    public int filter_date_after = -1;
+    public int filter_date_before = -1;
 }

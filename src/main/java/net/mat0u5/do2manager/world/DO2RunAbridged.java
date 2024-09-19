@@ -1,7 +1,10 @@
 package net.mat0u5.do2manager.world;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class DO2RunAbridged {
     public String run_type = null;
@@ -14,6 +17,7 @@ public class DO2RunAbridged {
     public int embers_counted = -1;
     public int crowns_counted = -1;
     public int compass_level = -1;
+    public String date = null;
     public int getRunNum() {
         return run_number;
     }
@@ -40,5 +44,11 @@ public class DO2RunAbridged {
         if (runners.isEmpty()) return false;
         if (runners.size() == 1) return false;
         return true;
+    }
+    public int timestampDate() {
+        if (date==null || date.isEmpty()) return -1;
+        DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime dateTime = LocalDateTime.parse(date, inputFormatter);
+        return dateTime.getSecond();
     }
 }

@@ -153,7 +153,9 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
                 remainingFilters.removeAll(run.runners);
                 if (!String.join("",remainingFilters).isEmpty()) continue;
             }
-
+            int timestampDate = run.timestampDate();
+            if (filter_date_after != -1 && timestampDate != -1 && timestampDate < filter_date_after) continue;
+            if (filter_date_before != -1 && timestampDate != -1 && timestampDate > filter_date_before) continue;
 
             runsSearchAbridged.add(run);
         }

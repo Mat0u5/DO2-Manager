@@ -406,6 +406,7 @@ public class DatabaseManager {
                 DO2RunAbridged run = new DO2RunAbridged();
                 run.id = resultSet.getInt("id");
                 run.run_number = resultSet.getInt("run_number");
+                run.date = resultSet.getString("date");
                 run.run_type = resultSet.getString("run_type");
                 run.runners = List.of(resultSet.getString("runners").split(","));
                 run.finishers = List.of(resultSet.getString("finishers").split(","));
