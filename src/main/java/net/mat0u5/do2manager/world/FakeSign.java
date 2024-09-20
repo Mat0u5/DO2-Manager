@@ -4,6 +4,8 @@ import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
+import net.mat0u5.do2manager.gui.GuiInventory_Database;
+import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -155,30 +157,62 @@ public class FakeSign {
         sign.getWorld().setBlockState(sign.getPos(),Blocks.AIR.getDefaultState());
         fakeSigns.remove(pos);
 
-        Main.openGuis.get(player).filter_player.clear();
-        Main.openGuis.get(player).filter_player_uuid.clear();
+        GuiPlayerSpecific playerGui = Main.openGuis.get(player);
+        GuiInventory_Database guiDatabase = Main.openGuis.get(player).guiDatabase;
+
+        playerGui.filter_player.clear();
+        playerGui.filter_player_uuid.clear();
         String query = signText.getMessage(0,false).getString()+signText.getMessage(1,false).getString();
+        List<String> signNames = new ArrayList<>();
         if (query.contains(",")) {
             for (String playerName : query.split(",")) {
-                playerName = DatabaseManager.getPlayerNameCaseCorrected(playerName.trim());
-                String playerUUID = DatabaseManager.getPlayerUUIDFromName(playerName);
-                Main.openGuis.get(player).guiDatabase.filter_player.add(playerName);
-                Main.openGuis.get(player).guiDatabase.filter_player_uuid.add(playerUUID);
+                signNames.add(playerName.trim());
             }
         }
         else if (!query.trim().isEmpty()){
-            String playerName = DatabaseManager.getPlayerNameCaseCorrected(query.trim());
-            String playerUUID = DatabaseManager.getPlayerUUIDFromName(playerName);
-            Main.openGuis.get(player).guiDatabase.filter_player.add(playerName);
-            Main.openGuis.get(player).guiDatabase.filter_player_uuid.add(playerUUID);
+            signNames.add(query.trim());
+        }
+        if (signNames.isEmpty()) {
+            guiDatabase.filter_player.clear();
+            guiDatabase.filter_player_uuid.clear();
         }
         else {
-            Main.openGuis.get(player).guiDatabase.filter_player.clear();
-            Main.openGuis.get(player).guiDatabase.filter_player_uuid.clear();
+            List<String> nameChoice = new ArrayList<>();
+            for (String nameRaw : signNames) {
+                String playerName = "";
+                if (Main.allPlayers.containsValue(nameRaw)) {
+                    playerName = nameRaw;
+                }
+                else {
+                    List<String> suggestedNames = new ArrayList<>();
+                    for (String suggested : Main.allPlayers.values()) {
+                        if (suggested.toLowerCase().contains(nameRaw.toLowerCase())) {
+                            suggestedNames.add(suggested);
+                        }
+                    }
+                    if (suggestedNames.isEmpty()) {
+                        guiDatabase.filter_player.clear();
+                        guiDatabase.filter_player_uuid.clear();
+                    }
+                    else if (suggestedNames.size() == 1) {
+                        playerName = suggestedNames.get(0);
+                    }
+                    else {
+                        nameChoice.addAll(suggestedNames);
+                    }
+                }
+                if (playerName.isEmpty()) continue;
+                guiDatabase.filter_player.add(playerName);
+                guiDatabase.filter_player_uuid.add(Main.getUUIDFromName(playerName));
+            }
+            if (!nameChoice.isEmpty()) {
+                guiDatabase.playerChoiceInventory(nameChoice);
+                guiDatabase.openRunInventoryNoUpdate(player);
+                return;
+            }
         }
-        Main.openGuis.get(player).guiDatabase.openRunInventoryNoUpdate(player);
-        Main.openGuis.get(player).guiDatabase.updateSearch();
-        Main.openGuis.get(player).guiDatabase.populateRunInventory();
-
+        guiDatabase.openRunInventoryNoUpdate(player);
+        guiDatabase.updateSearch();
+        guiDatabase.populateRunInventory();
     }
 }

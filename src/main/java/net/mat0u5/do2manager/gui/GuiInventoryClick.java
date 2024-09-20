@@ -117,6 +117,12 @@ public class GuiInventoryClick {
                 serverPlayer.closeHandledScreen();
                 gui.invId="";
                 new GuiInventory_Database().openRunInventory(serverPlayer);
+            } else if (tag.equalsIgnoreCase("player_choice")) {
+                String playerName = nbt.getString("SkullOwner");
+                guiDatabase.filter_player.add(playerName);
+                guiDatabase.filter_player_uuid.add(Main.getUUIDFromName(playerName));
+                guiDatabase.updateSearch();
+                guiDatabase.populateRunInventory();
             }
         }
         else if (guiName.equalsIgnoreCase("custom")) {

@@ -1,5 +1,6 @@
 package net.mat0u5.do2manager.gui;
 
+import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
@@ -356,5 +357,11 @@ public class GuiItems_Database {
         lore.add(Text.of("§7Average Crowns: §6" + averageCrowns));
 
         return createGuiItem(itemStack, "runs_info", itemName, lore);
+    }
+    public static ItemStack playerHeadChoice(String name) {
+        ItemStack itemStack = new ItemStack(Items.PLAYER_HEAD, 1);
+        NbtCompound nbt = itemStack.getOrCreateNbt();
+        nbt.putString("SkullOwner", name);
+        return createGuiItem(itemStack, "player_choice", "§7"+name, List.of(Text.of(""),Text.of("§eClick to choose this player!")));
     }
 }

@@ -114,4 +114,12 @@ public class Main implements ModInitializer {
 		});
 
 	}
+	public static String getUUIDFromName(String name) {
+		for (Map.Entry<String, String> entry : allPlayers.entrySet()) {
+			if (entry.getValue().equals(name)) {
+				return entry.getKey();
+			}
+		}
+		return null;
+	}
 }

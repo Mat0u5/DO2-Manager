@@ -70,7 +70,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
     }
 
     public void populateRunInventory() {
-        fillWithFillerItems(GuiItems_Database.filler(), List.of(4,45,46,47,48,50,51,52));
+        fillWithFillerItems(GuiItems_Database.filler(), List.of(4,36,45,46,47,48,50,51,52));
         addRunItems();
         addFiltersNStuff();
     }
@@ -278,6 +278,23 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
                     continue;
                 }
                 inventory.setStack(pos, items.get(runIndex).copy());
+                runIndex++;
+            }
+        }
+    }
+    public void playerChoiceInventory(List<String> options) {
+        Collections.sort(options);
+        fillWithFillerItems(GuiItems_Database.filler(), List.of());
+        int runIndex = 0;
+        for (int y = 0; y < 6; y++) {
+            for (int x = 0; x < 9; x++) {
+                int pos = x+y*9;
+                if (!(x > 0 && x < 8 && y > 0 && y < 5)) continue;
+                if (options.size() <= runIndex) {
+                    inventory.setStack(pos, GuiItems_Database.fillerLight());
+                    continue;
+                }
+                inventory.setStack(pos, GuiItems_Database.playerHeadChoice(options.get(runIndex)));
                 runIndex++;
             }
         }

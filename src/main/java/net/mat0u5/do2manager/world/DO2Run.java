@@ -220,7 +220,7 @@ public class DO2Run {
         String playerList = String.join(",",runners);
         if (!playerList.isEmpty()) {
             if (!playerList.contains(",")) {
-                String playerName = DatabaseManager.getPlayerNameFromUUID(runners.get(0));
+                String playerName = Main.allPlayers.get(runners.get(0));
                 NbtCompound nbt = itemStack.getOrCreateNbt();
                 nbt.putString("SkullOwner", playerName);
             }
