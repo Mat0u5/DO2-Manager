@@ -17,7 +17,7 @@ import java.util.concurrent.Executors;
 
 public class RunInfoParser {
     public static java.lang.Integer getRunNum(MinecraftServer server) {
-        return ScoreboardUtils.getPlayerScore(server,"TangoCam","TestObj");
+        return ScoreboardUtils.getPlayerScore(server,"TangoCam","RunCount");
     }
     public static java.lang.Integer getRunDifficulty(MinecraftServer server) {
         return ScoreboardUtils.getPlayerScore(server,"Difficulty","DeckedOutGame");
