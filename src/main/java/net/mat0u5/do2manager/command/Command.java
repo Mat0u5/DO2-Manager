@@ -9,8 +9,12 @@ import net.mat0u5.do2manager.gui.GuiInventory_ChestFramework;
 import net.mat0u5.do2manager.queue.QueueCommand;
 import net.mat0u5.do2manager.tcg.TCG_Commands;
 import net.mat0u5.do2manager.utils.PermissionManager;
+import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -18,6 +22,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import static net.mat0u5.do2manager.utils.PermissionManager.*;
 import static net.minecraft.command.argument.EntityArgumentType.getPlayer;
 import static net.minecraft.command.argument.EntityArgumentType.player;
+import static net.minecraft.server.command.CommandManager.argument;
 import static net.minecraft.server.command.CommandManager.literal;
 
 
@@ -45,7 +50,7 @@ public class Command {
                                 )
                             )
                             .then(literal("var_modify")
-                                .then(CommandManager.argument("query", StringArgumentType.string())
+                                .then(argument("query", StringArgumentType.string())
                                     .executes(context -> ConsoleCommand.database_runTracking_modifyVar(
                                         context.getSource(),
                                         StringArgumentType.getString(context, "query"))
@@ -54,8 +59,8 @@ public class Command {
                             )
                             .then(literal("var_modify_premade")
                                 .then(literal("items")
-                                    .then(CommandManager.argument("functionName", StringArgumentType.string())
-                                        .then(CommandManager.argument("targets", EntityArgumentType.entities())
+                                    .then(argument("functionName", StringArgumentType.string())
+                                        .then(argument("targets", EntityArgumentType.entities())
                                             .executes(context -> ConsoleCommand.database_runTracking_Items(
                                                 context.getSource(),
                                                 StringArgumentType.getString(context, "functionName"),
@@ -65,7 +70,7 @@ public class Command {
                                     )
                                 )
                                 .then(literal("timestamp")
-                                    .then(CommandManager.argument("timestampName", StringArgumentType.string())
+                                    .then(argument("timestampName", StringArgumentType.string())
                                         .executes(context -> ConsoleCommand.database_runTracking_Timestamp(
                                             context.getSource(),
                                             StringArgumentType.getString(context, "timestampName"))
@@ -148,8 +153,8 @@ public class Command {
                         )
                     )
                     .then(literal("getRaw")
-                        .then(CommandManager.argument("runId", IntegerArgumentType.integer())
-                            .then(CommandManager.argument("var_name", StringArgumentType.string())
+                        .then(argument("runId", IntegerArgumentType.integer())
+                            .then(argument("var_name", StringArgumentType.string())
                                 .executes(context -> DatabaseCommand.executeGetFromDB(
                                     context.getSource(),
                                     IntegerArgumentType.getInteger(context, "runId"),
@@ -163,12 +168,12 @@ public class Command {
                         .executes(context -> DatabaseCommand.executeCommandBlockUpdateDatabase(
                                 context.getSource(), -672, 165, 1727,-337, -64, 2291)
                         )
-                        .then(CommandManager.argument("fromX", IntegerArgumentType.integer())
-                        .then(CommandManager.argument("fromY", IntegerArgumentType.integer())
-                        .then(CommandManager.argument("fromZ", IntegerArgumentType.integer())
-                        .then(CommandManager.argument("toX", IntegerArgumentType.integer())
-                        .then(CommandManager.argument("toY", IntegerArgumentType.integer())
-                        .then(CommandManager.argument("toZ", IntegerArgumentType.integer())
+                        .then(argument("fromX", IntegerArgumentType.integer())
+                        .then(argument("fromY", IntegerArgumentType.integer())
+                        .then(argument("fromZ", IntegerArgumentType.integer())
+                        .then(argument("toX", IntegerArgumentType.integer())
+                        .then(argument("toY", IntegerArgumentType.integer())
+                        .then(argument("toZ", IntegerArgumentType.integer())
                             .executes(context -> DatabaseCommand.executeCommandBlockUpdateDatabase(
                                 context.getSource(),
                                 IntegerArgumentType.getInteger(context, "fromX"),
@@ -210,9 +215,9 @@ public class Command {
                         )
                     )
                     .then(literal("customGUI")
-                        .then(CommandManager.argument("inv_size", IntegerArgumentType.integer())
-                            .then(CommandManager.argument("inv_name", StringArgumentType.string())
-                                .then(CommandManager.argument("chest_pos", StringArgumentType.string())
+                        .then(argument("inv_size", IntegerArgumentType.integer())
+                            .then(argument("inv_name", StringArgumentType.string())
+                                .then(argument("chest_pos", StringArgumentType.string())
                                     .executes(context -> new GuiInventory_ChestFramework().openChestInventory(
                                         context.getSource().getPlayer(),
                                         IntegerArgumentType.getInteger(context, "inv_size"),
@@ -240,7 +245,7 @@ public class Command {
                         )
                     )
                     .then(literal("execute")
-                        .then(CommandManager.argument("args", StringArgumentType.string())
+                        .then(argument("args", StringArgumentType.string())
                             .executes(context -> TestingCommand.executeCmd(
                                 StringArgumentType.getString(context, "args"))
                             )
@@ -265,7 +270,7 @@ public class Command {
                         .executes(context -> Main.simulator.runHand(
                             context.getSource(),5000,false)
                         )
-                        .then(CommandManager.argument("simulate_runs_num", IntegerArgumentType.integer(1))
+                        .then(argument("simulate_runs_num", IntegerArgumentType.integer(1))
                             .executes(context -> Main.simulator.runHand(
                                 context.getSource(),
                                 IntegerArgumentType.getInteger(context, "simulate_runs_num"),false)
@@ -298,7 +303,7 @@ public class Command {
                 .then(literal("commandBlockSearch")
                     .requires(source -> (isAdmin(source.getPlayer())))
                     .then(literal("containsString")
-                        .then(CommandManager.argument("string", StringArgumentType.string())
+                        .then(argument("string", StringArgumentType.string())
                             .executes(context -> DatabaseCommand.executeCommandBlockSearch(
                                 context.getSource(),
                                 StringArgumentType.getString(context, "string"),
@@ -307,7 +312,7 @@ public class Command {
                         )
                     )
                     .then(literal("startsWithString")
-                        .then(CommandManager.argument("string", StringArgumentType.string())
+                        .then(argument("string", StringArgumentType.string())
                             .executes(context -> DatabaseCommand.executeCommandBlockSearch(
                                 context.getSource(),
                                 StringArgumentType.getString(context, "string"),
@@ -316,7 +321,7 @@ public class Command {
                         )
                     )
                     .then(literal("endsWithString")
-                        .then(CommandManager.argument("string", StringArgumentType.string())
+                        .then(argument("string", StringArgumentType.string())
                             .executes(context -> DatabaseCommand.executeCommandBlockSearch(
                                 context.getSource(),
                                 StringArgumentType.getString(context, "string"),
@@ -326,7 +331,7 @@ public class Command {
                     )
                 )
                 .then(literal("mapGuiScale")
-                    .then(CommandManager.argument("guiScale", IntegerArgumentType.integer())
+                    .then(argument("guiScale", IntegerArgumentType.integer())
                         .executes(context -> GuiMapCommand.executeGuiScale(
                             context.getSource(),
                             IntegerArgumentType.getInteger(context, "guiScale"))
@@ -363,7 +368,7 @@ public class Command {
                 )
                 .then(literal("invScanner")
                         .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
-                        .then(CommandManager.argument("targets", EntityArgumentType.players())
+                        .then(argument("targets", EntityArgumentType.players())
                             .then(literal("tagExpanded")
                                 .executes(context -> OtherCommand.invScanner(
                                     context.getSource(),
@@ -392,12 +397,12 @@ public class Command {
                 .then(literal("blockLock")
                     .requires(source -> (isModOwner(source.getPlayer())))
                     .then(literal("startSearch")
-                        .then(CommandManager.argument("fromX", IntegerArgumentType.integer())
-                        .then(CommandManager.argument("fromY", IntegerArgumentType.integer())
-                        .then(CommandManager.argument("fromZ", IntegerArgumentType.integer())
-                        .then(CommandManager.argument("toX", IntegerArgumentType.integer())
-                        .then(CommandManager.argument("toY", IntegerArgumentType.integer())
-                        .then(CommandManager.argument("toZ", IntegerArgumentType.integer())
+                        .then(argument("fromX", IntegerArgumentType.integer())
+                        .then(argument("fromY", IntegerArgumentType.integer())
+                        .then(argument("fromZ", IntegerArgumentType.integer())
+                        .then(argument("toX", IntegerArgumentType.integer())
+                        .then(argument("toY", IntegerArgumentType.integer())
+                        .then(argument("toZ", IntegerArgumentType.integer())
                             .executes(context -> OtherCommand.executeLock(
                                 context.getSource(),
                                 IntegerArgumentType.getInteger(context, "fromX"),
@@ -511,18 +516,18 @@ public class Command {
                             context.getSource(),1
                         )
                     )
-                    .then(CommandManager.argument("skipTurns", IntegerArgumentType.integer(1))
+                    .then(argument("skipTurns", IntegerArgumentType.integer(1))
                         .executes(context -> QueueCommand.skipTurn(
                                 context.getSource(),IntegerArgumentType.getInteger(context,"skipTurns")
                             )
                         )
                     )
-                    .then(CommandManager.argument("player", player())
+                    .then(argument("player", player())
                         .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
                         .executes(context -> QueueCommand.skipTurnOther(
                             context.getSource(),getPlayer(context,"player"),1
                         ))
-                        .then(CommandManager.argument("skipTurns", IntegerArgumentType.integer(1))
+                        .then(argument("skipTurns", IntegerArgumentType.integer(1))
                             .executes(context -> QueueCommand.skipTurnOther(
                                             context.getSource(),getPlayer(context,"player"),IntegerArgumentType.getInteger(context,"skipTurns")
                                     )
@@ -532,7 +537,7 @@ public class Command {
                 )
                 .then(literal("finishRun")
                     .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
-                    .then(CommandManager.argument("targets", EntityArgumentType.players())
+                    .then(argument("targets", EntityArgumentType.players())
                         .executes(context -> QueueCommand.runFinish(
                                 context.getSource(),
                                 EntityArgumentType.getPlayers(context, "targets"))
@@ -541,14 +546,14 @@ public class Command {
                 )
                 .then(literal("add")
                     .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
-                    .then(CommandManager.argument("player", player())
+                    .then(argument("player", player())
                         .executes(context -> QueueCommand.addPlayerToQueue(
                             context.getSource(),getPlayer(context,"player")
                         ))
                     ))
                 .then(literal("remove")
                     .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
-                    .then(CommandManager.argument("target", StringArgumentType.string())
+                    .then(argument("target", StringArgumentType.string())
                         .suggests(QueueCommand.getQueuePlayersSuggestionProvider())
                         .executes(context -> QueueCommand.removePlayerFromQueue(
                             context.getSource(),StringArgumentType.getString(context,"target")
@@ -568,7 +573,7 @@ public class Command {
                                 context.getSource(), "hermit",1
                             )
                         )
-                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(1,27))
+                        .then(argument("amount", IntegerArgumentType.integer(1,27))
                             .executes(context -> TCG_Commands.generateDeck(
                                     context.getSource(), "hermit",IntegerArgumentType.getInteger(context,"amount")
                                 )
@@ -580,7 +585,7 @@ public class Command {
                                 context.getSource(), "booster",1
                             )
                         )
-                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(1,27))
+                        .then(argument("amount", IntegerArgumentType.integer(1,27))
                             .executes(context -> TCG_Commands.generateDeck(
                                     context.getSource(), "booster",IntegerArgumentType.getInteger(context,"amount")
                                 )
@@ -592,7 +597,7 @@ public class Command {
                                 context.getSource(), "starter",1
                             )
                         )
-                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(1,27))
+                        .then(argument("amount", IntegerArgumentType.integer(1,27))
                             .executes(context -> TCG_Commands.generateDeck(
                                     context.getSource(), "starter",IntegerArgumentType.getInteger(context,"amount")
                                 )
@@ -604,7 +609,7 @@ public class Command {
                                 context.getSource(), "alterEgo",1
                             )
                         )
-                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(1,27))
+                        .then(argument("amount", IntegerArgumentType.integer(1,27))
                             .executes(context -> TCG_Commands.generateDeck(
                                     context.getSource(), "alterEgo",IntegerArgumentType.getInteger(context,"amount")
                                 )
@@ -616,7 +621,7 @@ public class Command {
                                 context.getSource(), "effect",1
                             )
                         )
-                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(1,27))
+                        .then(argument("amount", IntegerArgumentType.integer(1,27))
                             .executes(context -> TCG_Commands.generateDeck(
                                     context.getSource(), "effect",IntegerArgumentType.getInteger(context,"amount")
                                 )
@@ -628,7 +633,7 @@ public class Command {
                                 context.getSource(), "item",1
                             )
                         )
-                        .then(CommandManager.argument("amount", IntegerArgumentType.integer(1,27))
+                        .then(argument("amount", IntegerArgumentType.integer(1,27))
                             .executes(context -> TCG_Commands.generateDeck(
                                     context.getSource(), "item",IntegerArgumentType.getInteger(context,"amount")
                                 )
@@ -669,7 +674,7 @@ public class Command {
                     )
                 )
                 .then(literal("set")
-                    .then(CommandManager.argument("cmd", IntegerArgumentType.integer())
+                    .then(argument("cmd", IntegerArgumentType.integer())
                         .executes(context -> OtherCommand.customModelData(
                             context.getSource(),true, IntegerArgumentType.getInteger(context,"cmd"))
                         )
@@ -679,16 +684,16 @@ public class Command {
         dispatcher.register(
             literal("patch")
                 .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
-                .then(CommandManager.argument("change", StringArgumentType.string())
+                .then(argument("change", StringArgumentType.string())
                     .executes(context -> OtherCommand.pushChange(
                         context.getSource(),StringArgumentType.getString(context,"change"),"",""
                     ))
-                    .then(CommandManager.argument("reason", StringArgumentType.string())
+                    .then(argument("reason", StringArgumentType.string())
                         .executes(context -> OtherCommand.pushChange(
                             context.getSource(),StringArgumentType.getString(context,"change"),
                             StringArgumentType.getString(context,"reason"),""
                         ))
-                        .then(CommandManager.argument("affected", StringArgumentType.string())
+                        .then(argument("affected", StringArgumentType.string())
                             .executes(context -> OtherCommand.pushChange(
                                 context.getSource(),StringArgumentType.getString(context,"change"),
                                 StringArgumentType.getString(context,"reason"), StringArgumentType.getString(context,"affected")
@@ -696,6 +701,27 @@ public class Command {
                         )
                     )
                 )
+        );
+        dispatcher.register(literal("scoreboard")
+            .then(literal("objectives")
+                .then(literal("rename")
+                    .then(argument("old_objective", StringArgumentType.word())
+                        .suggests((context, builder) -> {
+                            // Suggest existing objectives for the old_objective argument
+                            Scoreboard scoreboard = context.getSource().getServer().getScoreboard();
+                            return CommandSource.suggestMatching(scoreboard.getObjectiveNames(), builder);
+                        })
+                        .then(argument("new_objective", StringArgumentType.word())
+                            .executes(context -> {
+                                // Execute the renaming logic
+                                String oldObjectiveName = StringArgumentType.getString(context, "old_objective");
+                                String newObjectiveName = StringArgumentType.getString(context, "new_objective");
+                                return ScoreboardUtils.renameScoreboardObjective(context.getSource(), oldObjectiveName, newObjectiveName);
+                            })
+                        )
+                    )
+                )
+            )
         );
     }
 }

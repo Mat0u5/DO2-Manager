@@ -70,7 +70,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
     }
 
     public void populateRunInventory() {
-        fillWithFillerItems(GuiItems_Database.filler(), List.of(4,36,45,46,47,48,50,51,52));
+        fillWithFillerItems(GuiItems_Database.filler(), List.of(4,45,46,47,48,50,51,52));
         addRunItems();
         addFiltersNStuff();
     }
