@@ -567,75 +567,89 @@ public class Command {
         dispatcher.register(
             literal("tcg")
                 .requires(source -> ((isTCGGameMaster(source.getPlayer()) || (source.getEntity() == null))))
-                .then(literal("generateBundle")
-                    .then(literal("hermit")
-                        .executes(context -> TCG_Commands.generateDeck(
-                                context.getSource(), "hermit",1
-                            )
-                        )
-                        .then(argument("amount", IntegerArgumentType.integer(1,27))
+                .then(literal("giveBundle")
+                    .then(argument("target", EntityArgumentType.player())
+                        .then(literal("hermit")
                             .executes(context -> TCG_Commands.generateDeck(
-                                    context.getSource(), "hermit",IntegerArgumentType.getInteger(context,"amount")
+                                    context.getSource(), "hermit",1,
+                                    EntityArgumentType.getPlayer(context, "target")
+                                )
+                            )
+                            .then(argument("amount", IntegerArgumentType.integer(1,27))
+                                .executes(context -> TCG_Commands.generateDeck(
+                                        context.getSource(), "hermit",IntegerArgumentType.getInteger(context,"amount"),
+                                        EntityArgumentType.getPlayer(context, "target")
+                                    )
                                 )
                             )
                         )
-                    )
-                    .then(literal("booster")
-                        .executes(context -> TCG_Commands.generateDeck(
-                                context.getSource(), "booster",1
-                            )
-                        )
-                        .then(argument("amount", IntegerArgumentType.integer(1,27))
+                        .then(literal("booster")
                             .executes(context -> TCG_Commands.generateDeck(
-                                    context.getSource(), "booster",IntegerArgumentType.getInteger(context,"amount")
+                                    context.getSource(), "booster",1,
+                                    EntityArgumentType.getPlayer(context, "target")
+                                )
+                            )
+                            .then(argument("amount", IntegerArgumentType.integer(1,27))
+                                .executes(context -> TCG_Commands.generateDeck(
+                                        context.getSource(), "booster",IntegerArgumentType.getInteger(context,"amount"),
+                                        EntityArgumentType.getPlayer(context, "target")
+                                    )
                                 )
                             )
                         )
-                    )
-                    .then(literal("starter")
-                        .executes(context -> TCG_Commands.generateDeck(
-                                context.getSource(), "starter",1
-                            )
-                        )
-                        .then(argument("amount", IntegerArgumentType.integer(1,27))
+                        .then(literal("starter")
                             .executes(context -> TCG_Commands.generateDeck(
-                                    context.getSource(), "starter",IntegerArgumentType.getInteger(context,"amount")
+                                    context.getSource(), "starter",1,
+                                    EntityArgumentType.getPlayer(context, "target")
+                                )
+                            )
+                            .then(argument("amount", IntegerArgumentType.integer(1,27))
+                                .executes(context -> TCG_Commands.generateDeck(
+                                        context.getSource(), "starter",IntegerArgumentType.getInteger(context,"amount"),
+                                        EntityArgumentType.getPlayer(context, "target")
+                                    )
                                 )
                             )
                         )
-                    )
-                    .then(literal("alterEgo")
-                        .executes(context -> TCG_Commands.generateDeck(
-                                context.getSource(), "alterEgo",1
-                            )
-                        )
-                        .then(argument("amount", IntegerArgumentType.integer(1,27))
+                        .then(literal("alterEgo")
                             .executes(context -> TCG_Commands.generateDeck(
-                                    context.getSource(), "alterEgo",IntegerArgumentType.getInteger(context,"amount")
+                                    context.getSource(), "alterEgo",1,
+                                    EntityArgumentType.getPlayer(context, "target")
+                                )
+                            )
+                            .then(argument("amount", IntegerArgumentType.integer(1,27))
+                                .executes(context -> TCG_Commands.generateDeck(
+                                        context.getSource(), "alterEgo",IntegerArgumentType.getInteger(context,"amount"),
+                                        EntityArgumentType.getPlayer(context, "target")
+                                    )
                                 )
                             )
                         )
-                    )
-                    .then(literal("effect")
-                        .executes(context -> TCG_Commands.generateDeck(
-                                context.getSource(), "effect",1
-                            )
-                        )
-                        .then(argument("amount", IntegerArgumentType.integer(1,27))
+                        .then(literal("effect")
                             .executes(context -> TCG_Commands.generateDeck(
-                                    context.getSource(), "effect",IntegerArgumentType.getInteger(context,"amount")
+                                    context.getSource(), "effect",1,
+                                    EntityArgumentType.getPlayer(context, "target")
+                                )
+                            )
+                            .then(argument("amount", IntegerArgumentType.integer(1,27))
+                                .executes(context -> TCG_Commands.generateDeck(
+                                        context.getSource(), "effect",IntegerArgumentType.getInteger(context,"amount"),
+                                        EntityArgumentType.getPlayer(context, "target")
+                                    )
                                 )
                             )
                         )
-                    )
-                    .then(literal("item")
-                        .executes(context -> TCG_Commands.generateDeck(
-                                context.getSource(), "item",1
-                            )
-                        )
-                        .then(argument("amount", IntegerArgumentType.integer(1,27))
+                        .then(literal("item")
                             .executes(context -> TCG_Commands.generateDeck(
-                                    context.getSource(), "item",IntegerArgumentType.getInteger(context,"amount")
+                                    context.getSource(), "item",1,
+                                    EntityArgumentType.getPlayer(context, "target")
+                                )
+                            )
+                            .then(argument("amount", IntegerArgumentType.integer(1,27))
+                                .executes(context -> TCG_Commands.generateDeck(
+                                        context.getSource(), "item",IntegerArgumentType.getInteger(context,"amount"),
+                                        EntityArgumentType.getPlayer(context, "target")
+                                    )
                                 )
                             )
                         )
@@ -705,6 +719,7 @@ public class Command {
         dispatcher.register(literal("scoreboard")
             .then(literal("objectives")
                 .then(literal("rename")
+                    .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
                     .then(argument("old_objective", StringArgumentType.word())
                         .suggests((context, builder) -> {
                             // Suggest existing objectives for the old_objective argument

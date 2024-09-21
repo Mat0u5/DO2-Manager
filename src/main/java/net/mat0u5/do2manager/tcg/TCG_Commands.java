@@ -14,20 +14,19 @@ import net.minecraft.world.GameMode;
 
 import javax.xml.crypto.Data;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class TCG_Commands {
-    public static int generateDeck(ServerCommandSource source, String type, int amount) {
-        MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
-        if (self == null) return -1;
+    public static int generateDeck(ServerCommandSource source, String type, int amount, ServerPlayerEntity target) {
+        if (target == null) return -1;
         for (int i = 0; i < amount; i++) {
-            if (type.equalsIgnoreCase("hermit")) self.giveItemStack(TCG_DeckCreator.getHermitPack());
-            if (type.equalsIgnoreCase("booster")) self.giveItemStack(TCG_DeckCreator.getBoosterPack());
-            if (type.equalsIgnoreCase("starter")) self.giveItemStack(TCG_DeckCreator.getStarterDeck());
-            if (type.equalsIgnoreCase("alterEgo")) self.giveItemStack(TCG_DeckCreator.getAlterEgoPack());
-            if (type.equalsIgnoreCase("effect")) self.giveItemStack(TCG_DeckCreator.getEffectPack());
-            if (type.equalsIgnoreCase("item")) self.giveItemStack(TCG_DeckCreator.getItemPack());
+            if (type.equalsIgnoreCase("hermit")) target.giveItemStack(TCG_DeckCreator.getHermitPack());
+            if (type.equalsIgnoreCase("booster")) target.giveItemStack(TCG_DeckCreator.getBoosterPack());
+            if (type.equalsIgnoreCase("starter")) target.giveItemStack(TCG_DeckCreator.getStarterDeck());
+            if (type.equalsIgnoreCase("alterEgo")) target.giveItemStack(TCG_DeckCreator.getAlterEgoPack());
+            if (type.equalsIgnoreCase("effect")) target.giveItemStack(TCG_DeckCreator.getEffectPack());
+            if (type.equalsIgnoreCase("item")) target.giveItemStack(TCG_DeckCreator.getItemPack());
         }
 
         return 1;
