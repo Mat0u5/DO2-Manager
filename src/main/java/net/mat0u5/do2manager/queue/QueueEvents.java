@@ -22,11 +22,11 @@ public class QueueEvents {
             disconnectTimes.remove(playerName);
         }
         if (Main.dungeonQueue.containsPlayer(player)) {
-            player.sendMessage(Text.of("§3You're currently still in the queue!"));
+            player.sendMessage(Text.of("§7You're currently still in the queue!"));
             Main.dungeonQueue.messageQueueToPlayer(player);
         }
         else {
-            Text baseMessage = Text.literal("§3Click ");
+            Text baseMessage = Text.literal("§7Click ");
             Text clickableHere = Text.literal("here")
                     .styled(style -> style
                             .withColor(Formatting.GREEN)
@@ -35,7 +35,7 @@ public class QueueEvents {
                     );
             Text fullMessage = ((MutableText) baseMessage)
                     .append(clickableHere)
-                    .append(Text.literal("§3 §b(or use the §3/queue§b command)§3 to join the dungeon queue!")
+                    .append(Text.literal("§7 §7(or use the §b/queue§7 command)§7 to join the dungeon queue!")
                             .formatted(Formatting.YELLOW)
                     );
             player.sendMessage(fullMessage, false);
