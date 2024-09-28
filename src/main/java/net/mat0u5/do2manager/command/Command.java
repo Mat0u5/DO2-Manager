@@ -3,6 +3,7 @@ package net.mat0u5.do2manager.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.mat0u5.do2manager.gui.GuiInventory_ChestFramework;
@@ -12,13 +13,18 @@ import net.mat0u5.do2manager.utils.PermissionManager;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
+import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.util.math.BlockPos;
 
+import java.util.List;
+
+import static net.mat0u5.do2manager.Main.dungeonQueue;
 import static net.mat0u5.do2manager.utils.PermissionManager.*;
 import static net.minecraft.command.argument.EntityArgumentType.getPlayer;
 import static net.minecraft.command.argument.EntityArgumentType.player;
@@ -168,26 +174,22 @@ public class Command {
                         .executes(context -> DatabaseCommand.executeCommandBlockUpdateDatabase(
                                 context.getSource(), -672, 165, 1727,-337, -64, 2291)
                         )
-                        .then(argument("fromX", IntegerArgumentType.integer())
-                        .then(argument("fromY", IntegerArgumentType.integer())
-                        .then(argument("fromZ", IntegerArgumentType.integer())
-                        .then(argument("toX", IntegerArgumentType.integer())
-                        .then(argument("toY", IntegerArgumentType.integer())
-                        .then(argument("toZ", IntegerArgumentType.integer())
-                            .executes(context -> DatabaseCommand.executeCommandBlockUpdateDatabase(
-                                context.getSource(),
-                                IntegerArgumentType.getInteger(context, "fromX"),
-                                IntegerArgumentType.getInteger(context, "fromY"),
-                                IntegerArgumentType.getInteger(context, "fromZ"),
-                                IntegerArgumentType.getInteger(context, "toX"),
-                                IntegerArgumentType.getInteger(context, "toY"),
-                                IntegerArgumentType.getInteger(context, "toZ"))
+                        .then(argument("fromPos", BlockPosArgumentType.blockPos()) // Suggests the block you're looking at
+                            .then(argument("toPos", BlockPosArgumentType.blockPos()) // Suggests the block you're looking at
+                                .executes(context -> {
+                                    BlockPos fromPos = BlockPosArgumentType.getBlockPos(context, "fromPos");
+                                    BlockPos toPos = BlockPosArgumentType.getBlockPos(context, "toPos");
+                                    return DatabaseCommand.executeCommandBlockUpdateDatabase(
+                                        context.getSource(),
+                                        fromPos.getX(),
+                                        fromPos.getY(),
+                                        fromPos.getZ(),
+                                        toPos.getX(),
+                                        toPos.getY(),
+                                        toPos.getZ()
+                                    );
+                                })
                             )
-                        )
-                        )
-                        )
-                        )
-                        )
                         )
                     )
                     .then(literal("functionsStartScan")
@@ -394,45 +396,6 @@ public class Command {
                         )
                     )
                 )
-                .then(literal("blockLock")
-                    .requires(source -> (isModOwner(source.getPlayer())))
-                    .then(literal("startSearch")
-                        .then(argument("fromX", IntegerArgumentType.integer())
-                        .then(argument("fromY", IntegerArgumentType.integer())
-                        .then(argument("fromZ", IntegerArgumentType.integer())
-                        .then(argument("toX", IntegerArgumentType.integer())
-                        .then(argument("toY", IntegerArgumentType.integer())
-                        .then(argument("toZ", IntegerArgumentType.integer())
-                            .executes(context -> OtherCommand.executeLock(
-                                context.getSource(),
-                                IntegerArgumentType.getInteger(context, "fromX"),
-                                IntegerArgumentType.getInteger(context, "fromY"),
-                                IntegerArgumentType.getInteger(context, "fromZ"),
-                                IntegerArgumentType.getInteger(context, "toX"),
-                                IntegerArgumentType.getInteger(context, "toY"),
-                                IntegerArgumentType.getInteger(context, "toZ"),
-                                "lock_block")
-                            )
-                            .then(literal("unlock")
-                                .executes(context -> OtherCommand.executeLock(
-                                    context.getSource(),
-                                    IntegerArgumentType.getInteger(context, "fromX"),
-                                    IntegerArgumentType.getInteger(context, "fromY"),
-                                    IntegerArgumentType.getInteger(context, "fromZ"),
-                                    IntegerArgumentType.getInteger(context, "toX"),
-                                    IntegerArgumentType.getInteger(context, "toY"),
-                                    IntegerArgumentType.getInteger(context, "toZ"),
-                                    "unlock_block")
-                                )
-                            )
-                        )
-                        )
-                        )
-                        )
-                        )
-                        )
-                    )
-                )
                 .then(literal("reload")
                     .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
                     .executes(context -> OtherCommand.reload()
@@ -443,8 +406,44 @@ public class Command {
                     )
                 )
         );
-
-
+        dispatcher.register(
+            literal("blocklock")
+                .requires(source -> (isAdmin(source.getPlayer())))
+                .then(argument("lock_or_unlock", StringArgumentType.string())
+                    .suggests((context, builder) -> CommandSource.suggestMatching(List.of("lock", "unlock"), builder))
+                    .then(argument("fromPos", BlockPosArgumentType.blockPos()) // Suggests the block you're looking at
+                        .then(argument("toPos", BlockPosArgumentType.blockPos()) // Suggests the block you're looking at
+                            .executes(context -> {
+                                BlockPos fromPos = BlockPosArgumentType.getBlockPos(context, "fromPos");
+                                BlockPos toPos = BlockPosArgumentType.getBlockPos(context, "toPos");
+                                return OtherCommand.executeLock(
+                                    context.getSource(),
+                                    fromPos.getX(),
+                                    fromPos.getY(),
+                                    fromPos.getZ(),
+                                    toPos.getX(),
+                                    toPos.getY(),
+                                    toPos.getZ(),
+                                    StringArgumentType.getString(context, "lock_or_unlock")
+                                );
+                            })
+                        )
+                        .executes(context -> {
+                            BlockPos fromPos = BlockPosArgumentType.getBlockPos(context, "fromPos");
+                            return OtherCommand.executeLock(
+                                context.getSource(),
+                                fromPos.getX(),
+                                fromPos.getY(),
+                                fromPos.getZ(),
+                                fromPos.getX(),
+                                fromPos.getY(),
+                                fromPos.getZ(),
+                                StringArgumentType.getString(context, "lock_or_unlock")
+                            );
+                        })
+                    )
+                )
+        );
         dispatcher.register(
             literal("playerlist")
                 .executes(context -> OtherCommand.playerList(

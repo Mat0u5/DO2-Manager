@@ -59,7 +59,7 @@ public class BlockScanner extends MSPTUtils {
         percentCompleted = new ArrayList<>();
         scanType = scanFor;
         lockOrUnlock = 0;
-        if (scanFor.equalsIgnoreCase("lock_block")) blockPassword = Main.config.getProperty("block_password");
+        if (scanFor.equalsIgnoreCase("lock")) blockPassword = Main.config.getProperty("block_password");
 
         minX = Math.min(startPos.getX(), endPos.getX());
         maxX = Math.max(startPos.getX(), endPos.getX());
@@ -97,7 +97,7 @@ public class BlockScanner extends MSPTUtils {
                 if (!percentCompleted.contains(percent) ) {
                     percentCompleted.add(percent);
                     player.sendMessage(Text.of("[Block Database Searcher] Processed " + percent + "% of positions."));
-                    if (scanType.contains("lock_block")) player.sendMessage(Text.of("-Modified " + lockOrUnlock + " blocks."));
+                    if (scanType.contains("lock")) player.sendMessage(Text.of("-Modified " + lockOrUnlock + " blocks."));
                     System.out.println("[Block Database Searcher] Processed " + percent + "% of positions.");
                 }
             }
@@ -125,7 +125,7 @@ public class BlockScanner extends MSPTUtils {
 
         if (scanType.equalsIgnoreCase("command_block")) {
             processCommandBlockPos(block,pos);
-        } else if (scanType.contains("lock_block")) {
+        } else if (scanType.contains("lock")) {
             processContainerBlockPos(block,pos);
         }
     }
@@ -146,7 +146,7 @@ public class BlockScanner extends MSPTUtils {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity == null) return;
         NbtCompound nbt = blockEntity.createNbt();
-        if (scanType.equalsIgnoreCase("unlock_block")) {
+        if (scanType.equalsIgnoreCase("unlock")) {
             if (nbt.contains("Lock")) {
                 nbt.remove("Lock");
                 blockEntity.readNbt(nbt);
@@ -173,7 +173,7 @@ public class BlockScanner extends MSPTUtils {
         if (scanType.equalsIgnoreCase("command_block")) {
             addCommandBlockData();
         }
-        else if (scanType.contains("lock_block")) {
+        else if (scanType.contains("lock")) {
             player.sendMessage(Text.of("-Modified " + lockOrUnlock + " blocks."));
         }
     }
