@@ -3,6 +3,7 @@ package net.mat0u5.do2manager.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
@@ -11,14 +12,18 @@ import net.mat0u5.do2manager.queue.QueueCommand;
 import net.mat0u5.do2manager.tcg.TCG_Commands;
 import net.mat0u5.do2manager.utils.PermissionManager;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;
+import net.mat0u5.do2manager.world.FunctionPreview;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.BlockPosArgumentType;
+import net.minecraft.command.argument.CommandFunctionArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
+import net.minecraft.server.command.FunctionCommand;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.function.CommandFunctionManager;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.math.BlockPos;
 
@@ -737,5 +742,29 @@ public class Command {
                 )
             )
         );
+
+        dispatcher.register(
+            literal("previewFunction")
+                .requires(source -> (isAdmin(source.getPlayer())))
+                .then(argument("name", CommandFunctionArgumentType.commandFunction())
+                    .suggests(FUNCTION_COMMAND_SUGGESTION)
+                    .executes(context -> FunctionPreview.previewFunction(
+                        context.getSource(),CommandFunctionArgumentType.getFunctions(context, "name")
+                    ))
+                )
+                .then(literal("stop")
+                    .executes(context -> FunctionPreview.stopPreviewFunction(
+                            context.getSource()
+                        )
+                    )
+                )
+        );
+
+
     }
+    public static final SuggestionProvider<ServerCommandSource> FUNCTION_COMMAND_SUGGESTION = (context, builder) -> {
+        CommandFunctionManager commandFunctionManager = ((ServerCommandSource)context.getSource()).getServer().getCommandFunctionManager();
+        CommandSource.suggestIdentifiers(commandFunctionManager.getFunctionTags(), builder, "#");
+        return CommandSource.suggestIdentifiers(commandFunctionManager.getAllFunctions(), builder);
+    };
 }

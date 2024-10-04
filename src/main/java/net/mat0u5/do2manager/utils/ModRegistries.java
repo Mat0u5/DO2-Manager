@@ -5,12 +5,14 @@ import net.mat0u5.do2manager.command.Command;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.events.Events;
 
+import javax.xml.crypto.Data;
+
 public class ModRegistries {
     public static void registerModStuff() {
         try {
             registerCommands();
             registerEvents();
-            DatabaseManager.initialize();
+            if (DatabaseManager.isFirstStartup()) DatabaseManager.initialize();
             TextUtils.setEmotes();
         }catch (Exception e) {}
     }

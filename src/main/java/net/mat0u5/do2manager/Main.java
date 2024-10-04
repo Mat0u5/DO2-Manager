@@ -8,13 +8,11 @@ import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
 import net.mat0u5.do2manager.queue.DungeonQueue;
 import net.mat0u5.do2manager.simulator.Simulator;
 import net.mat0u5.do2manager.tcg.TCG_Items;
-import net.mat0u5.do2manager.utils.DiscordBot;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,7 +50,6 @@ public class Main implements ModInitializer {
 		ModRegistries.registerModStuff();
 		LOGGER.info("Initializing DO2-manager...");
 		simulator = new Simulator();
-
 		dungeonQueue.loadQueueFromConfig();
 		TCG_Items.reload();
 	}

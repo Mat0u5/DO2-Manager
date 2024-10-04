@@ -30,6 +30,7 @@ public class DatabaseManager {
     public static final String URL = "jdbc:sqlite:"+FILE_PATH;
 
     public static void initialize() {
+        System.out.println("Initializing database");
         try {
             createFolderIfNotExists();
             try (Connection connection = DriverManager.getConnection(URL)) {
