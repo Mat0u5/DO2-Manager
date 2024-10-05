@@ -149,7 +149,8 @@ public class DO2Run {
         return special_events.contains(event);
     }
     public String getFormattedEvents() {
-        String text = String.join(" ",special_events).replaceAll("bomb",":bomb:").replaceAll("rusty",":kit:").replaceAll("dive",":diving_mask:");
+        String text = String.join(" ",special_events).replaceAll("bomb",":bomb:").replaceAll("rusty",":kit:")
+                .replaceAll("dive",":diving_mask:").replaceAll("witch_hut",":jack_o_lantern:");
         return TextUtils.formatEmotesForDiscord(text);
     }
     public String getFormattedDifficulty() {
