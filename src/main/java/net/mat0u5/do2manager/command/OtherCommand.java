@@ -21,6 +21,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.function.CommandFunction;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -51,8 +52,9 @@ public class OtherCommand {
     public static int executeLock(ServerCommandSource source, int fromX, int fromY, int fromZ, int toX, int toY, int toZ, String type) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
+        if (self == null) return -1;
         self.sendMessage(Text.of("Started Block Lock Search..."));
-        new BlockScanner().scanArea(type,server.getOverworld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
+        new BlockScanner().scanArea(type, (ServerWorld) self.getWorld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
         return 1;
     }
     public static int reload() {
