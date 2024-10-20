@@ -11,6 +11,9 @@ import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.RavagerEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -53,6 +56,21 @@ public class TestingCommand {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
+        return 1;
+    }
+    public static int executeTestEntity(ServerCommandSource source, Entity target) {
+        MinecraftServer server = source.getServer();
+        final PlayerEntity self = source.getPlayer();
+
+        if (target instanceof RavagerEntity) {
+            RavagerEntity ravager = (RavagerEntity) target;
+            source.sendMessage(Text.of("attack range: " + ravager.squaredAttackRange(self)));
+            source.sendMessage(Text.of("attack range2: " + ravager.getSquaredDistanceToAttackPosOf(self)));
+            source.sendMessage(Text.of("attack range3: " + ravager.getWidth()));
+        }
+        else {
+            source.sendMessage(Text.of("Not a ravager"));
+        }
 
         return 1;
     }
