@@ -108,7 +108,7 @@ public class DiscordUtils {
         List<ServerPlayerEntity> players = Main.server.getPlayerManager().getPlayerList();
         List<String> playerNames = new ArrayList<>();
         for (ServerPlayerEntity player : players) {
-            playerNames.add(player.getEntityName());
+            playerNames.add(player.getNameForScoreboard());
         }
         if (playerNames.contains("TangoCam")) playerNames.remove("TangoCam");
         String description = "Players online (" + playerNames.size() + "): " + String.join(", ",playerNames);

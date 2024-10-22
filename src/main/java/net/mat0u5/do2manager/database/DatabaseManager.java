@@ -9,6 +9,9 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.google.gson.Gson;
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.PropertyMap;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.mat0u5.do2manager.world.CommandBlockData;
@@ -16,6 +19,7 @@ import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
 import net.mat0u5.do2manager.world.ItemManager;
+import net.minecraft.component.ComponentMap;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
@@ -23,11 +27,12 @@ import net.minecraft.util.math.BlockPos;
 import org.sqlite.SQLiteErrorCode;
 
 public class DatabaseManager {
-    public static final String DB_VERSION = "v.1.0.7";
+    public static final String DB_VERSION = "v.1.1.0";
 
     private static final String FOLDER_PATH = "./config/"+ Main.MOD_ID;
     private static final String FILE_PATH = FOLDER_PATH+"/"+Main.MOD_ID+".db";
     public static final String URL = "jdbc:sqlite:"+FILE_PATH;
+    private static final Gson GSON = new Gson();
 
     public static void initialize() {
         System.out.println("Initializing database");
@@ -89,6 +94,7 @@ public class DatabaseManager {
                 "uuid TEXT NOT NULL UNIQUE," +
                 "name TEXT NOT NULL," +
                 "joined_at TEXT NOT NULL" +
+                "game_profile TEXT" +
                 ");";
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.executeUpdate();
@@ -187,6 +193,7 @@ public class DatabaseManager {
         versionUpdates.put(List.of("v.1.0.4"),List.of("v.1.0.5","ALTER TABLE runsDetailed ADD loot_drops TEXT; ALTER TABLE runsDetailed ADD special_events TEXT;"));
         versionUpdates.put(List.of("v.1.0.5"),List.of("v.1.0.6","ALTER TABLE runs ADD crowns_counted INTEGER;"));
         versionUpdates.put(List.of("v.1.0.6"),List.of("v.1.0.7","CREATE TABLE \"tcg_items\" (\"id\" INTEGER,\"db_version\" TEXT,\"item\" TEXT,PRIMARY KEY(\"id\" AUTOINCREMENT));"));
+        versionUpdates.put(List.of("v.1.0.7"),List.of("v.1.1.0","ALTER TABLE players ADD game_profile TEXT;"));
         //
         try (Connection connection = DriverManager.getConnection(URL)) {
             if (connection != null) {
@@ -380,7 +387,8 @@ public class DatabaseManager {
             ResultSet resultSet = statement.executeQuery();
             while (resultSet.next()) {
                 String itemStr = resultSet.getString("item");
-                result.add(DO2_GSON.deserializeItemStack(itemStr));
+                String db_version = resultSet.getString("db_version");
+                result.add(DO2_GSON.deserializeItemStack(itemStr,db_version));
             }
 
         } catch (SQLException e) {
@@ -405,6 +413,7 @@ public class DatabaseManager {
 
             while (resultSet.next()) {
                 DO2RunAbridged run = new DO2RunAbridged();
+                //String db_version = resultSet.getString("db_version");
                 run.id = resultSet.getInt("id");
                 run.run_number = resultSet.getInt("run_number");
                 run.date = resultSet.getString("date");
@@ -415,14 +424,11 @@ public class DatabaseManager {
                 run.embers_counted = resultSet.getInt("embers_counted");
                 run.crowns_counted = resultSet.getInt("crowns_counted");
                 run.difficulty = resultSet.getInt("difficulty");
-
-                ItemStack compass_item = DO2_GSON.deserializeItemStack(resultSet.getString("compass_item"));
+/*
+                ItemStack compass_item = DO2_GSON.deserializeItemStack(resultSet.getString("compass_item"),db_version);
                 if (compass_item != null)  {
-                    NbtCompound nbt = compass_item.getNbt();
-                    if (ItemManager.hasNbtEntry(compass_item, "Level")) {
-                        run.compass_level = nbt.getInt("Level");
-                    }
-                }
+                    run.compass_level= ItemManager.getCustomComponentInt(compass_item,"Level");
+                }*/
 
                 runsDictionary.add(run);
             }
@@ -498,6 +504,9 @@ public class DatabaseManager {
             ResultSet resultSet = statement.executeQuery();
 
             while (resultSet.next()) {
+
+                String db_version = resultSet.getString("db_version");
+
                 DO2Run run = new DO2Run();
                 run.id = resultSet.getInt("id");
                 run.run_number = resultSet.getInt("run_number");
@@ -510,13 +519,13 @@ public class DatabaseManager {
                 run.crowns_counted = resultSet.getInt("crowns_counted");
 
                 // Populate runsDetailed fields
-                run.card_plays = DO2_GSON.deserializeListItemStack(resultSet.getString("card_plays"));
+                run.card_plays = DO2_GSON.deserializeListItemStack(resultSet.getString("card_plays"),db_version);
                 run.difficulty = resultSet.getInt("difficulty");
-                run.compass_item = DO2_GSON.deserializeItemStack(resultSet.getString("compass_item"));
-                run.artifact_item = DO2_GSON.deserializeItemStack(resultSet.getString("artifact_item"));
-                run.deck_item = DO2_GSON.deserializeItemStack(resultSet.getString("deck_item"));
-                run.inventory_save = DO2_GSON.deserializeListItemStack(resultSet.getString("inventory_save"));
-                run.items_bought = DO2_GSON.deserializeListItemStack(resultSet.getString("items_bought"));
+                run.compass_item = DO2_GSON.deserializeItemStack(resultSet.getString("compass_item"),db_version);
+                run.artifact_item = DO2_GSON.deserializeItemStack(resultSet.getString("artifact_item"),db_version);
+                run.deck_item = DO2_GSON.deserializeItemStack(resultSet.getString("deck_item"),db_version);
+                run.inventory_save = DO2_GSON.deserializeListItemStack(resultSet.getString("inventory_save"),db_version);
+                run.items_bought = DO2_GSON.deserializeListItemStack(resultSet.getString("items_bought"),db_version);
                 run.death_pos = resultSet.getString("death_pos");
                 run.death_message = resultSet.getString("death_message");
                 if (resultSet.getString("loot_drops") != null)
@@ -688,12 +697,15 @@ public class DatabaseManager {
         Main.resetRunInfo();
     }
 
-    public static void addPlayer(String uuid, String name) {
-        String sql = "INSERT OR REPLACE INTO players(uuid, name, joined_at) VALUES(?, ?, datetime('now'))";
+    public static void addPlayer(String uuid, String name, GameProfile gameProfile) {
+        String sql = "INSERT OR REPLACE INTO players(uuid, name, joined_at) VALUES(?, ?, datetime('now'))";//game_profile, ?
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, uuid);
             statement.setString(2, name);
+            /*
+            String game_profile = GSON.toJson(gameProfile.getProperties(), PropertyMap.class);
+            statement.setString(3, game_profile);*/
             statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -752,7 +764,7 @@ public class DatabaseManager {
     }
     public static void fetchAllPlayers() {
         Main.allPlayers.clear();
-        String sql = "SELECT uuid, name FROM players";
+        String sql = "SELECT uuid, name FROM players";//game_profile
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql);
              ResultSet resultSet = statement.executeQuery()) {
@@ -760,6 +772,14 @@ public class DatabaseManager {
             while (resultSet.next()) {
                 String uuid = resultSet.getString("uuid");
                 String name = resultSet.getString("name");
+                /*
+                String game_profile = resultSet.getString("game_profile");
+                if (game_profile != null) {
+                    if (!game_profile.isEmpty()) {
+                        PropertyMap properties = GSON.fromJson(game_profile, PropertyMap.class);
+                        Main.allPlayerProfiles.put(uuid, properties);
+                    }
+                }*/
                 Main.allPlayers.put(uuid, name);
             }
         } catch (SQLException e) {

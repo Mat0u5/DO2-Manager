@@ -258,13 +258,11 @@ public class Command {
                             )
                         )
                     )
-                        .then(literal("executeTestEntity")
-                                .then(argument("target", EntityArgumentType.entity())
-                                        .executes(context -> TestingCommand.executeTestEntity(
-                                                context.getSource(), EntityArgumentType.getEntity(context, "target"))
-                                        )
-                                )
+                    .then(literal("updateGameProfiles")
+                        .executes(context -> TestingCommand.updateGameProfiles(
+                            context.getSource())
                         )
+                    )
                 )
                 .then(literal("simulator")
                     .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))

@@ -14,6 +14,7 @@ import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.block.Block;
 import net.minecraft.block.entity.LockableContainerBlockEntity;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
@@ -59,16 +60,17 @@ public class PlayerEvents {
             QueueEvents.onPlayerJoin(player);
             if (player.isCreative() && !player.hasPermissionLevel(2)) {
                 player.changeGameMode(GameMode.SPECTATOR);
-                System.out.println(player.getEntityName()+"'s gamemode was automatically reset to spectator, because they were in creative.");
+                System.out.println(player.getNameForScoreboard()+"'s gamemode was automatically reset to spectator, because they were in creative.");
             }
 
             //Add the player to the database
-            DatabaseManager.addPlayer(player.getUuidAsString(),player.getEntityName());
+            System.out.println("TEST_"+player.getGameProfile().getProperties());
+            DatabaseManager.addPlayer(player.getUuidAsString(),player.getNameForScoreboard(), player.getGameProfile());
             if (Main.allPlayers.isEmpty()) {
                 DatabaseManager.fetchAllPlayers();
             }
             else {
-                Main.allPlayers.put(player.getUuidAsString(),player.getEntityName());
+                Main.allPlayers.put(player.getUuidAsString(),player.getNameForScoreboard());
             }
             lastPlayerLogoutTime = -1;
 
@@ -91,7 +93,7 @@ public class PlayerEvents {
             Main.currentRun.death_pos = player.getPos().toString();
             Main.currentRun.death_message = source.getDeathMessage(player).getString();
             if (diedFromPathOfCoward) {
-                System.out.println(player.getEntityName() + " took the path of the coward. LLLL");
+                System.out.println(player.getNameForScoreboard() + " took the path of the coward. LLLL");
                 Main.currentRun.finishers = new ArrayList<>();
                 DatabaseManager.saveRun(server);
             }
@@ -132,12 +134,10 @@ public class PlayerEvents {
             if (slotId < 0 ) return;
             ItemStack clickedItem = handler.getSlot(slotId).getStack();
             if (clickedItem == null) return;
-            NbtCompound nbt = clickedItem.getNbt();
-            if (nbt == null) return;
             if (OtherUtils.isHoldingAdminKey(player)) return;
-            if (!nbt.contains("GUI")) return;
-            if (!nbt.contains("GUI_DontCancelClick")) ci.cancel();
-            String tag = nbt.getString("GUI");
+            if (!ItemManager.hasCustomComponentEntry(clickedItem,"GUI")) return;
+            if (!ItemManager.hasCustomComponentEntry(clickedItem,"GUI_DontCancelClick")) ci.cancel();
+            String tag = ItemManager.getCustomComponentString(clickedItem, "GUI");
             if ((tag.equalsIgnoreCase("DatabaseGUI")||tag.equalsIgnoreCase("custom")) && clickEventCooldown <= 0) {
                 clickEventCooldown = 4;
                 GuiInventoryClick.onClickDatabaseGUI(tag,slotId,button,actionType,player,ci,handler);
@@ -159,7 +159,7 @@ public class PlayerEvents {
         if (lock == null || lock.isEmpty()) return ActionResult.PASS;
         if (PermissionManager.isAdmin(player) || player.getUuidAsString().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d")) {
             OtherUtils.unlockContainerForTick((ServerWorld) world, player.getServer(), container,pos);
-            player.playSound(SoundEvents.BLOCK_AMETHYST_BLOCK_STEP, SoundCategory.PLAYERS, 0.7f, 1.0f);
+            player.playSoundToPlayer(SoundEvents.BLOCK_AMETHYST_BLOCK_STEP, SoundCategory.PLAYERS, 0.7f, 1.0f);
             return ActionResult.PASS;
         }
 
@@ -178,7 +178,7 @@ public class PlayerEvents {
 
             JsonObject embed = new JsonObject();
             embed.addProperty("description", "__**[DO2-Manager]**__" +
-                    "\n\n**"+player.getEntityName()+"** opened a locked container!" +
+                    "\n\n**"+player.getNameForScoreboard()+"** opened a locked container!" +
                     "\n Lock: "+lock+
                     "\n Location: " + pos.toString()+
                     "\n\n All items with the given password have been removed from the players inventory."

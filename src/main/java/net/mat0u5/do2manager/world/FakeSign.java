@@ -6,6 +6,7 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
+import net.mat0u5.do2manager.utils.OtherUtils;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
@@ -67,11 +68,7 @@ public class FakeSign {
             fakeSigns.add(pos);
             if (server != null) {
                 scheduler.schedule(() -> server.execute(() -> {
-                    PacketByteBuf buf = new PacketByteBuf(Unpooled.buffer());
-                    buf.writeBlockPos(pos);
-                    buf.writeBoolean(false); // This value is for the "front" field, adapt as needed
-
-                    player.networkHandler.sendPacket(new SignEditorOpenS2CPacket(buf));
+                    player.networkHandler.sendPacket(new SignEditorOpenS2CPacket(pos,false));
                     player.networkHandler.sendPacket(sign.toUpdatePacket());
                 }), 40, TimeUnit.MILLISECONDS);
             }
@@ -203,7 +200,7 @@ public class FakeSign {
                 }
                 if (playerName.isEmpty()) continue;
                 guiDatabase.filter_player.add(playerName);
-                guiDatabase.filter_player_uuid.add(Main.getUUIDFromName(playerName));
+                guiDatabase.filter_player_uuid.add(OtherUtils.getPlayerUUIDFromName(playerName));
             }
             if (!nameChoice.isEmpty()) {
                 guiDatabase.playerChoiceInventory(nameChoice);

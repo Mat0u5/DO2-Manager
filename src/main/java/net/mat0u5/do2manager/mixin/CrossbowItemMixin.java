@@ -4,6 +4,7 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.events.CrossbowEvents;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.ProjectileEntity;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.sound.SoundCategory;
@@ -12,6 +13,7 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.TypedActionResult;
 import net.minecraft.world.World;
 import net.minecraft.server.network.ServerPlayerEntity;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -30,7 +32,8 @@ public abstract class CrossbowItemMixin {
         CrossbowEvents.onLoadFinish(user, projectile, cir);
     }
     @Inject(method = "shoot", at = @At("HEAD"), cancellable = true)
-    private static void onShoot(World world, LivingEntity shooter, Hand hand, ItemStack crossbow, ItemStack projectile, float soundPitch, boolean creative, float speed, float divergence, float simulated, CallbackInfo ci) {
-        CrossbowEvents.onShoot(world, shooter, hand, crossbow, ci);
+    private static void onShoot(LivingEntity shooter, ProjectileEntity projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target, CallbackInfo ci) {
+        CrossbowEvents.onShoot(shooter.getWorld(), shooter, shooter.getActiveItem());
+
     }
 }

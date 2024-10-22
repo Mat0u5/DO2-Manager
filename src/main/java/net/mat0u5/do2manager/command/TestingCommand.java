@@ -2,6 +2,7 @@ package net.mat0u5.do2manager.command;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.mojang.authlib.GameProfile;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DO2RunIterator;
 import net.mat0u5.do2manager.database.DatabaseManager;
@@ -22,13 +23,15 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class TestingCommand {
     public static int execute(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        new DiscordUtils().updateDiscordChannelDescription();
+        //new DiscordUtils().updateDiscordChannelDescription();
+System.out.println(Main.allPlayers);
 
         return 1;
     }
@@ -58,20 +61,21 @@ public class TestingCommand {
 
         return 1;
     }
-    public static int executeTestEntity(ServerCommandSource source, Entity target) {
+    public static int updateGameProfiles(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
 
-        if (target instanceof RavagerEntity) {
-            RavagerEntity ravager = (RavagerEntity) target;
-            source.sendMessage(Text.of("attack range: " + ravager.squaredAttackRange(self)));
-            source.sendMessage(Text.of("attack range2: " + ravager.getSquaredDistanceToAttackPosOf(self)));
-            source.sendMessage(Text.of("attack range3: " + ravager.getWidth()));
-        }
-        else {
-            source.sendMessage(Text.of("Not a ravager"));
+        for (String uuid : Main.allPlayers.keySet()) {
+            String name = Main.allPlayers.get(uuid);
+            ItemManager.getPlayerProfileAsync(name).thenAccept(gameProfile->{
+                if (gameProfile.isPresent()) {
+                    System.out.println("TESTTT_"+uuid+"__"+name+"__"+gameProfile.get().getProperties());
+                    DatabaseManager.addPlayer(uuid,name,gameProfile.get());
+                }
+            });
         }
 
+        self.sendMessage(Text.translatable("§6Updating Profiles.."));
         return 1;
     }
 }

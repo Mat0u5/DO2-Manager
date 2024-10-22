@@ -5,6 +5,7 @@ import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
 import net.mat0u5.do2manager.world.ItemManager;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
@@ -22,10 +23,9 @@ public class GuiItems_Database {
         return createGuiItem(itemStack, tag, displayName, null);
     }
     private static ItemStack createGuiItem(ItemStack itemStack, String tag, String displayName, List<Text> lore) {
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putString("GUI", "DatabaseGUI");
-        nbt.putString("GUI_ITEM", tag);
-        itemStack.setCustomName(Text.of(displayName));
+        ItemManager.setCustomComponentString(itemStack, "GUI", "DatabaseGUI");
+        ItemManager.setCustomComponentString(itemStack, "GUI_ITEM", tag);
+        itemStack.set(DataComponentTypes.CUSTOM_NAME,Text.of(displayName));
 
         if (lore != null) ItemManager.addLoreToItemStack(itemStack, lore);
         return itemStack;
@@ -37,9 +37,8 @@ public class GuiItems_Database {
     }
     public static ItemStack pageCustom(boolean isNextPage, int currentPage, int totalPages, String custom_inv, int run_number) {
         ItemStack itemStack = new ItemStack(Items.ARROW, 1);
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putInt("run_number", run_number);
-        nbt.putString("custom_list_inv", custom_inv);
+        ItemManager.setCustomComponentInt(itemStack,"run_number",run_number);
+        ItemManager.setCustomComponentString(itemStack,"custom_list_inv", custom_inv);
 
         return createGuiItem(itemStack, (isNextPage?"next":"previous")+"_page_custom_list", "§a"+(isNextPage?"Next":"Previous")+" Page", List.of(Text.of("§7(" + currentPage + "/" + totalPages + ")"), Text.of(""), Text.of("§eClick to turn page!")));
     }
@@ -77,8 +76,7 @@ public class GuiItems_Database {
 
         if (run.run_type.equalsIgnoreCase("testing")) itemStack = new ItemStack(Items.BEDROCK);
 
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putInt("run_number", run.run_number);
+        ItemManager.setCustomComponentInt(itemStack,"run_number",run.run_number);
         return createGuiItem(itemStack, "run", (successfulRun?"§a":"§c")+"Run #" + run.run_number,lore);
     }
     public static ItemStack sort_by(String sort_by, boolean sort_by_descending) {
@@ -130,9 +128,7 @@ public class GuiItems_Database {
     }
     public static ItemStack filterRunType(int filter_run_type) {
         ItemStack itemStack = new ItemStack(Items.IRON_NUGGET, 1);
-
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putInt("CustomModelData", 6); // Set the custom model data value
+        ItemManager.setModelData(itemStack,6);
         return createGuiItem(itemStack, "filter_run_type", "§aRun Type Filter", List.of(Text.of(""), Text.of((filter_run_type==0?"§8▶ ":"  ")+"§8No filter"), Text.of((filter_run_type==1?"§e▶ ":"  §7")+"Casual"), Text.of((filter_run_type==2?"§b▶ ":"  §7")+"Phase"), Text.of(""), Text.of("§eClick cycle through!")));
     }
     public static ItemStack filterPlayer(List<String> filter_player) {
@@ -140,14 +136,12 @@ public class GuiItems_Database {
         String playerList = String.join(", ",filter_player);
         if (!playerList.isEmpty()) {
             if (!playerList.contains(", ")) {
-                String playerName = filter_player.get(0);
-                NbtCompound nbt = itemStack.getOrCreateNbt();
-                nbt.putString("SkullOwner", playerName);
+                String playerName = filter_player.getFirst();
+                itemStack = ItemManager.getPlayerSkull(playerName,filter_player.getFirst());
             }
             else {
                 itemStack = new ItemStack(Items.CARVED_PUMPKIN, 1);
-                NbtCompound nbt = itemStack.getOrCreateNbt();
-                nbt.putInt("CustomModelData", 46);
+                ItemManager.setModelData(itemStack,46);
             }
         }
 
@@ -164,8 +158,7 @@ public class GuiItems_Database {
     }
     public static ItemStack backToRunNum(int run_number) {
         ItemStack itemStack = new ItemStack(Items.ARROW, 1);
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putInt("run_number", run_number);
+        ItemManager.setCustomComponentInt(itemStack,"run_number",run_number);
 
         return createGuiItem(itemStack, "back_to_run", "§aGo Back", List.of(Text.of(""), Text.of("§eClick to return!")));
     }
@@ -213,8 +206,7 @@ public class GuiItems_Database {
         List<Text> lore = new ArrayList<>();
         String itemName = "§aDeath Info";
         if (!run.getSuccess()) {
-            NbtCompound nbt = itemStack.getOrCreateNbt();
-            nbt.putInt("CustomModelData", 96);
+            ItemManager.setModelData(itemStack,96);
 
             lore.add(Text.of(""));
 
@@ -229,8 +221,9 @@ public class GuiItems_Database {
     public static ItemStack getEmbers(DO2Run run) {
         ItemStack itemStack = new ItemStack(Items.IRON_NUGGET, 1);
         List<Text> lore = new ArrayList<>();
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putInt("CustomModelData", 3);
+        ItemManager.setModelData(itemStack,3);
+
+
         itemStack.setCount(Math.max(1, Math.min(64, run.embers_counted)));
         String itemName = "§aFrost Embers";
         lore.add(Text.of(""));
@@ -244,8 +237,9 @@ public class GuiItems_Database {
         }
         ItemStack itemStack = new ItemStack(Items.IRON_NUGGET, 1);
         List<Text> lore = new ArrayList<>();
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putInt("CustomModelData", 2);
+        ItemManager.setModelData(itemStack,2);
+
+
         itemStack.setCount(Math.max(1, Math.min(64, run.crowns_counted)));
         String itemName = "§aCrowns";
         lore.add(Text.of(""));
@@ -255,10 +249,11 @@ public class GuiItems_Database {
     }
     public static ItemStack runCardPlays(DO2Run run) {
         ItemStack itemStack = new ItemStack(Items.IRON_NUGGET, 1);
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putInt("CustomModelData", 102);
-        nbt.putInt("run_number", run.run_number);
-        nbt.putString("custom_list_inv", "card_plays");
+
+        ItemManager.setModelData(itemStack,102);
+        ItemManager.setCustomComponentInt(itemStack,"run_number",run.run_number);
+        ItemManager.setCustomComponentString(itemStack,"custom_list_inv", "card_plays");
+
         List<Text> lore = new ArrayList<>();
         itemStack.setCount(Math.max(1, Math.min(64,run.card_plays.size())));
 
@@ -270,9 +265,8 @@ public class GuiItems_Database {
     public static ItemStack runInventory(DO2Run run) {
         ItemStack itemStack = new ItemStack(Items.CHEST, 1);
         List<Text> lore = new ArrayList<>();
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putInt("run_number", run.run_number);
-        nbt.putString("custom_list_inv", "inventory_save");
+        ItemManager.setCustomComponentInt(itemStack,"run_number",run.run_number);
+        ItemManager.setCustomComponentString(itemStack,"custom_list_inv", "inventory_save");
 
         lore.add(Text.of(""));
         lore.add(Text.of("§eClick view the last inventory save in this run!"));
@@ -282,10 +276,9 @@ public class GuiItems_Database {
     public static ItemStack runItemsBought(DO2Run run) {
         ItemStack itemStack = new ItemStack(Items.GOLD_INGOT, 1);
         List<Text> lore = new ArrayList<>();
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putInt("run_number", run.run_number);
-        nbt.putString("custom_list_inv", "items_bought");
 
+        ItemManager.setCustomComponentInt(itemStack,"run_number",run.run_number);
+        ItemManager.setCustomComponentString(itemStack,"custom_list_inv", "items_bought");
 
         lore.add(Text.of(""));
         lore.add(Text.of("§eClick view the bought items in this run!"));
@@ -338,8 +331,7 @@ public class GuiItems_Database {
 
         ItemStack itemStack = new ItemStack(Items.IRON_NUGGET, 1);
         List<Text> lore = new ArrayList<>();
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putInt("CustomModelData", 47);
+        ItemManager.setModelData(itemStack,47);
         String itemName = "§aRuns Info";
         lore.add(Text.of(""));
         lore.add(Text.of("§7Runs: §b" + runsNum));
@@ -359,9 +351,7 @@ public class GuiItems_Database {
         return createGuiItem(itemStack, "runs_info", itemName, lore);
     }
     public static ItemStack playerHeadChoice(String name) {
-        ItemStack itemStack = new ItemStack(Items.PLAYER_HEAD, 1);
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putString("SkullOwner", name);
+        ItemStack itemStack = ItemManager.getPlayerSkull(name);
         return createGuiItem(itemStack, "player_choice", "§7"+name, List.of(Text.of(""),Text.of("§eClick to choose this player!")));
     }
 }

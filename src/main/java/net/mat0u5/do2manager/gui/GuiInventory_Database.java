@@ -106,7 +106,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
             inventory.setStack(slot,itemStack);
         }
         else {
-            inventory.getStack(slot).setNbt(itemStack.getNbt());
+            inventory.getStack(slot).applyComponentsFrom(itemStack.getComponents());
         }
     }
     public void addRunItems() {
@@ -180,7 +180,6 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
                 e.printStackTrace();
             }
         }
-
         // Create and run a new future
         CompletableFuture<Void> newFuture = CompletableFuture.runAsync(() -> {
             synchronized (GuiInventory_Database.class) {

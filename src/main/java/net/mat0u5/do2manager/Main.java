@@ -1,5 +1,7 @@
 package net.mat0u5.do2manager;
 
+import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.PropertyMap;
 import net.fabricmc.api.ModInitializer;
 
 import net.mat0u5.do2manager.config.ConfigManager;
@@ -34,6 +36,7 @@ public class Main implements ModInitializer {
 	public static List<DO2RunAbridged> allAbridgedRuns = new ArrayList<>();
 	public static HashMap<PlayerEntity, GuiPlayerSpecific> openGuis = new HashMap<>();
 	public static HashMap<String, String> allPlayers = new HashMap<>();
+	public static HashMap<String, PropertyMap> allPlayerProfiles = new HashMap<>();
 	public static MinecraftServer server;
 	public static boolean reloadedRuns = false;
 	public static Simulator simulator;
@@ -51,7 +54,7 @@ public class Main implements ModInitializer {
 		LOGGER.info("Initializing DO2-manager...");
 		simulator = new Simulator();
 		dungeonQueue.loadQueueFromConfig();
-		TCG_Items.reload();
+		//TCG_Items.reload();//TODO
 	}
 
 	public static void resetRunInfo() {
@@ -73,7 +76,6 @@ public class Main implements ModInitializer {
 	public static CompletableFuture<Void> reloadAllAbridgedRunsAsync() {
 		return CompletableFuture.runAsync(() -> {
 			synchronized (Main.class) { // Synchronize to handle concurrent access
-				System.out.println("Loading All Abridged Runs...");
 				allAbridgedRuns = DatabaseManager.getAbridgedRunsByCriteria(new ArrayList<>());
 				Collections.sort(allAbridgedRuns, Comparator.comparingInt(DO2RunAbridged::getRunNum).reversed());
 
@@ -110,13 +112,5 @@ public class Main implements ModInitializer {
 			}
 		});
 
-	}
-	public static String getUUIDFromName(String name) {
-		for (Map.Entry<String, String> entry : allPlayers.entrySet()) {
-			if (entry.getValue().equals(name)) {
-				return entry.getKey();
-			}
-		}
-		return null;
 	}
 }

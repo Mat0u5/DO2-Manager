@@ -19,10 +19,13 @@ import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ingame.SignEditScreen;
 import net.minecraft.command.argument.EntityAnchorArgumentType;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.PlayerManager;
 import net.minecraft.server.command.CommandOutput;
@@ -47,10 +50,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 public class OtherUtils {
 
@@ -179,41 +179,6 @@ public class OtherUtils {
             player.sendMessage(message, false);
         }
     }
-    public static PlayerEntity getPlayerFromUUIDString(MinecraftServer server, String uuidString) {
-        return getPlayerFromName(server, DatabaseManager.getPlayerNameFromUUID(uuidString));
-    }
-    public static String fetchPlayerNameFromMojangAPI(UUID uuid) {
-        String urlString = "https://sessionserver.mojang.com/session/minecraft/profile/" + uuid.toString().replace("-", "");
-        try {
-            URL url = new URL(urlString);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setConnectTimeout(5000);
-            conn.setReadTimeout(5000);
-
-            if (conn.getResponseCode() == 200) {
-                InputStreamReader reader = new InputStreamReader(conn.getInputStream());
-                JsonObject json = JsonParser.parseReader(reader).getAsJsonObject();
-                reader.close();
-                return json.get("name").getAsString();
-            } else {
-                System.out.println("Failed to fetch player name, response code: " + conn.getResponseCode());
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-    public static UUID getUUIDFromString(String uuidString) {
-        UUID uuid;
-        try {
-            uuid = UUID.fromString(uuidString.trim());
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid UUID string: " + uuidString);
-            return null;
-        }
-        return uuid;
-    }
     public static boolean isPlayerOnline(MinecraftServer server, String username) {
         PlayerManager playerManager = server.getPlayerManager();
         ServerPlayerEntity player = playerManager.getPlayer(username);
@@ -222,32 +187,15 @@ public class OtherUtils {
     public static boolean isPlayerOnline(String username) {
         return isPlayerOnline(Main.server,username);
     }
-    public static PlayerEntity getPlayerFromName(MinecraftServer server, String playerName) {
-        PlayerManager playerManager = server.getPlayerManager();
-        PlayerEntity playerEntity = playerManager.getPlayer(playerName);
-
-        if (playerEntity != null) {
-            return playerEntity; // Player is online
-        } else {
-            GameProfile profile = server.getUserCache().findByName(playerName).orElse(null);
-            if (profile != null) {
-                UUID uuid = profile.getId();
-                File playerDataFile = server.getSavePath(WorldSavePath.PLAYERDATA).resolve(uuid.toString() + ".dat").toFile();
-                if (playerDataFile.exists()) {
-                    try {
-                        NbtCompound playerData = NbtIo.readCompressed(playerDataFile);
-                        ServerWorld world = server.getOverworld();
-                        PlayerEntity offlinePlayerEntity = new ServerPlayerEntity(server, world, profile);
-                        offlinePlayerEntity.readNbt(playerData);
-                        return offlinePlayerEntity;
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-            System.out.println("Player not found: " + playerName);
-            return null;
+    public static String getPlayerNameFromUUID(String uuid) {
+        if (Main.allPlayers.containsKey(uuid)) return Main.allPlayers.get(uuid);
+        return "";
+    }
+    public static String getPlayerUUIDFromName(String name) {
+        for (String uuid : Main.allPlayers.keySet()) {
+            if (Main.allPlayers.get(uuid).equalsIgnoreCase(name)) return uuid;
         }
+        return "";
     }
     public static void restartServer(MinecraftServer server) {
         System.out.println("A queued restart has triggered...");
@@ -265,7 +213,7 @@ public class OtherUtils {
     }
     public static void playGuiClickSound(PlayerEntity player) {
         if (player != null && player.getWorld() != null) {
-            player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.PLAYERS, 0.5F, 1.0F);
+            player.playSoundToPlayer(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.PLAYERS, 0.5F, 1.0F);
         }
     }
     public static List<BlockPos> getPositionsFromString(String str) {
@@ -310,16 +258,17 @@ public class OtherUtils {
         }
     }
     public static void unlockContainerForTick(ServerWorld world, MinecraftServer server, LockableContainerBlockEntity container, BlockPos pos) {
-        NbtCompound nbt = container.createNbt();
+        RegistryWrapper.WrapperLookup registryLookup = Main.server.getRegistryManager();
+        NbtCompound nbt = container.createNbt(registryLookup);
         String originalLock = nbt.getString("Lock");
         nbt.remove("Lock");
-        container.readNbt(nbt);
+        container.read(nbt, registryLookup);
         server.execute(() -> {
             try {
                 // Re-lock the original container
-                NbtCompound newNbt = container.createNbt();
+                NbtCompound newNbt = container.createNbt(registryLookup);
                 newNbt.putString("Lock", originalLock);
-                container.readNbt(newNbt);
+                container.read(newNbt, registryLookup);
             } catch (Exception e) {
                 System.out.println("Failed to re-add lock at " + pos.toString());
             }
@@ -331,17 +280,17 @@ public class OtherUtils {
             ChestBlockEntity otherHalf = getOtherHalf(world, chest, pos);
 
             if (otherHalf != null) {
-                NbtCompound otherNbt = otherHalf.createNbt();
+                NbtCompound otherNbt = otherHalf.createNbt(registryLookup);
                 String otherOriginalLock = otherNbt.getString("Lock");
                 otherNbt.remove("Lock");
-                otherHalf.readNbt(otherNbt);
+                otherHalf.read(otherNbt, registryLookup);
 
                 server.execute(() -> {
                     try {
                         if (otherHalf != null) {
-                            NbtCompound newOtherNbt = otherHalf.createNbt();
+                            NbtCompound newOtherNbt = otherHalf.createNbt(registryLookup);
                             newOtherNbt.putString("Lock", otherOriginalLock);
-                            otherHalf.readNbt(newOtherNbt);
+                            otherHalf.read(newOtherNbt, registryLookup);
                         }
                     } catch (Exception e) {
                         System.out.println("Failed to re-add lock at " + pos.toString());
@@ -375,16 +324,9 @@ public class OtherUtils {
         }
         return null;
     }
-    public static boolean isLocked(LockableContainerBlockEntity container) {
-        NbtCompound nbt = container.createNbt();
-        if (nbt != null && nbt.contains("Lock")) {
-            String lockKey = nbt.getString("Lock");
-            return lockKey != null && !lockKey.isEmpty();
-        }
-        return false;
-    }
     public static String getLock(LockableContainerBlockEntity container) {
-        NbtCompound nbt = container.createNbt();
+        RegistryWrapper.WrapperLookup registryLookup = Main.server.getRegistryManager();
+        NbtCompound nbt = container.createNbt(registryLookup);
         if (nbt == null) return null;
         if (!nbt.contains("Lock")) return null;
         String lockKey = nbt.getString("Lock");
@@ -394,11 +336,9 @@ public class OtherUtils {
     public static void removeItemsFromPlayerInventory(PlayerEntity player, String match) {
         for (int i = 0; i < player.getInventory().size(); i++) {
             ItemStack stack = player.getInventory().getStack(i);
-            if (stack.hasCustomName()) {
-                Text customName = stack.getName();
-                if (customName.getString().toLowerCase().equalsIgnoreCase(match.toLowerCase())) {
-                    player.getInventory().setStack(i, ItemStack.EMPTY);
-                }
+            Text customName = stack.getName();
+            if (customName.getString().toLowerCase().equalsIgnoreCase(match.toLowerCase())) {
+                player.getInventory().setStack(i, ItemStack.EMPTY);
             }
         }
     }

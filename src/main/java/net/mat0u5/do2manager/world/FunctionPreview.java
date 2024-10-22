@@ -1,15 +1,6 @@
 package net.mat0u5.do2manager.world;
 
-import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.OtherUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.decoration.DisplayEntity.BlockDisplayEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.predicate.entity.TypeSpecificPredicate;
-import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ServerScoreboard;
 import net.minecraft.scoreboard.Team;
 import net.minecraft.server.MinecraftServer;
@@ -18,12 +9,10 @@ import net.minecraft.server.function.CommandFunction;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.WorldSavePath;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -35,19 +24,19 @@ public class FunctionPreview {
 
     static HashMap<BlockPos,String> blockLines = new HashMap<>();
 
-    public static int previewFunction(ServerCommandSource source, Collection<CommandFunction> functions) {
+    public static int previewFunction(ServerCommandSource source, Collection<CommandFunction<ServerCommandSource>> functions) {
         MinecraftServer server = source.getServer();
         final ServerPlayerEntity self = source.getPlayer();
         blockLines.clear();
         if (self == null) return 0;
         killAllGlowingBlocks((ServerWorld) self.getWorld());
         List<List<BlockPos>> blockPositions = new ArrayList<>();
-        for (CommandFunction function : functions) {
+        for (CommandFunction<ServerCommandSource> function : functions) {
             int lineNum = 0;
             self.sendMessage(Text.of("Previewing "+function));
 
             Path datapacksDirectory = server.getSavePath(WorldSavePath.DATAPACKS);
-            Identifier functionId = function.getId();
+            Identifier functionId = function.id();
             String namespace = functionId.getNamespace();
             String functionPath = functionId.getPath();
             Path functionFilePath = datapacksDirectory

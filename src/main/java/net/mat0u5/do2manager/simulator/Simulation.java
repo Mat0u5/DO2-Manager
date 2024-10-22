@@ -438,7 +438,7 @@ public class Simulation extends MSPTUtils {
                     deckCopy.addCard(new Cards().Stumble, stumbleCount);
                 }
 
-                if (effect.matches("[0-9]+E\\*")) emberQ+=(Integer.parseInt(effect.split("E")[0])*(currentCardEffects.containsKey("cold_snap")?2:1));//TODO
+                if (effect.matches("[0-9]+E\\*")) emberQ+=(Integer.parseInt(effect.split("E")[0])*(currentCardEffects.containsKey("cold_snap")?2:1));
 
                 if (effect.equalsIgnoreCase("custom")) {
                     if (randomCard.cardName.equalsIgnoreCase("cold_snap") || randomCard.cardName.equalsIgnoreCase("chill_step") || randomCard.cardName.equalsIgnoreCase("cash_cow")) {

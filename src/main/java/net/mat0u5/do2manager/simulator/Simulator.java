@@ -26,7 +26,7 @@ public class Simulator {
 
     public Deck getDeckFromHand(PlayerEntity player) {
         ItemStack mainHand = player.getMainHandStack();
-        List<ItemStack> shulkerBoxItems = ItemManager.getShulkerItemContents(mainHand);
+        List<ItemStack> shulkerBoxItems = ItemManager.getContainerItemContents(mainHand);
         Deck deck = getDeckFromItems(shulkerBoxItems);
         return deck;
     }
@@ -51,7 +51,7 @@ public class Simulator {
         List<ItemStack> hopper = ItemManager.getHopperItems((ServerWorld) world,new BlockPos(-551,122,1971));
         List<ItemStack> deckItems = new ArrayList<>();
         for (ItemStack shulkerPotential : hopper) {
-            List<ItemStack> potentialDeckItems = ItemManager.getShulkerItemContents(shulkerPotential);
+            List<ItemStack> potentialDeckItems = ItemManager.getContainerItemContents(shulkerPotential);
             if (potentialDeckItems == null) continue;
             if (potentialDeckItems.isEmpty()) continue;
             deckItems.addAll(potentialDeckItems);

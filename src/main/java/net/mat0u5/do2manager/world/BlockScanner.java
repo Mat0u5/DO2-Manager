@@ -9,6 +9,7 @@ import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
@@ -145,11 +146,12 @@ public class BlockScanner extends MSPTUtils {
         if (!lockableBlocks.contains(block) && !block.asItem().toString().contains("shulker_box")) return;
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity == null) return;
-        NbtCompound nbt = blockEntity.createNbt();
+        RegistryWrapper.WrapperLookup registryLookup = world.getServer().getRegistryManager();
+        NbtCompound nbt = blockEntity.createNbt(registryLookup);
         if (scanType.equalsIgnoreCase("unlock")) {
             if (nbt.contains("Lock")) {
                 nbt.remove("Lock");
-                blockEntity.readNbt(nbt);
+                blockEntity.read(nbt,registryLookup);
                 blockEntity.markDirty();
                 world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
                 lockOrUnlock++;
@@ -158,7 +160,7 @@ public class BlockScanner extends MSPTUtils {
         else {
             if (!nbt.contains("Lock") || !nbt.getString("Lock").equalsIgnoreCase(blockPassword)) {
                 nbt.putString("Lock", blockPassword);
-                blockEntity.readNbt(nbt);
+                blockEntity.read(nbt,registryLookup);
                 blockEntity.markDirty();
                 world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
                 lockOrUnlock++;

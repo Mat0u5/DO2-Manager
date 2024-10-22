@@ -41,7 +41,7 @@ public class ServerPlayNetworkHandlerMixin {
             Text finalMessage = Text.empty().append("<").append(playerNameWithFormatting).append("> ").append(formattedContentText);
 
             OtherUtils.broadcastMessage(player.getServer(), finalMessage);
-            DiscordUtils.sendMessageToDiscord(TextUtils.formatEmotesForDiscord(originalContent),"[Server] "+player.getEntityName(),"https://mc-heads.net/avatar/"+player.getUuidAsString());
+            DiscordUtils.sendMessageToDiscord(TextUtils.formatEmotesForDiscord(originalContent),"[Server] "+player.getNameForScoreboard(),"https://mc-heads.net/avatar/"+player.getUuidAsString());
             ci.cancel();
         }
     }
@@ -49,7 +49,7 @@ public class ServerPlayNetworkHandlerMixin {
     @Inject(method = "onUpdateCommandBlock", at = @At("HEAD"))
     private void onUpdateCommandBlock(UpdateCommandBlockC2SPacket packet, CallbackInfo ci) {
         ServerWorld world = ((ServerPlayNetworkHandler) (Object) this).getPlayer().getServerWorld();
-        BlockPos pos = packet.getBlockPos();
+        BlockPos pos = packet.getPos();
         BlockEntity blockEntity = world.getBlockEntity(pos);
 
         if (blockEntity instanceof CommandBlockBlockEntity) {

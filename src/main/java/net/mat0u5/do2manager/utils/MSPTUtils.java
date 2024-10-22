@@ -52,7 +52,7 @@ public abstract class MSPTUtils {
         stoppedFunction();
     }
     public static double getCurrentMSPT() {
-        long[] tickTimes = server.lastTickLengths;
+        long[] tickTimes = server.getTickTimes();
 
         // Calculate the average tick time
         long totalTickTime = 0;

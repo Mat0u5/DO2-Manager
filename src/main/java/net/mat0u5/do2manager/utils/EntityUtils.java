@@ -22,7 +22,7 @@ public class EntityUtils {
         return false;
     }
     public static List<ItemStack> getItemStacksInBox(ServerWorld world, BlockPos pos1, BlockPos pos2) {
-        Box box = new Box(pos1, pos2);
+        Box box = new Box(pos1.toCenterPos(), pos2.toCenterPos());
 
         List<ItemStack> itemStacks = new ArrayList<>();
         for (ItemEntity itemEntity : world.getEntitiesByClass(ItemEntity.class, box, entity -> true)) {

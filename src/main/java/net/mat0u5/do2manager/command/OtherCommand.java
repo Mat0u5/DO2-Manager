@@ -2,6 +2,7 @@ package net.mat0u5.do2manager.command;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.config.ConfigManager;
+import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.simulator.Simulator;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
@@ -61,6 +62,7 @@ public class OtherCommand {
         Main.config= new ConfigManager("./config/"+Main.MOD_ID+"/"+Main.MOD_ID+".properties");
         Main.lastInvUpdate = new ConfigManager("./config/"+Main.MOD_ID+"/"+Main.MOD_ID+"_inv_update.properties");
         TextUtils.setEmotes();
+        DatabaseManager.fetchAllPlayers();
         return 1;
     }
     public static int reloadDatabase(ServerCommandSource source) {
@@ -100,7 +102,7 @@ public class OtherCommand {
         if (isRunner(server, self)) return -1;
 
         self.changeGameMode(GameMode.SPECTATOR);
-        self.teleport(-529.5, 113, 1980.5);
+        self.teleport(server.getOverworld(),-529.5, 113, 1980.5, 0, 0);
         return 1;
     }
     public static int viewDeck(ServerCommandSource source) {
@@ -113,9 +115,7 @@ public class OtherCommand {
 
         SimpleInventory inventory = new SimpleInventory(27);
         for (ItemStack item : currentCards) {
-            NbtCompound nbt = item.getOrCreateNbt();
-            nbt.putString("GUI","view-deck");
-            item.setNbt(nbt);
+            ItemManager.setCustomComponentString(item,"GUI","view-deck");
             inventory.addStack(item);
         }
 
@@ -140,15 +140,13 @@ public class OtherCommand {
         SimpleInventory inventory = new SimpleInventory(54);
 
         for (ItemStack item : currentItems) {
-            NbtCompound nbt = item.getOrCreateNbt();
-            nbt.putString("GUI","player_inv");
-            item.setNbt(nbt);
+            ItemManager.setCustomComponentString(item,"GUI","player_inv");
             inventory.addStack(item);
         }
 
         self.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
             return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, syncId, inv, inventory, 6);
-        }, Text.of((runners.size() == 1 ? runners.get(0).getEntityName(): "Coop")+"'s Items")));
+        }, Text.of((runners.size() == 1 ? runners.get(0).getNameForScoreboard(): "Coop")+"'s Items")));
         return 1;
     }
     public static int getInfo(ServerCommandSource source) {
@@ -177,12 +175,12 @@ public class OtherCommand {
 
         for (ServerPlayerEntity player : targets) {
             if (scanType.equalsIgnoreCase("tagExpanded")) {
-                self.sendMessage(Text.of("Tagging "+player.getEntityName()+"'s Custom Cards"));
+                self.sendMessage(Text.of("Tagging "+player.getNameForScoreboard()+"'s Custom Cards"));
                 ItemConvertor.convertCustomItems(player,-1);
                 self.sendMessage(Text.of("Tagging complete."));
             }
             if (scanType.equalsIgnoreCase("removePhase")) {
-                self.sendMessage(Text.of("Converting "+player.getEntityName()+"'s Items from phase to casual"));
+                self.sendMessage(Text.of("Converting "+player.getNameForScoreboard()+"'s Items from phase to casual"));
                 ItemConvertor.convertPhaseItems(player,-1);
                 self.sendMessage(Text.of("Conversion complete."));
             }
@@ -215,7 +213,7 @@ public class OtherCommand {
             if (ItemManager.isDungeonCard(holdingItem)) {
                 phaseLoreJson = String.format("{\"text\":\"-= Phase Card =-\",\"color\":\"%s\"}", Formatting.RED.getName());
             }
-            ItemManager.addJsonLoreToItemStack(holdingItem,List.of(phaseLoreJson));
+            ItemManager.addLoreToItemStack(holdingItem,List.of(Text.of(phaseLoreJson)));
         }
 
         return 1;
@@ -240,7 +238,7 @@ public class OtherCommand {
         final ServerPlayerEntity self = source.getPlayer();
         String name = "null";
         if (self != null) {
-            name = self.getEntityName();
+            name = self.getNameForScoreboard();
             self.sendMessage(Text.of("Discord message has been sent."));
         }
         DiscordUtils.sendChangeInfo(name,change,reason,affected);

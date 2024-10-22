@@ -1,10 +1,16 @@
 package net.mat0u5.do2manager.world;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.mojang.authlib.GameProfile;
+import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.DO2_GSON;
-import net.minecraft.block.entity.BarrelBlockEntity;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.DispenserBlockEntity;
-import net.minecraft.block.entity.HopperBlockEntity;
+import net.mat0u5.do2manager.utils.OtherUtils;
+import net.minecraft.block.entity.*;
+import net.minecraft.component.ComponentChanges;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.*;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.vehicle.ChestBoatEntity;
@@ -16,19 +22,20 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.nbt.NbtString;
-import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
+import net.minecraft.util.UserCache;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
-import org.apache.http.impl.conn.SystemDefaultRoutePlanner;
 
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 
 public class ItemManager {
     public static final List<Integer> artiModelDataList = Arrays.asList(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58);
@@ -173,71 +180,10 @@ public class ItemManager {
             giveItemStack(player,itemStack);
         }
     }
-    public static ItemStack getItemStackFromString(String itemName, int quantity) {
-        return getItemStackFromString(itemName, quantity,null);
-    }
-    public static ItemStack getItemStackFromString(String itemName, int quantity, String nbtData) {
-        Item item = Registries.ITEM.get( new Identifier(itemName));
-        if (item == null) {
-            throw new IllegalArgumentException("Invalid item ID: " + itemName);
-        }
-        ItemStack itemStack = new ItemStack(item, quantity);
-
-        // Deserialize NBT data from JSON
-        if (nbtData != null) {
-            itemStack.setNbt(DO2_GSON.deserializeNbt(nbtData));
-        }
-        return itemStack;
-    }
 
     public static String getItemId(ItemStack itemStack) {
         return Registries.ITEM.getId(itemStack.getItem()).toString();
     }
-    public static boolean hasNbtEntry(ItemStack itemStack, String nbtEntry) {
-        NbtCompound nbt = itemStack.getNbt();
-        if (nbt == null) return false;
-        return nbt.contains(nbtEntry);
-    }
-    public static int getModelData(ItemStack itemStack) {
-        NbtCompound nbt = itemStack.getNbt();
-        if (hasNbtEntry(itemStack, "CustomModelData")) return nbt.getInt("CustomModelData");
-        return -1;
-    }
-    public static void setModelData(ItemStack itemStack, int modelData) {
-        setNbtInt(itemStack, "CustomModelData", modelData);
-    }
-    public static void setRoleplayData(ItemStack itemStack, byte roleplayData) {
-        setNbtByte(itemStack, "CustomRoleplayData", roleplayData);
-    }
-    public static void setNbtInt(ItemStack itemStack, String subNbt, int setTo) {
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putInt(subNbt, setTo);
-        itemStack.setNbt(nbt);
-    }
-    public static void setNbtByte(ItemStack itemStack, String subNbt, byte setTo) {
-        NbtCompound nbt = itemStack.getOrCreateNbt();
-        nbt.putByte(subNbt, setTo);
-        itemStack.setNbt(nbt);
-    }
-    public static int getMapId(ItemStack itemStack) {
-        NbtCompound nbt = itemStack.getNbt();
-        if (hasNbtEntry(itemStack, "map")) return nbt.getInt("map");
-        return -1;
-    }
-    public static NbtCompound createItemEntry(Item item, int count) {
-        ItemStack stack = new ItemStack(item, count);
-        NbtCompound entry = new NbtCompound();
-        stack.writeNbt(entry);
-        entry.putByte("Count", (byte) count);  // Set the item count
-        return entry;
-    }
-    public static NbtCompound createItemStackEntry(ItemStack stack) {
-        NbtCompound entry = new NbtCompound();
-        stack.writeNbt(entry);  // Write the ItemStack's NBT data to the entry
-        entry.putByte("Count", (byte) stack.getCount());  // Set the item count
-        return entry;
-    }
-
     public static List<ItemStack> getHopperItems(ServerWorld world, BlockPos hopperPos) {
         BlockEntity blockEntity = world.getBlockEntity(hopperPos);
 
@@ -285,7 +231,12 @@ public class ItemManager {
     public static List<ItemStack> getContentsOfEntitiesAtPosition(World world, BlockPos pos, int range) {
         List<ItemStack> allContents = new ArrayList<>();
 
-        List<Entity> entities = world.getEntitiesByClass(Entity.class, new Box(pos.add(-range, -range, -range), pos.add(range, range, range)), entity -> entity instanceof HopperMinecartEntity || entity instanceof ChestBoatEntity);
+        List<Entity> entities = world.getEntitiesByClass(
+                Entity.class,
+                new Box(pos.add(-range, -range, -range).toCenterPos(),
+                pos.add(range, range, range).toCenterPos()),
+                entity -> entity instanceof HopperMinecartEntity || entity instanceof ChestBoatEntity
+        );
 
         for (Entity entity : entities) {
             if (entity instanceof HopperMinecartEntity) {
@@ -339,7 +290,7 @@ public class ItemManager {
                 stack.setCount(0);
                 barrel.markDirty();
                 return true;
-            } else if (ItemStack.canCombine(slotStack, stack)) {
+            } else if (ItemStack.areItemsAndComponentsEqual(slotStack, stack)) {
                 int transferAmount = Math.min(inventory.getMaxCountPerStack() - slotStack.getCount(), stack.getCount());
                 slotStack.increment(transferAmount);
                 stack.decrement(transferAmount);
@@ -371,78 +322,32 @@ public class ItemManager {
     }
 
     public static void clearItemPhaseLore(ItemStack itemStack) {
-        NbtCompound display = itemStack.getSubNbt("display");
-        if (display != null && display.contains("Lore", NbtElement.LIST_TYPE)) {
-            NbtList loreList = display.getList("Lore", NbtElement.STRING_TYPE);
-            int lastIndex = loreList.size() - 1;
-
-            if (lastIndex >= 0) {
-                String lastLoreLine = loreList.getString(lastIndex);
-                if (lastLoreLine.contains("-= Phase")) {
-                    loreList.remove(lastIndex);
-                }
-            }
-
-            if (loreList.isEmpty()) {
-                display.remove("Lore");
-            } else {
-                display.put("Lore", loreList);
-            }
-
-            if (display.isEmpty()) {
-                itemStack.removeSubNbt("display");
-            } else {
-                itemStack.setSubNbt("display", display);
+        List<Text> currentLore = getLore(itemStack);
+        if (currentLore == null || currentLore.isEmpty()) return;
+        List<Text> newLore = new ArrayList<>();
+        for (Text loreLine : currentLore) {
+            if (!loreLine.getString().contains("-= Phase")) {
+                newLore.add(loreLine);
             }
         }
+        LoreComponent lore = new LoreComponent(newLore);
+        itemStack.set(DataComponentTypes.LORE,lore);
     }
     public static void clearItemLore(ItemStack itemStack) {
-        NbtCompound display = itemStack.getSubNbt("display");
-        if (display != null) {
-            display.remove("Lore");
-            if (display.isEmpty()) {
-                itemStack.removeSubNbt("display");
-            } else {
-                itemStack.setSubNbt("display", display);
-            }
-        }
+        itemStack.remove(DataComponentTypes.LORE);
     }
-    public static void addLoreToItemStack(ItemStack itemStack, List<Text> lore) {
-        NbtCompound displayTag = itemStack.getOrCreateSubNbt("display");
-        NbtList loreList = displayTag.getList("Lore", 8); // 8 means it's a string tag type
-
-        // Convert each lore Text to string and add to NBT list
-        for (Text loreLine : lore) {
-            loreList.add(NbtString.of(Text.Serializer.toJson(loreLine)));
-        }
-
-        // Update the display tag with the new lore list
-        displayTag.put("Lore", loreList);
-    }
-    public static void addJsonLoreToItemStack(ItemStack itemStack, List<String> lore) {
-        NbtCompound displayTag = itemStack.getOrCreateSubNbt("display");
-        NbtList loreList = displayTag.getList("Lore", 8); // 8 means it's a string tag type
-
-        // Convert each lore Text to string and add to NBT list
-        for (String jsonLine : lore) {
-            loreList.add(NbtString.of(jsonLine));
-        }
-
-        // Update the display tag with the new lore list
-        displayTag.put("Lore", loreList);
+    public static void addLoreToItemStack(ItemStack itemStack, List<Text> lines) {
+        List<Text> loreLines = getLore(itemStack);
+        if (lines != null && !lines.isEmpty()) loreLines.addAll(lines);
+        LoreComponent lore = new LoreComponent(loreLines);
+        itemStack.set(DataComponentTypes.LORE, lore);
     }
     public static List<Text> getLore(ItemStack itemStack) {
-        List<Text> loreList = new ArrayList<>();
-
-        if (itemStack.hasNbt() && itemStack.getNbt().contains("display")) {
-            NbtList loreNbt = itemStack.getNbt().getCompound("display").getList("Lore", 8); // 8 is the NBT type for string
-            for (int i = 0; i < loreNbt.size(); i++) {
-                Text loreText = Text.Serializer.fromJson(loreNbt.getString(i));
-                loreList.add(loreText);
-            }
-        }
-
-        return loreList;
+        LoreComponent lore = itemStack.get(DataComponentTypes.LORE);
+        List<Text> lines = lore.lines();
+        if (lines == null) return new ArrayList<>();
+        if (lines.isEmpty()) return new ArrayList<>();
+        return lines;
     }
     public static boolean isShulkerBox(ItemStack itemStack) {
         return getItemId(itemStack).endsWith("shulker_box");
@@ -451,33 +356,15 @@ public class ItemManager {
         return (itemStack.getItem() instanceof BundleItem);
     }
 
-    public static List<ItemStack> getShulkerItemContents(ItemStack shulkerBox) {
-        List<ItemStack> result = new ArrayList<>();
-
-        NbtCompound nbt = shulkerBox.getOrCreateSubNbt("BlockEntityTag");
-        NbtList items = nbt.getList("Items", 10);
-        for (int i = 0; i < items.size(); i++) {
-            NbtCompound itemTag = items.getCompound(i);
-            ItemStack itemStack = ItemStack.fromNbt(itemTag);
-            result.add(itemStack);
-        }
-        return result;
+    public static List<ItemStack> getContainerItemContents(ItemStack container) {
+        ContainerComponent contents = container.get(DataComponentTypes.CONTAINER);
+        if (contents == null) return new ArrayList<>();
+        return contents.stream().toList();
     }
     public static List<ItemStack> getBundleItemContents(ItemStack bundle) {
-        List<ItemStack> items = new ArrayList<>();
-        if (!isBundle(bundle)) return items;
-
-        NbtCompound nbtCompound = bundle.getNbt();
-        if (nbtCompound != null && nbtCompound.contains("Items", 9)) { // 9 is the NBT type ID for a list
-            NbtList itemList = nbtCompound.getList("Items", 10); // 10 is the NBT type ID for a compound tag
-
-            for (int i = 0; i < itemList.size(); i++) {
-                NbtCompound itemCompound = itemList.getCompound(i);
-                ItemStack itemStack = ItemStack.fromNbt(itemCompound);
-                items.add(itemStack);
-            }
-        }
-        return items;
+        BundleContentsComponent contents = bundle.get(DataComponentTypes.BUNDLE_CONTENTS);
+        if (contents == null) return new ArrayList<>();
+        return contents.stream().toList();
     }
     public static int getHopperItemsCount(ServerWorld world, BlockPos pos) {
         List<ItemStack> items = getHopperItems(world,pos);
@@ -513,7 +400,7 @@ public class ItemManager {
 
             // Try to merge with existing stacks in the combined list
             for (ItemStack combinedStack : combinedStacks) {
-                if (ItemStack.canCombine(inputStack, combinedStack)) {
+                if (ItemStack.areItemsAndComponentsEqual(inputStack, combinedStack)) {
                     int combinedAmount = Math.min(combinedStack.getMaxCount() - combinedStack.getCount(), inputStack.getCount());
                     combinedStack.increment(combinedAmount);
                     inputStack.decrement(combinedAmount);
@@ -542,9 +429,77 @@ public class ItemManager {
         return offHandItem;
     }
 
+
+    public static void setCustomComponentInt(ItemStack itemStack, String componentKey, int value) {
+        if (itemStack == null) return;
+        NbtComponent currentNbt = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+        NbtCompound nbtComp = currentNbt == null ? new NbtCompound() : currentNbt.copyNbt();
+        nbtComp.putInt(componentKey,value);
+        itemStack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbtComp));
+    }
+    public static void setCustomComponentByte(ItemStack itemStack, String componentKey, byte value) {
+        if (itemStack == null) return;
+        NbtComponent currentNbt = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+        NbtCompound nbtComp = currentNbt == null ? new NbtCompound() : currentNbt.copyNbt();
+        nbtComp.putByte(componentKey,value);
+        itemStack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbtComp));
+    }
+    public static void setCustomComponentString(ItemStack itemStack, String componentKey, String value) {
+        if (itemStack == null) return;
+        NbtComponent currentNbt = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+        NbtCompound nbtComp = currentNbt == null ? new NbtCompound() : currentNbt.copyNbt();
+        nbtComp.putString(componentKey,value);
+        itemStack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbtComp));
+    }
+    public static String getCustomComponentString(ItemStack itemStack, String componentKey) {
+        if (itemStack == null) return null;
+        NbtComponent nbtComponent = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+        if (nbtComponent == null) return null;
+        NbtCompound nbtComp = nbtComponent.copyNbt();
+        if (!nbtComp.contains(componentKey)) return null;
+        return nbtComp.getString(componentKey);
+    }
+    public static Integer getCustomComponentInt(ItemStack itemStack, String componentKey) {
+        if (itemStack == null) return null;
+        NbtComponent nbtComponent = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+        if (nbtComponent == null) return null;
+        NbtCompound nbtComp = nbtComponent.copyNbt();
+        if (!nbtComp.contains(componentKey)) return null;
+        return nbtComp.getInt(componentKey);
+    }
+    public static Byte getCustomComponentByte(ItemStack itemStack, String componentKey) {
+        if (itemStack == null) return null;
+        NbtComponent nbtComponent = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+        if (nbtComponent == null) return null;
+        NbtCompound nbtComp = nbtComponent.copyNbt();
+        if (!nbtComp.contains(componentKey)) return null;
+        return nbtComp.getByte(componentKey);
+    }
+    public static boolean hasCustomComponentEntry(ItemStack itemStack, String componentEntry) {
+        NbtComponent nbt = itemStack.getComponents().get(DataComponentTypes.CUSTOM_DATA);
+        if (nbt == null) return false;
+        return nbt.contains(componentEntry);
+    }
+    public static void setModelData(ItemStack itemStack, int modelData) {
+        itemStack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(modelData));
+    }
+    public static int getModelData(ItemStack itemStack) {
+        CustomModelDataComponent cmdComp = itemStack.get(DataComponentTypes.CUSTOM_MODEL_DATA);
+        if (cmdComp == null) return -1;
+        return cmdComp.value();
+    }
+    public static int getMapId(ItemStack itemStack) {
+        MapIdComponent mapIdComp = itemStack.get(DataComponentTypes.MAP_ID);
+        if (mapIdComp == null) return -1;
+        return mapIdComp.id();
+    }
+    public static void setRoleplayData(ItemStack itemStack, byte roleplayData) {
+        setCustomComponentByte(itemStack,"CustomRoleplayData",roleplayData);
+    }
+
     public static boolean isDungeonCompass(ItemStack itemStack) {
         if (!getItemId(itemStack).equalsIgnoreCase("minecraft:compass")) return false;
-        if (!hasNbtEntry(itemStack, "LodestoneTracked")) return false;
+        if (!itemStack.contains(DataComponentTypes.LODESTONE_TRACKER)) return false;
         return true;
     }
     public static boolean isDungeonArtifact(ItemStack itemStack) {
@@ -583,5 +538,44 @@ public class ItemManager {
             return artifactNames.get(modelData);
         }
         return "";
+    }
+    public static ItemStack getPlayerSkull(String playerName) {
+        String playerUUID = OtherUtils.getPlayerUUIDFromName(playerName);
+        return getPlayerSkull(playerName,playerUUID);
+    }
+    public static ItemStack getPlayerSkull(String playerName, String playerUUID) {
+        ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD, 1);
+        GameProfile profile = new GameProfile(UUID.fromString(playerUUID), playerName);
+        ProfileComponent profileComponent = new ProfileComponent(profile);
+        playerHead.set(DataComponentTypes.PROFILE, profileComponent);
+        return playerHead;
+    }
+    public static CompletableFuture<ItemStack> getPlayerSkullAsync(String playerName) {
+        return SkullBlockEntity.fetchProfileByName(playerName).thenApply(optionalProfile -> {
+            if (optionalProfile.isPresent()) {
+                GameProfile profile = optionalProfile.get();
+
+                // Create the player head item
+                ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD, 1);
+
+                // Use the ProfileComponent to attach the GameProfile to the player head
+                ProfileComponent profileComponent = new ProfileComponent(profile);
+                playerHead.set(DataComponentTypes.PROFILE, profileComponent);
+
+                return playerHead;
+            } else {
+                // Return an empty stack if the profile wasn't found
+                return ItemStack.EMPTY;
+            }
+        });
+    }
+    public static CompletableFuture<Optional<GameProfile>> getPlayerProfileAsync(String playerName) {
+        // Fetch the GameProfile cache from the server
+        UserCache profileCache = Main.server.getUserCache();
+        // Use the cache to look up the player's GameProfile by name asynchronously
+        return CompletableFuture.supplyAsync(() -> {
+            Optional<GameProfile> gameProfile = profileCache.findByName(playerName);
+            return gameProfile;
+        });
     }
 }

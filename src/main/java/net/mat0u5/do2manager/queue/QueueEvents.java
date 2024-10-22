@@ -17,7 +17,7 @@ public class QueueEvents {
     private static int checkDisconnectTimes = 20;
 
     public static void onPlayerJoin(ServerPlayerEntity player) {
-        String playerName = player.getEntityName();
+        String playerName = player.getNameForScoreboard();
         if (disconnectTimes.containsKey(playerName)) {
             disconnectTimes.remove(playerName);
         }
@@ -42,7 +42,7 @@ public class QueueEvents {
         }
     }
     public static void onPlayerLeave(ServerPlayerEntity player) {
-        String playerName = player.getEntityName();
+        String playerName = player.getNameForScoreboard();
         if (Main.dungeonQueue.getNextPlayer().equalsIgnoreCase(playerName)) {
             Main.dungeonQueue.removeFromDisconnect(playerName);
         }

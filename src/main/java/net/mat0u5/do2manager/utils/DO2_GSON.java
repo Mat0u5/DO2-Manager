@@ -1,11 +1,23 @@
 package net.mat0u5.do2manager.utils;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.mojang.datafixers.DataFixer;
+import com.mojang.datafixers.DataFixerBuilder;
+import com.mojang.datafixers.DataFixerUpper;
+import net.dv8tion.jda.api.interactions.components.ItemComponent;
+import net.mat0u5.do2manager.world.ItemConvertor;
 import net.mat0u5.do2manager.world.ItemManager;
+import net.minecraft.component.Component;
+import net.minecraft.component.ComponentMap;
+import net.minecraft.component.type.NbtComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 
@@ -20,22 +32,20 @@ import org.jetbrains.annotations.NotNull;
 public class DO2_GSON {
 
     private static final Gson GSON = new Gson();
-
-    public static String serializeNbt(NbtCompound nbt) {
-        if (nbt == null) return null;
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
-            NbtIo.writeCompressed(nbt, outputStream);
-            return Base64.getEncoder().encodeToString(outputStream.toByteArray());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
+    private static final List<String> oldNbtVersions = List.of(
+            "v.1.0.0",
+            "v.1.0.1",
+            "v.1.0.2",
+            "v.1.0.3",
+            "v.1.0.4",
+            "v.1.0.5",
+            "v.1.0.6",
+            "v.1.0.7");
 
     public static NbtCompound deserializeNbt(String nbtString) {
         if (nbtString == null) return null;
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64.getDecoder().decode(nbtString))) {
-            return NbtIo.readCompressed(inputStream);
+            return NbtIo.readCompressed(inputStream,NbtSizeTracker.ofUnlimitedBytes());
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -44,10 +54,8 @@ public class DO2_GSON {
 
     private static SerializedItemStack serializeItemStackCustom(ItemStack itemStack) {
         if (itemStack == null) return null;
-        NbtCompound nbtCompound = new NbtCompound();
-        itemStack.writeNbt(nbtCompound);
 
-        String nbtData = serializeNbt(itemStack.getNbt());
+        String nbtData = GSON.toJson(itemStack.getComponents(), ComponentMap.class);
 
         return new SerializedItemStack(
                 ItemManager.getItemId(itemStack),
@@ -55,32 +63,41 @@ public class DO2_GSON {
                 nbtData
         );
     }
-
-    // Serialize ItemStack to JSON string
-    public static String serializeItemStack(ItemStack itemStack) {
-        if (itemStack == null) return "";
-        return GSON.toJson(serializeItemStackCustom(itemStack));
-    }
-
     // Deserialize SerializedItemStack to ItemStack
-    private static ItemStack deserializeItemStack(SerializedItemStack serializedItemStack) {
+    private static ItemStack deserializeItemStack(SerializedItemStack serializedItemStack, String dbVersion) {
         if (serializedItemStack == null) return null;
         ItemStack itemStack = new ItemStack(
-                Registries.ITEM.get(new Identifier(serializedItemStack.getItemName())),
+                Registries.ITEM.get(Identifier.of(serializedItemStack.getItemName())),
                 serializedItemStack.getQuantity()
         );
-
         if (serializedItemStack.getNbtData() != null) {
-            NbtCompound nbtCompound = deserializeNbt(serializedItemStack.getNbtData());
-            itemStack.setNbt(nbtCompound);
+            if (!dbVersion.equalsIgnoreCase("") && oldNbtVersions.contains(dbVersion)) {
+                //Old NBT ItemStack
+                NbtCompound nbtCompound = deserializeNbt(serializedItemStack.getNbtData());
+                NbtCompound nbt = new NbtCompound();
+                nbt.putString("id",serializedItemStack.getItemName());
+                nbt.putByte("Count", (byte) serializedItemStack.getQuantity());
+                nbt.put("tag", nbtCompound);
+                itemStack = ItemConvertor.convertOldNbtToItemStack(nbt, 3465);
+            }
+            else {
+                //Component ItemStack
+                ComponentMap componentMap = GSON.fromJson(serializedItemStack.getNbtData(), ComponentMap.class);
+                itemStack.applyComponentsFrom(componentMap);
+            }
         }
 
         return itemStack;
     }
     // Deserialize JSON string to ItemStack
-    public static ItemStack deserializeItemStack(String json) {
+    public static ItemStack deserializeItemStack(String json, String dbVersion) {
         SerializedItemStack serializedItemStack = GSON.fromJson(json, SerializedItemStack.class);
-        return deserializeItemStack(serializedItemStack);
+        return deserializeItemStack(serializedItemStack,dbVersion);
+    }
+    // Serialize ItemStack to JSON string
+    public static String serializeItemStack(ItemStack itemStack) {
+        if (itemStack == null) return "";
+        return GSON.toJson(serializeItemStackCustom(itemStack));
     }
 
     // Serialize List<ItemStack> to a JSON string
@@ -99,13 +116,13 @@ public class DO2_GSON {
 
 
     // Deserialize JSON string to List<ItemStack>
-    public static List<ItemStack> deserializeListItemStack(String json) {
-        List<ItemStack> inv = new ArrayList<ItemStack>();
+    public static List<ItemStack> deserializeListItemStack(String json, String dbVersion) {
+        List<ItemStack> inv = new ArrayList<>();
 
         SerializedItemStack[] serializedItemStacks = GSON.fromJson(json, SerializedItemStack[].class);
 
         for (SerializedItemStack serializedItemStack : serializedItemStacks) {
-            ItemStack itemStack = deserializeItemStack(serializedItemStack);
+            ItemStack itemStack = deserializeItemStack(serializedItemStack, dbVersion);
             inv.add(itemStack);
         }
         return inv;

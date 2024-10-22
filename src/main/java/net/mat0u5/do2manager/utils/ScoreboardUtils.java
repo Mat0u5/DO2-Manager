@@ -1,28 +1,26 @@
 package net.mat0u5.do2manager.utils;
 
 import net.mat0u5.do2manager.Main;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardCriterion;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.scoreboard.ScoreboardPlayerScore;
+import net.minecraft.scoreboard.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class ScoreboardUtils {
     public static java.lang.Integer getPlayerScore(MinecraftServer server, ServerPlayerEntity player, String objectiveName) {
-        return getPlayerScore(server, player.getEntityName(),objectiveName);
+        return getPlayerScore(server, player.getNameForScoreboard(),objectiveName);
     }
     public static java.lang.Integer getPlayerScore(MinecraftServer server, String playerName, String objectiveName) {
         Scoreboard scoreboard = server.getScoreboard();
         ScoreboardObjective objective = scoreboard.getNullableObjective(objectiveName);
         if (objective != null) {
-            return scoreboard.getPlayerScore(playerName, objective).getScore();
+            return scoreboard.getScore(ScoreHolder.fromName(playerName), objective).getScore();
         } else {
             return null; // Objective not found
         }
@@ -54,22 +52,27 @@ public class ScoreboardUtils {
             source.sendError(Text.literal("Objective with name '" + oldObjectiveName + "' does not exist."));
             return -1;
         }
-        if (scoreboard.getObjective(newObjectiveName) != null) {
+        if (scoreboard.getNullableObjective(newObjectiveName) != null) {
             source.sendError(Text.literal("Objective '" + newObjectiveName + "' already exists."));
             return -1;
         }
 
         // Create the new objective with the new name
-        ScoreboardObjective newObjective = scoreboard.addObjective(newObjectiveName, oldObjective.getCriterion(), oldObjective.getDisplayName(), oldObjective.getRenderType());
+        ScoreboardObjective newObjective = scoreboard.addObjective(
+                newObjectiveName, oldObjective.getCriterion(),
+                oldObjective.getDisplayName(), oldObjective.getRenderType(),
+                oldObjective.shouldDisplayAutoUpdate(), oldObjective.getNumberFormat()
+        );
 
         // Get all players who have a score in the old objective
-        Collection<ScoreboardPlayerScore> playerScores = scoreboard.getAllPlayerScores(oldObjective);
+        Collection<ScoreboardEntry> playerScores = scoreboard.getScoreboardEntries(oldObjective);
 
         // Copy all player scores from the old objective to the new objective
-        for (ScoreboardPlayerScore playerScore : playerScores) {
-            String playerName = playerScore.getPlayerName();
-            int score = playerScore.getScore();
-            scoreboard.getPlayerScore(playerName, newObjective).setScore(score);
+        for (ScoreboardEntry playerScore : playerScores) {
+            String playerName = playerScore.owner();
+            int score = playerScore.value();
+            ScoreAccess newScore = scoreboard.getOrCreateScore(ScoreHolder.fromName(playerName), newObjective);
+            newScore.setScore(score);
         }
 
         // Remove the old objective

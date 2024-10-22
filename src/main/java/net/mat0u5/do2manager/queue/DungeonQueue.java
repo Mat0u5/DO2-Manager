@@ -12,7 +12,7 @@ public class DungeonQueue {
     private final LinkedList<String> queue = new LinkedList<>();
 
     public void addToQueue(PlayerEntity player, boolean forced) {
-        String playerName = player.getEntityName();
+        String playerName = player.getNameForScoreboard();
         if (containsPlayer(player)) {
             return;
         }
@@ -25,7 +25,7 @@ public class DungeonQueue {
         putAtEnd(player,true);
     }
     public void putAtEnd(PlayerEntity player, boolean sendFeedback) {
-        String playerName = player.getEntityName();
+        String playerName = player.getNameForScoreboard();
         if (!containsPlayer(player)) {
             return;
         }
@@ -38,12 +38,12 @@ public class DungeonQueue {
         List<String> playersList = new ArrayList<>();
         for (ServerPlayerEntity player : players) {
             putAtEnd(player,false);
-            playersList.add(player.getEntityName());
+            playersList.add(player.getNameForScoreboard());
         }
         queueUpdated("§b"+ String.join(", ", playersList)+ "§7 "+(playersList.size()>1?"have":"has")+" finished a run!");
     }
     public void skipTurns(PlayerEntity player, int turnsNum, boolean forced) {
-        String playerName = player.getEntityName();
+        String playerName = player.getNameForScoreboard();
         if (!containsPlayer(player)) {
             return;
         }
@@ -57,7 +57,7 @@ public class DungeonQueue {
     }
 
     public void removeFromQueue(PlayerEntity player) {
-        String playerName = player.getEntityName();
+        String playerName = player.getNameForScoreboard();
         if (!containsPlayer(player)) {
             return;
         }
@@ -119,7 +119,7 @@ public class DungeonQueue {
         queueUpdated("§b"+playerName+"§7's turn has been skipped because are offline and it's their turn.");
     }
     public boolean containsPlayer(PlayerEntity player) {
-        String playerName = player.getEntityName();
+        String playerName = player.getNameForScoreboard();
         return queue.contains(playerName);
     }
 

@@ -3,21 +3,20 @@ package net.mat0u5.do2manager.world;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.mojang.authlib.GameProfile;
 import net.mat0u5.do2manager.Main;
-import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.TextUtils;
+import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class DO2Run {
     public String run_type = null;
@@ -211,7 +210,7 @@ public class DO2Run {
         if (players.isEmpty()) return "";
         List<String> runnersIGN = new ArrayList<>();
         for (String uuid : players) {
-            String player = Main.allPlayers.get(uuid);
+            String player = OtherUtils.getPlayerNameFromUUID(uuid);
             if (player != null) runnersIGN.add(player);
         }
         return String.join(", ",runnersIGN);
@@ -221,14 +220,13 @@ public class DO2Run {
         String playerList = String.join(",",runners);
         if (!playerList.isEmpty()) {
             if (!playerList.contains(",")) {
-                String playerName = Main.allPlayers.get(runners.get(0));
-                NbtCompound nbt = itemStack.getOrCreateNbt();
-                nbt.putString("SkullOwner", playerName);
+                String playerUUID = runners.getFirst();
+                String playerName = OtherUtils.getPlayerNameFromUUID(playerUUID);
+                itemStack = ItemManager.getPlayerSkull(playerName,playerUUID);
             }
             else {
                 itemStack = new ItemStack(Items.CARVED_PUMPKIN, 1);
-                NbtCompound nbt = itemStack.getOrCreateNbt();
-                nbt.putInt("CustomModelData", 46);
+                ItemManager.setModelData(itemStack, 46);
             }
         }
         return itemStack;
@@ -254,9 +252,9 @@ public class DO2Run {
     }
     public int getCompassLevel() {
         if (compass_item == null) return -1;
-        NbtCompound nbt = compass_item.getNbt();
-        if (ItemManager.hasNbtEntry(compass_item, "Level")) return nbt.getInt("Level");
-        return -1;
+        Integer level = ItemManager.getCustomComponentInt(compass_item,"Level");
+        if (level == null) return -1;
+        return level;
     }
 
 
@@ -301,12 +299,12 @@ public class DO2Run {
         do2Run.run_type = serializedDO2Run.run_type;
         do2Run.runners = serializedDO2Run.runners;
         do2Run.finishers = serializedDO2Run.finishers;
-        do2Run.card_plays = DO2_GSON.deserializeListItemStack(serializedDO2Run.card_plays);
-        do2Run.compass_item = DO2_GSON.deserializeItemStack(serializedDO2Run.compass_item);
-        do2Run.artifact_item = DO2_GSON.deserializeItemStack(serializedDO2Run.artifact_item);
-        do2Run.deck_item = DO2_GSON.deserializeItemStack(serializedDO2Run.deck_item);
-        do2Run.inventory_save = DO2_GSON.deserializeListItemStack(serializedDO2Run.inventory_save);
-        do2Run.items_bought = DO2_GSON.deserializeListItemStack(serializedDO2Run.items_bought);
+        do2Run.card_plays = DO2_GSON.deserializeListItemStack(serializedDO2Run.card_plays,"");
+        do2Run.compass_item = DO2_GSON.deserializeItemStack(serializedDO2Run.compass_item,"");
+        do2Run.artifact_item = DO2_GSON.deserializeItemStack(serializedDO2Run.artifact_item,"");
+        do2Run.deck_item = DO2_GSON.deserializeItemStack(serializedDO2Run.deck_item,"");
+        do2Run.inventory_save = DO2_GSON.deserializeListItemStack(serializedDO2Run.inventory_save,"");
+        do2Run.items_bought = DO2_GSON.deserializeListItemStack(serializedDO2Run.items_bought,"");
         do2Run.death_pos = serializedDO2Run.death_pos;
         do2Run.death_message = serializedDO2Run.death_message;
         do2Run.loot_drops = serializedDO2Run.loot_drops;

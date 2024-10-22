@@ -2,6 +2,7 @@ package net.mat0u5.do2manager.gui;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.OtherUtils;
+import net.mat0u5.do2manager.world.ItemManager;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BarrelBlockEntity;
@@ -121,12 +122,9 @@ public class GuiInventory_ChestFramework extends GuiPlayerSpecific {
         }catch(Exception e) {}
     }
     public void setFromItemStack(ItemStack shulkerBox, int listPos) {
-        NbtCompound nbt = shulkerBox.getOrCreateSubNbt("BlockEntityTag");
-        NbtList items = nbt.getList("Items", 10);
-
+        List<ItemStack> items = ItemManager.getContainerItemContents(shulkerBox);
         for (int i = 0; i < items.size(); i++) {
-            NbtCompound itemTag = items.getCompound(i);
-            ItemStack itemStack = ItemStack.fromNbt(itemTag);
+            ItemStack itemStack = items.get(i);
             inventory.setStack(listPos*27+i, itemStack.copy());
         }
     }

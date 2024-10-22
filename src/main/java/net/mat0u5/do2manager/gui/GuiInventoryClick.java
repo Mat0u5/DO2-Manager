@@ -3,6 +3,7 @@ package net.mat0u5.do2manager.gui;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.FakeSign;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -19,7 +20,7 @@ public class GuiInventoryClick {
         ItemStack clickedItem = handler.getSlot(slotId).getStack();
         OtherUtils.playGuiClickSound(player);
 
-        NbtCompound nbt = clickedItem.getNbt();
+        NbtCompound nbt = clickedItem.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
         String tag = nbt.getString("GUI_ITEM");
         GuiPlayerSpecific gui = Main.openGuis.get(player);
         GuiInventory_Database guiDatabase = gui.guiDatabase;
@@ -120,7 +121,7 @@ public class GuiInventoryClick {
             } else if (tag.equalsIgnoreCase("player_choice")) {
                 String playerName = nbt.getString("SkullOwner");
                 guiDatabase.filter_player.add(playerName);
-                guiDatabase.filter_player_uuid.add(Main.getUUIDFromName(playerName));
+                guiDatabase.filter_player_uuid.add(OtherUtils.getPlayerUUIDFromName(playerName));
                 guiDatabase.updateSearch();
                 guiDatabase.populateRunInventory();
             }

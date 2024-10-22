@@ -57,7 +57,7 @@ public class RunInfoParser {
                 if (finalSpeedrun.size() == 1) {
                     Main.speedrun = finalSpeedrun.get(0);
                     if (isSpeedrun) {
-                        OtherUtils.broadcastMessage(player.getServer(), Text.translatable("§6This speedrun will be compared with " + player.getEntityName() + "'s fastest "+Main.currentRun.getFormattedDifficulty()+" level " + Main.currentRun.getCompassLevel()+"§6 run."));
+                        OtherUtils.broadcastMessage(player.getServer(), Text.translatable("§6This speedrun will be compared with " + player.getNameForScoreboard() + "'s fastest "+Main.currentRun.getFormattedDifficulty()+" level " + Main.currentRun.getCompassLevel()+"§6 run."));
                     }
                 }
             }

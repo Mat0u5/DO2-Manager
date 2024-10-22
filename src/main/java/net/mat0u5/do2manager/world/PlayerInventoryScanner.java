@@ -35,7 +35,7 @@ public class PlayerInventoryScanner {
                 if (itemStack.isEmpty()) continue;
                 if (ItemManager.isShulkerBox(itemStack)) {
                     shulkersAndBundles.add(itemStack);
-                    toAdd.addAll(ItemManager.getShulkerItemContents(itemStack));
+                    toAdd.addAll(ItemManager.getContainerItemContents(itemStack));
                     toRemove.add(itemStack);
                 }
                 if (ItemManager.isBundle(itemStack)) {
