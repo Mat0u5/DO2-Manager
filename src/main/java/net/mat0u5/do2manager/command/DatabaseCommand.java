@@ -77,6 +77,15 @@ public class DatabaseCommand {
                 sqlQuery = "SELECT * FROM command_blocks WHERE command LIKE ?";
                 query = "%" + query;
                 break;
+            case "containscasesensitive":
+                sqlQuery = "SELECT * FROM command_blocks WHERE command GLOB ?";
+                query = "*" + query + "*";
+                break;
+                /* SQLite does not support regex
+            case "matchregex":
+                sqlQuery = "SELECT * FROM command_blocks WHERE command REGEXP BINARY ?";
+                query = "%" + query + "%";
+                break;*/
             case "contains":
             default:
                 sqlQuery = "SELECT * FROM command_blocks WHERE command LIKE ?";

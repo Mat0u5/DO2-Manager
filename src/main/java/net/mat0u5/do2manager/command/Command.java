@@ -323,6 +323,25 @@ public class Command {
                             )
                         )
                     )
+                        .then(literal("containsStringCaseSensitive")
+                                .then(argument("string", StringArgumentType.string())
+                                        .executes(context -> DatabaseCommand.executeCommandBlockSearch(
+                                                context.getSource(),
+                                                StringArgumentType.getString(context, "string"),
+                                                "containsCaseSensitive")
+                                        )
+                                )
+                        )
+                        /* SQLite does not support regex
+                        .then(literal("matchRegex")
+                                .then(argument("string", StringArgumentType.string())
+                                        .executes(context -> DatabaseCommand.executeCommandBlockSearch(
+                                                context.getSource(),
+                                                StringArgumentType.getString(context, "string"),
+                                                "matchRegex")
+                                        )
+                                )
+                        )*/
                     .then(literal("startsWithString")
                         .then(argument("string", StringArgumentType.string())
                             .executes(context -> DatabaseCommand.executeCommandBlockSearch(
