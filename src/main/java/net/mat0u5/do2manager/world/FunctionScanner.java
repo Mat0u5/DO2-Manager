@@ -13,7 +13,7 @@ import java.util.List;
 
 public class FunctionScanner {
 
-    private static final String FUNCTION_FOLDER_PATH = "./world/datapacks/dom/data/dom/functions/"; // Adjust the folder path as needed
+    private static final String FUNCTION_FOLDER_PATH = "./world/datapacks/dom/data/dom/function/"; // Adjust the folder path as needed
 
     public static void scanFunctions() {
         try (Connection connection = DriverManager.getConnection(DatabaseManager.URL)) {
@@ -75,7 +75,7 @@ public class FunctionScanner {
                 String functionName = resultSet.getString("function_name");
                 String functionContent = resultSet.getString("function_content");
                 if (matchesSearchCriteria(functionContent, searchString, searchMode)) {
-                    String fun = functionPath.replaceAll("\\\\","/").replaceAll(".mcfunction","").replaceAll("./world/datapacks/dom/data/dom/functions/","dom:");
+                    String fun = functionPath.replaceAll("\\\\","/").replaceAll(".mcfunction","").replaceAll("./world/datapacks/dom/data/dom/function/","dom:");
                     foundFunctions.add(fun);
                 }
             }

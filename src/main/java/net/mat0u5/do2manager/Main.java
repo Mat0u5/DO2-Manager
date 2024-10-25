@@ -69,7 +69,8 @@ public class Main implements ModInitializer {
 		System.out.println("Run Info Saved To Config..");
 	}
 	public static void loadRunInfoFromConfig() {
-		currentRun = new DO2Run().deserialize(config.getProperty("current_run"));
+		//TODO
+		//currentRun = new DO2Run().deserialize(config.getProperty("current_run"));
 	}
 
 	private static final ExecutorService executor = Executors.newSingleThreadExecutor();

@@ -20,7 +20,9 @@ public class ScoreboardUtils {
         Scoreboard scoreboard = server.getScoreboard();
         ScoreboardObjective objective = scoreboard.getNullableObjective(objectiveName);
         if (objective != null) {
-            return scoreboard.getScore(ScoreHolder.fromName(playerName), objective).getScore();
+            ReadableScoreboardScore score = scoreboard.getScore(ScoreHolder.fromName(playerName), objective);
+            if (score == null) return null;
+            return score.getScore();
         } else {
             return null; // Objective not found
         }
