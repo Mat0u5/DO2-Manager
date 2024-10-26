@@ -4,6 +4,7 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.MSPTUtils;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
@@ -85,7 +86,7 @@ public class BlockScanner extends MSPTUtils {
             stop();
         }
         else {
-            int batchSize = 10_000;
+            int batchSize = 2_500_000;
             int batchEndPos = Math.min(listPos + batchSize, positionsToCheckInt);
             for (int i = listPos; i < batchEndPos; i++) {
                 processPosition(i);
@@ -122,7 +123,9 @@ public class BlockScanner extends MSPTUtils {
             world.getChunk(chunkPos.x, chunkPos.z);
         }
 
-        Block block = world.getBlockState(pos).getBlock();
+        BlockState blockState = world.getBlockState(pos);
+        if (blockState.isAir()) return;
+        Block block = blockState.getBlock();
 
         if (scanType.equalsIgnoreCase("command_block")) {
             processCommandBlockPos(block,pos);

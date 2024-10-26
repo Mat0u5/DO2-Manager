@@ -583,6 +583,7 @@ public class DatabaseManager {
     }
 
     public static void addCommandBlocks(List<CommandBlockData> commandBlocks) {
+        System.out.println("Processing batch_"+commandBlocks.size());
         String sql = "INSERT INTO command_blocks(x, y, z, type, conditional, auto, command) VALUES(?, ?, ?, ?, ?, ?, ?)";
 
         try (Connection connection = DriverManager.getConnection(URL);

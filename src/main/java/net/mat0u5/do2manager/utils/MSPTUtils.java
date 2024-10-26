@@ -1,7 +1,9 @@
 package net.mat0u5.do2manager.utils;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.server.MinecraftServer;
 
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -23,12 +25,13 @@ public abstract class MSPTUtils {
         while (running) {
             try {
                 // Check the server's MSPT
-                double currentMSPT = getCurrentMSPT();
+                float currentMSPT = server.getAverageTickTime();
 
                 // Adjust the workload based on current MSPT
                 if (currentMSPT < DESIRED_MAX_MSPT) {
                     if (boosted) {
                         server.execute(this::complexFunction);
+                        waitForNextServerTicks(20);
                     }
                     else {
                         complexFunction();
@@ -51,20 +54,22 @@ public abstract class MSPTUtils {
         executorService.shutdown();
         stoppedFunction();
     }
-    public static double getCurrentMSPT() {
-        long[] tickTimes = server.getTickTimes();
+    public static void waitForNextServerTicks(int ticks) {
+        CountDownLatch latch = new CountDownLatch(ticks);
 
-        // Calculate the average tick time
-        long totalTickTime = 0;
-        for (long tickTime : tickTimes) {
-            totalTickTime += tickTime;
+        // Register a callback to be executed at the end of the next server tick
+        ServerTickEvents.END_SERVER_TICK.register(minecraftServer -> {
+            if (minecraftServer == server) {
+                // Decrease the count of the latch, allowing the waiting thread to proceed
+                latch.countDown();
+            }
+        });
+
+        try {
+            // Wait for the latch to be counted down, effectively blocking this thread
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
-
-        double averageTickTime = totalTickTime / (double) tickTimes.length;
-
-        // Convert from nanoseconds to milliseconds
-        double averageMSPT = averageTickTime / 1_000_000.0;
-
-        return averageMSPT;
     }
 }

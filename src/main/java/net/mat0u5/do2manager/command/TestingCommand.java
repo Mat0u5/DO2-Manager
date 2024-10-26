@@ -31,7 +31,6 @@ public class TestingCommand {
         final PlayerEntity self = source.getPlayer();
 
         //new DiscordUtils().updateDiscordChannelDescription();
-System.out.println(Main.allPlayers);
 
         return 1;
     }
