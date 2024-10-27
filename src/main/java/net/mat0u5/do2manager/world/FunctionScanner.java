@@ -1,5 +1,7 @@
 package net.mat0u5.do2manager.world;
 
+import net.mat0u5.do2manager.Main;
+import net.mat0u5.do2manager.command.DatabaseCommand;
 import net.mat0u5.do2manager.database.DatabaseManager;
 
 import java.io.File;
@@ -89,19 +91,29 @@ public class FunctionScanner {
         String[] lines = functionContent.split("\\r?\\n");
         for (String line : lines) {
             if (!line.trim().startsWith("#")) { // Ignore comment lines
-                switch (searchMode) {
+                switch (searchMode.toLowerCase()) {
                     case "contains":
+                        if (line.toLowerCase().contains(searchString.toLowerCase())) {
+                            return true;
+                        }
+                        break;
+                    case "containscasesensitive":
                         if (line.contains(searchString)) {
                             return true;
                         }
                         break;
-                    case "startsWith":
-                        if (line.startsWith(searchString)) {
+                    case "startswith":
+                        if (line.toLowerCase().startsWith(searchString.toLowerCase())) {
                             return true;
                         }
                         break;
-                    case "endsWith":
-                        if (line.endsWith(searchString)) {
+                    case "endswith":
+                        if (line.toLowerCase().endsWith(searchString.toLowerCase())) {
+                            return true;
+                        }
+                        break;
+                    case "finderrors":
+                        if (!DatabaseCommand.isValidCommand(Main.server,line)) {
                             return true;
                         }
                         break;

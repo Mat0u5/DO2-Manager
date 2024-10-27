@@ -1,5 +1,7 @@
 package net.mat0u5.do2manager.command;
 
+import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DO2RunIterator;
 import net.mat0u5.do2manager.database.DatabaseManager;
@@ -62,8 +64,8 @@ public class DatabaseCommand {
     public static int executeCommandBlockSearch(ServerCommandSource source, String query, String searchType) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
-        query = OtherUtils.removeQuotes(query);
-        if (query.startsWith("/"))query = query.substring(1);
+        //query = OtherUtils.removeQuotes(query);
+        if (query.startsWith("/")) query = query.substring(1);
 
         String origQuery = query + "";
 
@@ -86,6 +88,9 @@ public class DatabaseCommand {
                 sqlQuery = "SELECT * FROM command_blocks WHERE command REGEXP BINARY ?";
                 query = "%" + query + "%";
                 break;*/
+            case "finderrors":
+                sqlQuery = "SELECT * FROM command_blocks";
+                break;
             case "contains":
             default:
                 sqlQuery = "SELECT * FROM command_blocks WHERE command LIKE ?";
@@ -96,7 +101,7 @@ public class DatabaseCommand {
         try (Connection connection = DriverManager.getConnection(DatabaseManager.URL);
              PreparedStatement statement = connection.prepareStatement(sqlQuery)) {
 
-            statement.setString(1, query);
+            if (!query.isEmpty()) statement.setString(1, query);
             ResultSet resultSet = statement.executeQuery();
 
             List<Text> results = new ArrayList<>();
@@ -116,14 +121,27 @@ public class DatabaseCommand {
                                 .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
                                         Text.of("Teleport to this position"))));
                 Text finalText = Text.translatable("§a- Pos: ").append(positionText).append(Text.translatable(" §aType: "+type+", Conditional: "+(conditional ? "Yes" : "No")+", Auto: "+(auto ? "Always Active" : "Needs Redstone")+", §bCommand: "+command+"\n"));
-                results.add(finalText);
+
+                if (searchType.equalsIgnoreCase("findErrors")) {
+                    if (!isValidCommand(server, command)) {
+                        results.add(finalText);
+                    }
+                }
+                else {
+                    results.add(finalText);
+                }
                 containsAtLeastOne = true;
             }
             if (!containsAtLeastOne) {
                 self.sendMessage(Text.of("§c No Command Blocks Found!"), false);
             }
             else {
-                self.sendMessage(Text.of("Command Blocks matching the query:"), false);
+                if (searchType.equalsIgnoreCase("findErrors")) {
+                    self.sendMessage(Text.of("Command Blocks with errors ("+results.size()+"):"), false);
+                }
+                else {
+                    self.sendMessage(Text.of("Command Blocks matching the query ("+results.size()+"):"), false);
+                }
                 for (Text text : results) {
                     self.sendMessage(text);
                 }
@@ -133,15 +151,27 @@ public class DatabaseCommand {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         List<String> functions = FunctionScanner.findFunctionsContaining(origQuery, searchType);
         if (!functions.isEmpty()) {
-            self.sendMessage(Text.of("Functions matching the query:"), false);
+            if (searchType.equalsIgnoreCase("findErrors")) {
+                self.sendMessage(Text.of("Functions with errors ("+functions.size()+"):"), false);
+            }
+            else {
+                self.sendMessage(Text.of("Functions matching the query ("+functions.size()+"):"), false);
+            }
             for (String text : functions) {
                 self.sendMessage(Text.of("§a -" + text));
             }
         }
         return 1;
+    }
+    public static boolean isValidCommand(MinecraftServer server, String command) {
+        System.out.println("Evaluating command_"+command);
+        ServerCommandSource source = server.getCommandSource().withLevel(4);
+        ParseResults<ServerCommandSource> parseResults = server.getCommandManager()
+                .getDispatcher().parse(command, source);
+        System.out.println("test1"+parseResults.getExceptions());
+        return parseResults.getExceptions().isEmpty();
     }
     public static int executeCommandBlockUpdateDatabase(ServerCommandSource source, int fromX, int fromY, int fromZ, int toX, int toY, int toZ) {
         MinecraftServer server = source.getServer();
