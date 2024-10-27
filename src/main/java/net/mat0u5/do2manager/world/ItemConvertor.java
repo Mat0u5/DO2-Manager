@@ -84,6 +84,7 @@ public class ItemConvertor extends PlayerInventoryScanner {
     }
     public static void tagExtendedItems(ItemStack itemStack) {
         if (itemStack == null) return;
+        if (!itemStack.getItem().equals(Items.IRON_NUGGET)) return;
         int modelData = ItemManager.getModelData(itemStack);
         if (modelData == -1) return;
         if (!expandedModelDatas.contains(modelData) && !(modelData >= 142 && modelData <= 197)) return;

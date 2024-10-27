@@ -9,6 +9,8 @@ import java.util.List;
 
 public class DO2RunIterator {
 
+    public boolean useOldSerializer = false;
+
     public void processRun(DO2Run run) {
         System.out.println("Default Processing... "+run.run_number);
     }
@@ -16,6 +18,10 @@ public class DO2RunIterator {
         System.out.println("Default Finished Processing... ");
     }
     public void start() {
+        start(false);
+    }
+    public void start(boolean useOldSerializer) {
+        this.useOldSerializer = useOldSerializer;
         if (!Main.reloadedRuns) {
             Main.reloadAllAbridgedRunsAsync().thenRun(() -> {
                 mainLoop();
@@ -38,7 +44,7 @@ public class DO2RunIterator {
         finishedProcessing();
     }
     public void processBatch(List<DO2RunAbridged> batch) {
-        List<DO2Run> actualRuns = DatabaseManager.getRunsByAbridgedRuns(batch);
+        List<DO2Run> actualRuns = DatabaseManager.getRunsByAbridgedRuns(batch, useOldSerializer);
         for (DO2Run run : actualRuns) {
             processRun(run);
         }

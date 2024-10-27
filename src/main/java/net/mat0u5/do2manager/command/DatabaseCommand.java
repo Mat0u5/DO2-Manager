@@ -337,4 +337,18 @@ public class DatabaseCommand {
         iterator.start();
         return 1;
     }
+    public static int updateOldNBT(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final PlayerEntity self = source.getPlayer();
+
+
+        DO2RunIterator iterator = new DO2RunIterator() {
+            @Override
+            public void processRun(DO2Run run) {
+                DatabaseManager.updateRun(run);
+            }
+        };
+        iterator.start(true);
+        return 1;
+    }
 }

@@ -33,7 +33,7 @@ public class FunctionPreview {
         List<List<BlockPos>> blockPositions = new ArrayList<>();
         for (CommandFunction<ServerCommandSource> function : functions) {
             int lineNum = 0;
-            self.sendMessage(Text.of("Previewing "+function));
+            self.sendMessage(Text.of("Previewing "+function.id()));
 
             Path datapacksDirectory = server.getSavePath(WorldSavePath.DATAPACKS);
             Identifier functionId = function.id();
@@ -43,7 +43,7 @@ public class FunctionPreview {
                     .resolve(namespace)
                     .resolve("data")
                     .resolve(namespace)
-                    .resolve("functions")
+                    .resolve("function")
                     .resolve(functionPath + ".mcfunction");
             for (String line : getFunctionLines(functionFilePath.toString())) {
                 lineNum++;

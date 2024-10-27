@@ -54,7 +54,7 @@ public class Main implements ModInitializer {
 		LOGGER.info("Initializing DO2-manager...");
 		simulator = new Simulator();
 		dungeonQueue.loadQueueFromConfig();
-		//TCG_Items.reload();//TODO
+		TCG_Items.reload();
 	}
 
 	public static void resetRunInfo() {
@@ -69,8 +69,7 @@ public class Main implements ModInitializer {
 		System.out.println("Run Info Saved To Config..");
 	}
 	public static void loadRunInfoFromConfig() {
-		//TODO
-		//currentRun = new DO2Run().deserialize(config.getProperty("current_run"));
+		currentRun = new DO2Run().deserialize(config.getProperty("current_run"));
 	}
 
 	private static final ExecutorService executor = Executors.newSingleThreadExecutor();

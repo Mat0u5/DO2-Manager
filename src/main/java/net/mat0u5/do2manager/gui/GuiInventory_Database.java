@@ -192,7 +192,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
                 }
 
                 // Fetch runs with optional cancellation support
-                runsSearch = DatabaseManager.getRunsByAbridgedRuns(getRuns, currentStatement);
+                runsSearch = DatabaseManager.getRunsByAbridgedRuns(getRuns, currentStatement, false);
             }
         }, executor);
 

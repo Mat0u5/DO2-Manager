@@ -137,7 +137,7 @@ public class GuiItems_Database {
         if (!playerList.isEmpty()) {
             if (!playerList.contains(", ")) {
                 String playerName = filter_player.getFirst();
-                itemStack = ItemManager.getPlayerSkull(playerName,filter_player.getFirst());
+                itemStack = ItemManager.getPlayerSkull(playerName);
             }
             else {
                 itemStack = new ItemStack(Items.CARVED_PUMPKIN, 1);

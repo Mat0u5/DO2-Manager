@@ -1,14 +1,10 @@
 package net.mat0u5.do2manager.world;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.mojang.authlib.GameProfile;
+import com.mojang.authlib.properties.PropertyMap;
 import net.mat0u5.do2manager.Main;
-import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.minecraft.block.entity.*;
-import net.minecraft.component.ComponentChanges;
-import net.minecraft.component.ComponentMap;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.*;
 import net.minecraft.entity.Entity;
@@ -17,23 +13,17 @@ import net.minecraft.entity.vehicle.ChestBoatEntity;
 import net.minecraft.entity.vehicle.HopperMinecartEntity;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.BundleItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.registry.Registries;
 import net.minecraft.util.UserCache;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
@@ -359,12 +349,16 @@ public class ItemManager {
     public static List<ItemStack> getContainerItemContents(ItemStack container) {
         ContainerComponent contents = container.get(DataComponentTypes.CONTAINER);
         if (contents == null) return new ArrayList<>();
-        return contents.stream().toList();
+        List<ItemStack> list = new ArrayList<>();
+        contents.iterateNonEmpty().forEach(list::add);
+        return list;
     }
     public static List<ItemStack> getBundleItemContents(ItemStack bundle) {
         BundleContentsComponent contents = bundle.get(DataComponentTypes.BUNDLE_CONTENTS);
         if (contents == null) return new ArrayList<>();
-        return contents.stream().toList();
+        List<ItemStack> list = new ArrayList<>();
+        contents.iterate().forEach(list::add);
+        return list;
     }
     public static int getHopperItemsCount(ServerWorld world, BlockPos pos) {
         List<ItemStack> items = getHopperItems(world,pos);
@@ -540,42 +534,9 @@ public class ItemManager {
         return "";
     }
     public static ItemStack getPlayerSkull(String playerName) {
-        String playerUUID = OtherUtils.getPlayerUUIDFromName(playerName);
-        return getPlayerSkull(playerName,playerUUID);
-    }
-    public static ItemStack getPlayerSkull(String playerName, String playerUUID) {
         ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD, 1);
-        GameProfile profile = new GameProfile(UUID.fromString(playerUUID), playerName);
-        ProfileComponent profileComponent = new ProfileComponent(profile);
+        ProfileComponent profileComponent = new ProfileComponent(Optional.of(playerName), Optional.empty(), new PropertyMap());
         playerHead.set(DataComponentTypes.PROFILE, profileComponent);
         return playerHead;
-    }
-    public static CompletableFuture<ItemStack> getPlayerSkullAsync(String playerName) {
-        return SkullBlockEntity.fetchProfileByName(playerName).thenApply(optionalProfile -> {
-            if (optionalProfile.isPresent()) {
-                GameProfile profile = optionalProfile.get();
-
-                // Create the player head item
-                ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD, 1);
-
-                // Use the ProfileComponent to attach the GameProfile to the player head
-                ProfileComponent profileComponent = new ProfileComponent(profile);
-                playerHead.set(DataComponentTypes.PROFILE, profileComponent);
-
-                return playerHead;
-            } else {
-                // Return an empty stack if the profile wasn't found
-                return ItemStack.EMPTY;
-            }
-        });
-    }
-    public static CompletableFuture<Optional<GameProfile>> getPlayerProfileAsync(String playerName) {
-        // Fetch the GameProfile cache from the server
-        UserCache profileCache = Main.server.getUserCache();
-        // Use the cache to look up the player's GameProfile by name asynchronously
-        return CompletableFuture.supplyAsync(() -> {
-            Optional<GameProfile> gameProfile = profileCache.findByName(playerName);
-            return gameProfile;
-        });
     }
 }

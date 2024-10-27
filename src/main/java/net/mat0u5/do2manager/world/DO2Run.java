@@ -5,10 +5,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.mojang.authlib.GameProfile;
 import net.mat0u5.do2manager.Main;
-import net.mat0u5.do2manager.utils.DO2_GSON;
-import net.mat0u5.do2manager.utils.DiscordUtils;
-import net.mat0u5.do2manager.utils.OtherUtils;
-import net.mat0u5.do2manager.utils.TextUtils;
+import net.mat0u5.do2manager.utils.*;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.item.ItemStack;
@@ -222,7 +219,7 @@ public class DO2Run {
             if (!playerList.contains(",")) {
                 String playerUUID = runners.getFirst();
                 String playerName = OtherUtils.getPlayerNameFromUUID(playerUUID);
-                itemStack = ItemManager.getPlayerSkull(playerName,playerUUID);
+                itemStack = ItemManager.getPlayerSkull(playerName);
             }
             else {
                 itemStack = new ItemStack(Items.CARVED_PUMPKIN, 1);
@@ -264,12 +261,12 @@ public class DO2Run {
                 run_type,
                 runners,
                 finishers,
-                DO2_GSON.serializeListItemStack(card_plays),
-                DO2_GSON.serializeItemStack(compass_item),
-                DO2_GSON.serializeItemStack(artifact_item),
-                DO2_GSON.serializeItemStack(deck_item),
-                DO2_GSON.serializeListItemStack(inventory_save),
-                DO2_GSON.serializeListItemStack(items_bought),
+                ItemStackCodec.serializeListItemStack(card_plays),
+                ItemStackCodec.serializeItemStack(compass_item),
+                ItemStackCodec.serializeItemStack(artifact_item),
+                ItemStackCodec.serializeItemStack(deck_item),
+                ItemStackCodec.serializeListItemStack(inventory_save),
+                ItemStackCodec.serializeListItemStack(items_bought),
                 death_pos,
                 death_message,
                 loot_drops,
@@ -299,12 +296,12 @@ public class DO2Run {
         do2Run.run_type = serializedDO2Run.run_type;
         do2Run.runners = serializedDO2Run.runners;
         do2Run.finishers = serializedDO2Run.finishers;
-        do2Run.card_plays = DO2_GSON.deserializeListItemStack(serializedDO2Run.card_plays,"");
-        do2Run.compass_item = DO2_GSON.deserializeItemStack(serializedDO2Run.compass_item,"");
-        do2Run.artifact_item = DO2_GSON.deserializeItemStack(serializedDO2Run.artifact_item,"");
-        do2Run.deck_item = DO2_GSON.deserializeItemStack(serializedDO2Run.deck_item,"");
-        do2Run.inventory_save = DO2_GSON.deserializeListItemStack(serializedDO2Run.inventory_save,"");
-        do2Run.items_bought = DO2_GSON.deserializeListItemStack(serializedDO2Run.items_bought,"");
+        do2Run.card_plays = ItemStackCodec.deserializeListItemStack(serializedDO2Run.card_plays);
+        do2Run.compass_item = ItemStackCodec.deserializeItemStack(serializedDO2Run.compass_item);
+        do2Run.artifact_item = ItemStackCodec.deserializeItemStack(serializedDO2Run.artifact_item);
+        do2Run.deck_item = ItemStackCodec.deserializeItemStack(serializedDO2Run.deck_item);
+        do2Run.inventory_save = ItemStackCodec.deserializeListItemStack(serializedDO2Run.inventory_save);
+        do2Run.items_bought = ItemStackCodec.deserializeListItemStack(serializedDO2Run.items_bought);
         do2Run.death_pos = serializedDO2Run.death_pos;
         do2Run.death_message = serializedDO2Run.death_message;
         do2Run.loot_drops = serializedDO2Run.loot_drops;

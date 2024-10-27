@@ -18,8 +18,10 @@ public class GuiMapCommand {
             self.sendMessage(Text.of("§cInvalid gui scale!"));
             return -1;
         }
+        String command = "execute as "+self.getUuidAsString()+" run function dom:mat0u5/gui/scale/"+((guiScale==0)?"disable_map":"scale_"+guiScale);
 
-        OtherUtils.executeCommand(server,"execute as "+self.getUuidAsString()+" run function dom:mat0u5/gui/scale/"+((guiScale==0)?"disable_map":"scale_"+guiScale));
+        OtherUtils.executeCommand(server,command);
+
         return 1;
     }
 }

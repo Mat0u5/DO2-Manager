@@ -11,17 +11,15 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.google.gson.Gson;
 import com.mojang.authlib.GameProfile;
-import com.mojang.authlib.properties.PropertyMap;
 import net.mat0u5.do2manager.Main;
+import net.mat0u5.do2manager.utils.DO2_GSON;
+import net.mat0u5.do2manager.utils.ItemStackCodec;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.mat0u5.do2manager.world.CommandBlockData;
 import net.mat0u5.do2manager.world.DO2Run;
-import net.mat0u5.do2manager.utils.DO2_GSON;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
 import net.mat0u5.do2manager.world.ItemManager;
-import net.minecraft.component.ComponentMap;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.math.BlockPos;
 import org.sqlite.SQLiteErrorCode;
@@ -193,7 +191,7 @@ public class DatabaseManager {
         versionUpdates.put(List.of("v.1.0.4"),List.of("v.1.0.5","ALTER TABLE runsDetailed ADD loot_drops TEXT; ALTER TABLE runsDetailed ADD special_events TEXT;"));
         versionUpdates.put(List.of("v.1.0.5"),List.of("v.1.0.6","ALTER TABLE runs ADD crowns_counted INTEGER;"));
         versionUpdates.put(List.of("v.1.0.6"),List.of("v.1.0.7","CREATE TABLE \"tcg_items\" (\"id\" INTEGER,\"db_version\" TEXT,\"item\" TEXT,PRIMARY KEY(\"id\" AUTOINCREMENT));"));
-        versionUpdates.put(List.of("v.1.0.7"),List.of("v.1.1.0","ALTER TABLE players ADD game_profile TEXT;"));
+        versionUpdates.put(List.of("v.1.0.7"),List.of("v.1.1.0",""));
         //
         try (Connection connection = DriverManager.getConnection(URL)) {
             if (connection != null) {
@@ -270,13 +268,13 @@ public class DatabaseManager {
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, DB_VERSION);
             statement.setInt(2, run.run_number);
-            statement.setString(3, DO2_GSON.serializeListItemStack(run.card_plays));
+            statement.setString(3, ItemStackCodec.serializeListItemStack(run.card_plays));
             statement.setInt(4, run.difficulty);
-            statement.setString(5, DO2_GSON.serializeItemStack(run.compass_item));
-            statement.setString(6, DO2_GSON.serializeItemStack(run.artifact_item));
-            statement.setString(7, DO2_GSON.serializeItemStack(run.deck_item));
-            statement.setString(8, DO2_GSON.serializeListItemStack(run.inventory_save));
-            statement.setString(9, DO2_GSON.serializeListItemStack(ItemManager.combineItemStacks(run.items_bought)));
+            statement.setString(5, ItemStackCodec.serializeItemStack(run.compass_item));
+            statement.setString(6, ItemStackCodec.serializeItemStack(run.artifact_item));
+            statement.setString(7, ItemStackCodec.serializeItemStack(run.deck_item));
+            statement.setString(8, ItemStackCodec.serializeListItemStack(run.inventory_save));
+            statement.setString(9, ItemStackCodec.serializeListItemStack(ItemManager.combineItemStacks(run.items_bought)));
             statement.setString(10, run.death_pos);
             statement.setString(11, run.death_message);
             statement.setString(12, String.join(",", run.loot_drops));
@@ -329,13 +327,13 @@ public class DatabaseManager {
         String sql = "UPDATE runsDetailed SET card_plays = ?, difficulty = ?, compass_item = ?, artifact_item = ?, deck_item = ?, inventory_save = ?, items_bought = ?, death_pos = ?, death_message = ?, loot_drops = ?, special_events = ? WHERE id = ?";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
-            statement.setString(1, DO2_GSON.serializeListItemStack(run.card_plays));
+            statement.setString(1, ItemStackCodec.serializeListItemStack(run.card_plays));
             statement.setInt(2, run.difficulty);
-            statement.setString(3, DO2_GSON.serializeItemStack(run.compass_item));
-            statement.setString(4, DO2_GSON.serializeItemStack(run.artifact_item));
-            statement.setString(5, DO2_GSON.serializeItemStack(run.deck_item));
-            statement.setString(6, DO2_GSON.serializeListItemStack(run.inventory_save));
-            statement.setString(7, DO2_GSON.serializeListItemStack(run.items_bought));
+            statement.setString(3, ItemStackCodec.serializeItemStack(run.compass_item));
+            statement.setString(4, ItemStackCodec.serializeItemStack(run.artifact_item));
+            statement.setString(5, ItemStackCodec.serializeItemStack(run.deck_item));
+            statement.setString(6, ItemStackCodec.serializeListItemStack(run.inventory_save));
+            statement.setString(7, ItemStackCodec.serializeListItemStack(run.items_bought));
             statement.setString(8, run.death_pos);
             statement.setString(9, run.death_message);
             statement.setString(10, String.join(",", run.loot_drops));
@@ -372,7 +370,7 @@ public class DatabaseManager {
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setString(1, DB_VERSION);
-            statement.setString(2, DO2_GSON.serializeItemStack(itemStack));
+            statement.setString(2, ItemStackCodec.serializeItemStack(itemStack));
 
             statement.executeUpdate();
         } catch (SQLException e) {
@@ -388,7 +386,7 @@ public class DatabaseManager {
             while (resultSet.next()) {
                 String itemStr = resultSet.getString("item");
                 String db_version = resultSet.getString("db_version");
-                result.add(DO2_GSON.deserializeItemStack(itemStr,db_version));
+                result.add(ItemStackCodec.deserializeItemStack(itemStr));
             }
 
         } catch (SQLException e) {
@@ -424,11 +422,12 @@ public class DatabaseManager {
                 run.embers_counted = resultSet.getInt("embers_counted");
                 run.crowns_counted = resultSet.getInt("crowns_counted");
                 run.difficulty = resultSet.getInt("difficulty");
-/*
-                ItemStack compass_item = DO2_GSON.deserializeItemStack(resultSet.getString("compass_item"),db_version);
-                if (compass_item != null)  {
-                    run.compass_level= ItemManager.getCustomComponentInt(compass_item,"Level");
-                }*/
+                String compassStr = resultSet.getString("compass_item");
+                ItemStack compass_item = ItemStackCodec.deserializeItemStack(compassStr);
+                if (compass_item != null && !compass_item.isEmpty())  {
+                    Integer compassLevel = ItemManager.getCustomComponentInt(compass_item,"Level");
+                    if (compassLevel != null) run.compass_level = compassLevel;
+                }
 
                 runsDictionary.add(run);
             }
@@ -448,7 +447,7 @@ public class DatabaseManager {
         List<DO2Run> runs = fetchRuns(sql, List.of(id));
         return runs.isEmpty() ? null : runs.get(0); // Return the first run, or null if none found
     }
-    public static List<DO2Run> getRunsByAbridgedRuns(List<DO2RunAbridged> runNumbers, AtomicReference<PreparedStatement> currentStatementRef) {
+    public static List<DO2Run> getRunsByAbridgedRuns(List<DO2RunAbridged> runNumbers, AtomicReference<PreparedStatement> currentStatementRef, boolean useOldSerializer) {
         if (runNumbers == null || runNumbers.isEmpty()) {
             return new ArrayList<>();
         }
@@ -477,17 +476,20 @@ public class DatabaseManager {
                 whereClause.toString() + " " +
                 orderByClause.toString();
 
-        return fetchRuns(sql, new ArrayList<>(), currentStatementRef);
+        return fetchRuns(sql, new ArrayList<>(), currentStatementRef, useOldSerializer);
     }
 
     // Original method without cancellation support
     public static List<DO2Run> getRunsByAbridgedRuns(List<DO2RunAbridged> runNumbers) {
-        return getRunsByAbridgedRuns(runNumbers, null);
+        return getRunsByAbridgedRuns(runNumbers,false);
+    }
+    public static List<DO2Run> getRunsByAbridgedRuns(List<DO2RunAbridged> runNumbers, boolean useOldSerializer) {
+        return getRunsByAbridgedRuns(runNumbers, null, useOldSerializer);
     }
 
     // Overloaded method with cancellation support
     private static List<DO2Run> fetchRuns(String sql, List<Object> parameters,
-                                          AtomicReference<PreparedStatement> currentStatementRef) {
+                                          AtomicReference<PreparedStatement> currentStatementRef, boolean useOldSerializer) {
         List<DO2Run> runsDictionary = new ArrayList<>();
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
@@ -519,13 +521,24 @@ public class DatabaseManager {
                 run.crowns_counted = resultSet.getInt("crowns_counted");
 
                 // Populate runsDetailed fields
-                run.card_plays = DO2_GSON.deserializeListItemStack(resultSet.getString("card_plays"),db_version);
+                if (!useOldSerializer || db_version.equalsIgnoreCase(DB_VERSION)) {
+                    run.card_plays = ItemStackCodec.deserializeListItemStack(resultSet.getString("card_plays"));
+                    run.compass_item = ItemStackCodec.deserializeItemStack(resultSet.getString("compass_item"));
+                    run.artifact_item = ItemStackCodec.deserializeItemStack(resultSet.getString("artifact_item"));
+                    run.deck_item = ItemStackCodec.deserializeItemStack(resultSet.getString("deck_item"));
+                    run.inventory_save = ItemStackCodec.deserializeListItemStack(resultSet.getString("inventory_save"));
+                    run.items_bought = ItemStackCodec.deserializeListItemStack(resultSet.getString("items_bought"));
+                }
+                else {
+                    run.card_plays = DO2_GSON.deserializeListItemStack(resultSet.getString("card_plays"));
+                    run.compass_item = DO2_GSON.deserializeItemStack(resultSet.getString("compass_item"));
+                    run.artifact_item = DO2_GSON.deserializeItemStack(resultSet.getString("artifact_item"));
+                    run.deck_item = DO2_GSON.deserializeItemStack(resultSet.getString("deck_item"));
+                    run.inventory_save = DO2_GSON.deserializeListItemStack(resultSet.getString("inventory_save"));
+                    run.items_bought = DO2_GSON.deserializeListItemStack(resultSet.getString("items_bought"));
+                }
                 run.difficulty = resultSet.getInt("difficulty");
-                run.compass_item = DO2_GSON.deserializeItemStack(resultSet.getString("compass_item"),db_version);
-                run.artifact_item = DO2_GSON.deserializeItemStack(resultSet.getString("artifact_item"),db_version);
-                run.deck_item = DO2_GSON.deserializeItemStack(resultSet.getString("deck_item"),db_version);
-                run.inventory_save = DO2_GSON.deserializeListItemStack(resultSet.getString("inventory_save"),db_version);
-                run.items_bought = DO2_GSON.deserializeListItemStack(resultSet.getString("items_bought"),db_version);
+
                 run.death_pos = resultSet.getString("death_pos");
                 run.death_message = resultSet.getString("death_message");
                 if (resultSet.getString("loot_drops") != null)
@@ -563,9 +576,8 @@ public class DatabaseManager {
 
     // Original method without cancellation support
     private static List<DO2Run> fetchRuns(String sql, List<Object> parameters) {
-        return fetchRuns(sql, parameters, null);
+        return fetchRuns(sql, parameters, null,false);
     }
-
 
     public static List<DO2Run> getRunsByCriteria(List<String> criteria) {
         String sql = "SELECT r.*, rd.*, rs.* FROM runs r " +

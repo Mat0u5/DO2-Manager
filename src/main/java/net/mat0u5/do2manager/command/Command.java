@@ -162,6 +162,11 @@ public class Command {
                         .then(literal("boughtItems")
                                 .executes(context -> DatabaseCommand.updateBoughtItems())
                         )
+                        .then(literal("updateOldNBT")
+                            .executes(context -> DatabaseCommand.updateOldNBT(
+                                context.getSource())
+                            )
+                        )
                     )
                     .then(literal("getRaw")
                         .then(argument("runId", IntegerArgumentType.integer())
@@ -251,16 +256,19 @@ public class Command {
                             context.getSource())
                         )
                     )
+                    .then(literal("testGetInv")
+                        .then(argument("runNum", IntegerArgumentType.integer())
+                            .executes(context -> TestingCommand.executeGetInv(
+                                    context.getSource(),
+                                IntegerArgumentType.getInteger(context, "runNum"))
+                            )
+                        )
+                    )
                     .then(literal("execute")
                         .then(argument("args", StringArgumentType.string())
                             .executes(context -> TestingCommand.executeCmd(
                                 StringArgumentType.getString(context, "args"))
                             )
-                        )
-                    )
-                    .then(literal("updateGameProfiles")
-                        .executes(context -> TestingCommand.updateGameProfiles(
-                            context.getSource())
                         )
                     )
                 )

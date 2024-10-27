@@ -102,7 +102,7 @@ public class OtherCommand {
         if (isRunner(server, self)) return -1;
 
         self.changeGameMode(GameMode.SPECTATOR);
-        self.teleport(server.getOverworld(),-529.5, 113, 1980.5, 0, 0);
+        self.teleport(server.getOverworld(),-529.5, 113, 1980.5, 90, 0);
         return 1;
     }
     public static int viewDeck(ServerCommandSource source) {
@@ -209,11 +209,12 @@ public class OtherCommand {
             }
         }
         if (!alreadyHasPhaseLore) {
-            String phaseLoreJson = String.format("{\"text\":\"-= Phase Item =-\",\"color\":\"%s\"}", Formatting.RED.getName());
+
+            Text phaseLore = Text.literal("-= Phase Item =-").formatted(Formatting.RED);
             if (ItemManager.isDungeonCard(holdingItem)) {
-                phaseLoreJson = String.format("{\"text\":\"-= Phase Card =-\",\"color\":\"%s\"}", Formatting.RED.getName());
+                phaseLore = Text.literal("-= Phase Card =-").formatted(Formatting.RED);
             }
-            ItemManager.addLoreToItemStack(holdingItem,List.of(Text.of(phaseLoreJson)));
+            ItemManager.addLoreToItemStack(holdingItem,List.of(Text.of(phaseLore)));
         }
 
         return 1;
