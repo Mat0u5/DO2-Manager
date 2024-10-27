@@ -64,7 +64,6 @@ public class PlayerEvents {
             }
 
             //Add the player to the database
-            System.out.println("TEST_"+player.getGameProfile().getProperties());
             DatabaseManager.addPlayer(player.getUuidAsString(),player.getNameForScoreboard(), player.getGameProfile());
             if (Main.allPlayers.isEmpty()) {
                 DatabaseManager.fetchAllPlayers();

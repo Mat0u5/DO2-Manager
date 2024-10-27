@@ -166,11 +166,9 @@ public class DatabaseCommand {
         return 1;
     }
     public static boolean isValidCommand(MinecraftServer server, String command) {
-        System.out.println("Evaluating command_"+command);
         ServerCommandSource source = server.getCommandSource().withLevel(4);
         ParseResults<ServerCommandSource> parseResults = server.getCommandManager()
                 .getDispatcher().parse(command, source);
-        System.out.println("test1"+parseResults.getExceptions());
         return parseResults.getExceptions().isEmpty();
     }
     public static int executeCommandBlockUpdateDatabase(ServerCommandSource source, int fromX, int fromY, int fromZ, int toX, int toY, int toZ) {
