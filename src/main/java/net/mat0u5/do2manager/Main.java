@@ -4,6 +4,7 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
 import net.fabricmc.api.ModInitializer;
 
+import net.mat0u5.do2manager.blockblocker.BlockBlocker;
 import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
@@ -55,6 +56,7 @@ public class Main implements ModInitializer {
 		simulator = new Simulator();
 		dungeonQueue.loadQueueFromConfig();
 		TCG_Items.reload();
+		BlockBlocker.onInitialize();
 	}
 
 	public static void resetRunInfo() {
