@@ -14,6 +14,7 @@ import net.mat0u5.do2manager.tcg.TCG_Items;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
+import net.minecraft.SharedConstants;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
@@ -45,14 +46,13 @@ public class Main implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
-
 		config = new ConfigManager("./config/"+MOD_ID+"/"+MOD_ID+".properties");
 		lastInvUpdate = new ConfigManager("./config/"+MOD_ID+"/"+MOD_ID+"_inv_update.properties");
 
 		if (config.getProperty("current_run") != null && !config.getProperty("current_run").isEmpty()) loadRunInfoFromConfig();
 		DatabaseManager.checkForDBUpdates();
 		ModRegistries.registerModStuff();
-		LOGGER.info("Initializing DO2-manager...");
+		LOGGER.info("Initializing DO2-Manager");
 		simulator = new Simulator();
 		dungeonQueue.loadQueueFromConfig();
 		TCG_Items.reload();

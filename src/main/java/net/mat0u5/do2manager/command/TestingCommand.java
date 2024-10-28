@@ -85,4 +85,10 @@ public class TestingCommand {
 
         return 1;
     }
+    public static int updatePlayerData(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        PlayerDataUpdater updater = new PlayerDataUpdater(server);
+        updater.updateAllPlayerData();
+        return 1;
+    }
 }
