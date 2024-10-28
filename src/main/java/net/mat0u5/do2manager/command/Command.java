@@ -291,6 +291,11 @@ public class Command {
                             context.getSource())
                         )
                     )
+                        .then(literal("validatePlayerData")
+                                .executes(context -> TestingCommand.validatePlayerData(
+                                        context.getSource())
+                                )
+                        )
                 )
                 .then(literal("simulator")
                     .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))

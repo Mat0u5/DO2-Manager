@@ -91,4 +91,10 @@ public class TestingCommand {
         updater.updateAllPlayerData();
         return 1;
     }
+    public static int validatePlayerData(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        PlayerDataUpdater updater = new PlayerDataUpdater(server);
+        updater.validateAllPlayerData();
+        return 1;
+    }
 }
