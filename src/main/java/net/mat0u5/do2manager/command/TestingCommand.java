@@ -14,6 +14,8 @@ import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 
+import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 
 
@@ -71,6 +73,15 @@ public class TestingCommand {
     public static int executeTest(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();
+
+        return 1;
+    }
+    public static int executeCopyScoreboard(ServerCommandSource source, String newObj, String oldObj, String pathName) {
+        MinecraftServer server = source.getServer();
+        final PlayerEntity self = source.getPlayer();
+
+
+        ScoreboardUtils.copyObjectiveFromFile(server, newObj, oldObj, new File(pathName));
 
         return 1;
     }

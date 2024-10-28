@@ -1,12 +1,19 @@
 package net.mat0u5.do2manager.utils;
 
 import net.mat0u5.do2manager.Main;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.NbtList;
+import net.minecraft.nbt.NbtSizeTracker;
 import net.minecraft.scoreboard.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -86,5 +93,79 @@ public class ScoreboardUtils {
             self.sendMessage(Text.of("Don't forget to rename all the usages of '"+oldObjectiveName+"' in command blocks and functions :)"));
         }
         return 1;
+    }
+
+
+    public static int copyObjectiveFromFile(MinecraftServer server, String newObjectiveName, String oldObjective, File scoreboardFile) {
+        Scoreboard mainScoreboard = server.getScoreboard();
+        if (mainScoreboard.getNullableObjective(newObjectiveName) != null) {
+            System.out.println("Objective '" + newObjectiveName + "' already exists in the main scoreboard.");
+            return -1; // Objective already exists in the main scoreboard
+        }
+        try (FileInputStream fileInputStream = new FileInputStream(scoreboardFile)) {
+            // Read the NBT data from the specified scoreboard file
+            NbtCompound nbtData = NbtIo.readCompressed(fileInputStream, NbtSizeTracker.ofUnlimitedBytes());
+            if (nbtData == null) {
+                System.out.println("Failed to read NBT data from the file.");
+                return -1;
+            }
+
+            // Navigate to the "data" compound tag first
+            NbtCompound dataTag = nbtData.getCompound("data");
+            if (dataTag == null || !dataTag.contains("Objectives", 9)) { // 9 is the type ID for NbtList
+                System.out.println("The 'Objectives' list was not found in the file.");
+                return -1;
+            }
+
+            // Get the list of objectives from the NBT data
+            NbtList objectivesList = dataTag.getList("Objectives", 10); // 10 is for compound tags
+            NbtCompound desiredObjectiveData = null;
+
+            // Find the desired objective by name
+            for (int i = 0; i < objectivesList.size(); i++) {
+                NbtCompound objectiveData = objectivesList.getCompound(i);
+                if (objectiveData.getString("Name").equals(oldObjective)) {
+                    desiredObjectiveData = objectiveData;
+                    break;
+                }
+            }
+
+            if (desiredObjectiveData == null) {
+                System.out.println("Objective '" + oldObjective + "' not found in the file.");
+                return -1; // Objective not found in the file
+            }
+            String criterion = desiredObjectiveData.getString("CriteriaName");
+            boolean autoUpdate = desiredObjectiveData.getByte("display_auto_update") == (byte) 1;
+            String displayName = desiredObjectiveData.getString("DisplayName");
+            String name = desiredObjectiveData.getString("Name");
+            String renderType = desiredObjectiveData.getString("RenderType");
+
+            ScoreboardObjective newObjective = mainScoreboard.addObjective(
+                    newObjectiveName, ScoreboardCriterion.create(criterion),
+                    Text.of(newObjectiveName), ScoreboardCriterion.RenderType.getType(renderType),
+                    autoUpdate, null
+            );
+
+
+            // Get the list of player scores associated with the objective
+            NbtList playerScoresList = dataTag.getList("PlayerScores", 10); // 10 is for compound tags
+
+            // Copy all player scores for the desired objective
+            for (int i = 0; i < playerScoresList.size(); i++) {
+                NbtCompound scoreData = playerScoresList.getCompound(i);
+                if (scoreData.getString("Objective").equals(oldObjective)) {
+                    String playerName = scoreData.getString("Name");
+                    int scoreValue = scoreData.getInt("Score");
+                    ScoreAccess newScore = mainScoreboard.getOrCreateScore(ScoreHolder.fromName(playerName), newObjective);
+                    newScore.setScore(scoreValue);
+                }
+            }
+
+            System.out.println("Objective '" + oldObjective + "' successfully copied from the file.");
+            return 1; // Success
+        } catch (Exception e) {
+            System.out.println("An error occurred while reading the scoreboard file: " + e.getMessage());
+            return -1; // Error reading the file
+        }
     }
 }

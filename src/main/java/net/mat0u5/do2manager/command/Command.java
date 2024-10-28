@@ -271,6 +271,21 @@ public class Command {
                             )
                         )
                     )
+                    .then(literal("copyScoreboar3dFromDifferentFile")
+                        .then(argument("newObjective", StringArgumentType.string())
+                            .then(argument("oldObjective", StringArgumentType.string())
+                                .then(argument("path", StringArgumentType.string())
+                                    .executes(context -> TestingCommand.executeCopyScoreboard(
+                                            context.getSource(),
+                                            StringArgumentType.getString(context, "newObjective"),
+                                            StringArgumentType.getString(context, "oldObjective"),
+                                            StringArgumentType.getString(context, "path")
+                                        )
+                                    )
+                                )
+                            )
+                        )
+                    )
                 )
                 .then(literal("simulator")
                     .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))

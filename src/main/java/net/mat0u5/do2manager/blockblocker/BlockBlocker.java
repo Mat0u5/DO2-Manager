@@ -20,10 +20,6 @@ public class BlockBlocker {
     public static void onInitialize() {
         AutoConfig.register(BlockBlockerConfig.class, GsonConfigSerializer::new);
         config = AutoConfig.getConfigHolder(BlockBlockerConfig.class).get();
-        System.out.println("BlockBlocker config noInteract: "+config.general.noInteract);
-        System.out.println("BlockBlocker config2 noPlace: "+config.general.noPlace);
-        System.out.println("BlockBlocker config3 noHarvest: "+config.general.noHarvest);
-
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
 
             if ((config.general.opBypass && player.hasPermissionLevel(2)) || (config.general.creativeBypass && player.getAbilities().creativeMode)) {
