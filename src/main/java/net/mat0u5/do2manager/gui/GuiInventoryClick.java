@@ -4,6 +4,7 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.FakeSign;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.component.type.ProfileComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -13,6 +14,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 public class GuiInventoryClick {
     public static void onClickDatabaseGUI(String guiName, int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci, ScreenHandler handler) {
@@ -119,7 +121,11 @@ public class GuiInventoryClick {
                 gui.invId="";
                 new GuiInventory_Database().openRunInventory(serverPlayer);
             } else if (tag.equalsIgnoreCase("player_choice")) {
-                String playerName = nbt.getString("SkullOwner");
+                ProfileComponent profile = clickedItem.get(DataComponentTypes.PROFILE);
+                if (profile == null) return;
+                Optional<String> optName = profile.name();
+                if (optName.isEmpty()) return;
+                String playerName = optName.get();
                 guiDatabase.filter_player.add(playerName);
                 guiDatabase.filter_player_uuid.add(OtherUtils.getPlayerUUIDFromName(playerName));
                 guiDatabase.updateSearch();
