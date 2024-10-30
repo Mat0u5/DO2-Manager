@@ -281,7 +281,7 @@ public class ItemManager {
                 barrel.markDirty();
                 return true;
             } else if (ItemStack.areItemsAndComponentsEqual(slotStack, stack)) {
-                int transferAmount = Math.min(inventory.getMaxCountPerStack() - slotStack.getCount(), stack.getCount());
+                int transferAmount = Math.min(stack.getMaxCount() - slotStack.getCount(), stack.getCount());
                 slotStack.increment(transferAmount);
                 stack.decrement(transferAmount);
                 if (stack.isEmpty()) {

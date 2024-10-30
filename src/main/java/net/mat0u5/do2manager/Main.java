@@ -15,6 +15,8 @@ import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
 import net.minecraft.SharedConstants;
+import net.minecraft.block.VaultBlock;
+import net.minecraft.block.vault.VaultConfig;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
