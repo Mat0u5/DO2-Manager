@@ -1,6 +1,5 @@
 package net.mat0u5.do2manager.gui;
 
-import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
@@ -8,9 +7,6 @@ import net.mat0u5.do2manager.world.ItemManager;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
 import net.minecraft.text.Text;
 
 import java.util.ArrayList;
@@ -350,8 +346,8 @@ public class GuiItems_Database {
 
         return createGuiItem(itemStack, "runs_info", itemName, lore);
     }
-    public static ItemStack playerHeadChoice(String name) {
+    public static ItemStack playerHeadChoice(String name, int playerRuns) {
         ItemStack itemStack = ItemManager.getPlayerSkull(name);
-        return createGuiItem(itemStack, "player_choice", "§7"+name, List.of(Text.of(""),Text.of("§eClick to choose this player!")));
+        return createGuiItem(itemStack, "player_choice", "§a"+name, List.of(Text.of("§7[Has done§b "+playerRuns+" §7runs]"), Text.of(""),Text.of("§eClick to choose this player!")));
     }
 }

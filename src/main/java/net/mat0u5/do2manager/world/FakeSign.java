@@ -1,31 +1,23 @@
 package net.mat0u5.do2manager.world;
 
-import io.netty.buffer.Unpooled;
-import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.mat0u5.do2manager.Main;
-import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
 import net.mat0u5.do2manager.utils.OtherUtils;
-import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.SignBlockEntity;
 import net.minecraft.block.entity.SignText;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.PacketByteBuf;
 import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.Executors;
@@ -175,6 +167,8 @@ public class FakeSign {
         }
         else {
             List<String> nameChoice = new ArrayList<>();
+            HashMap<String, Integer> playerRuns = new HashMap<>();
+
             for (String nameRaw : signNames) {
                 String playerName = "";
                 if (Main.allPlayers.containsValue(nameRaw)) {
@@ -195,15 +189,22 @@ public class FakeSign {
                         playerName = suggestedNames.get(0);
                     }
                     else {
-                        nameChoice.addAll(suggestedNames);
+                        for (String name : suggestedNames) {
+                            int runs = getRunNumByPlayer(name);
+                            if (runs == 0) continue;
+                            playerRuns.put(name,runs);
+                        }
                     }
+                }
+                if (playerRuns.size() == 1) {
+                    playerName = (String) playerRuns.keySet().toArray()[0];
                 }
                 if (playerName.isEmpty()) continue;
                 guiDatabase.filter_player.add(playerName);
                 guiDatabase.filter_player_uuid.add(OtherUtils.getPlayerUUIDFromName(playerName));
             }
-            if (!nameChoice.isEmpty()) {
-                guiDatabase.playerChoiceInventory(nameChoice);
+            if (playerRuns.size() > 1) {
+                guiDatabase.playerChoiceInventory(playerRuns);
                 guiDatabase.openRunInventoryNoUpdate(player);
                 return;
             }
@@ -211,5 +212,15 @@ public class FakeSign {
         guiDatabase.openRunInventoryNoUpdate(player);
         guiDatabase.updateSearch();
         guiDatabase.populateRunInventory();
+    }
+    public static int getRunNumByPlayer(String playerName) {
+        int num = 0;
+        String playerUUID = OtherUtils.getPlayerUUIDFromName(playerName);
+        for (DO2RunAbridged run : Main.allAbridgedRuns) {
+            if (run.runners.contains(playerUUID)) {
+                num++;
+            }
+        }
+        return num;
     }
 }
