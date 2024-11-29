@@ -155,6 +155,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
             if (filter_level == 4 && run.compass_level != 4) continue;
             if (filter_run_type == 1 && !run.run_type.equalsIgnoreCase("casual")) continue;
             if (filter_run_type == 2 && !run.run_type.equalsIgnoreCase("phase")) continue;
+            if (filter_run_type == 3 && !run.run_type.equalsIgnoreCase("hardcore")) continue;
             if (!filter_player_uuid.isEmpty()) {
                 List<String> remainingFilters = new ArrayList<>(List.copyOf(filter_player_uuid));
                 remainingFilters.removeAll(run.runners);

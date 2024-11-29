@@ -62,7 +62,7 @@ public class GuiInventoryClick {
                 guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("filter_run_type")) {
                 guiDatabase.filter_run_type++;
-                if (guiDatabase.filter_run_type > 2) guiDatabase.filter_run_type =0;
+                if (guiDatabase.filter_run_type > 3) guiDatabase.filter_run_type =0;
                 guiDatabase.updateSearch();
                 guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("filter_player")) {

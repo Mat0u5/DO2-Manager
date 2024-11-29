@@ -49,10 +49,12 @@ public class GuiItems_Database {
         boolean successfulRun = run.getSuccessAdvanced(filter_player_uuid);
         if (successfulRun) {
             if (run.run_type.equalsIgnoreCase("phase")) itemStack = new ItemStack(Items.GREEN_STAINED_GLASS);
+            else if (run.run_type.equalsIgnoreCase("hardcore")) itemStack = new ItemStack(Items.GREEN_TERRACOTTA);
             else itemStack = new ItemStack(Items.GREEN_WOOL);
         }
         else {
             if (run.run_type.equalsIgnoreCase("phase")) itemStack = new ItemStack(Items.RED_STAINED_GLASS);
+            else if (run.run_type.equalsIgnoreCase("hardcore")) itemStack = new ItemStack(Items.RED_TERRACOTTA);
             else itemStack = new ItemStack(Items.RED_WOOL);
         }
         if (showRunsAsHeads) {
@@ -63,7 +65,7 @@ public class GuiItems_Database {
         lore.add(Text.of("§7Runners: §3" + run.getRunnersName()));
         lore.add(Text.of("§7Difficulty: " +run.getFormattedDifficulty()));
         lore.add(Text.of("§7Level: " +run.getFormattedLevel()));
-        lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§d")) +run.getRunType())));
+        lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§c")) +run.getRunType())));
         lore.add(Text.of(""));
         lore.add(Text.of("§7Run Length: §6" + OtherUtils.convertTicksToClockTime(run.run_length,true)));
         if (run.date!=null) lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
@@ -125,7 +127,7 @@ public class GuiItems_Database {
     public static ItemStack filterRunType(int filter_run_type) {
         ItemStack itemStack = new ItemStack(Items.IRON_NUGGET, 1);
         ItemManager.setModelData(itemStack,6);
-        return createGuiItem(itemStack, "filter_run_type", "§aRun Type Filter", List.of(Text.of(""), Text.of((filter_run_type==0?"§8▶ ":"  ")+"§8No filter"), Text.of((filter_run_type==1?"§e▶ ":"  §7")+"Casual"), Text.of((filter_run_type==2?"§b▶ ":"  §7")+"Phase"), Text.of(""), Text.of("§eClick cycle through!")));
+        return createGuiItem(itemStack, "filter_run_type", "§aRun Type Filter", List.of(Text.of(""), Text.of((filter_run_type==0?"§8▶ ":"  ")+"§8No filter"), Text.of((filter_run_type==1?"§e▶ ":"  §7")+"Casual"), Text.of((filter_run_type==2?"§b▶ ":"  §7")+"Phase"), Text.of((filter_run_type==3?"§c▶ ":"  §7")+"Hardcore"), Text.of(""), Text.of("§eClick cycle through!")));
     }
     public static ItemStack filterPlayer(List<String> filter_player) {
         ItemStack itemStack = new ItemStack(Items.PLAYER_HEAD, 1);
@@ -176,7 +178,7 @@ public class GuiItems_Database {
         lore.add(Text.of(""));
         lore.add(Text.of("§7Difficulty: " +run.getFormattedDifficulty()));
         lore.add(Text.of("§7Level: " +run.getFormattedLevel()));
-        lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§d")) +run.getRunType())));
+        lore.add(Text.of("§7Run Type: "+((run.run_type.equalsIgnoreCase("phase")?"§b":(run.run_type.equalsIgnoreCase("casual")?"§e":"§c")) +run.getRunType())));
         if (run.date!=null) lore.add(Text.of("§7Date & Time: §f"+run.getFormattedDate()));
         return createGuiItem(itemStack, "runners", (run.getSuccess()?"§a":"§c")+"Run #" + run.run_number, lore);
     }
