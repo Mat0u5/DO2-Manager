@@ -42,9 +42,12 @@ public class CrossbowEvents {
             }
         }
     }
-    public static void onShoot(World world, LivingEntity user , ItemStack crossbow) {
+    public static void onShoot(World world, LivingEntity user) {
+        ItemStack crossbow = user.getMainHandStack();
+        ItemStack crossbow2 = user.getOffHandStack();
         int modelData = ItemManager.getModelData(crossbow);
-        if (modelData == 1) {
+        int modelData2 = ItemManager.getModelData(crossbow2);
+        if (modelData == 1 || modelData2 == 1) {
             if (!world.isClient) {
                 world.playSound(null, user.getX(), user.getY(), user.getZ(), GUNSHOT, SoundCategory.PLAYERS, 0.8F, 1.0F);
             }

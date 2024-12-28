@@ -33,7 +33,7 @@ public abstract class CrossbowItemMixin {
     }
     @Inject(method = "shoot", at = @At("HEAD"), cancellable = true)
     private static void onShoot(LivingEntity shooter, ProjectileEntity projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target, CallbackInfo ci) {
-        CrossbowEvents.onShoot(shooter.getWorld(), shooter, shooter.getActiveItem());
+        CrossbowEvents.onShoot(shooter.getWorld(), shooter);
 
     }
 }
