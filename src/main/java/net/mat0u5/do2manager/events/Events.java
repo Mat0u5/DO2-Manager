@@ -9,9 +9,14 @@ import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.command.RestartCommand;
+import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.mat0u5.do2manager.queue.QueueEvents;
+import net.mat0u5.do2manager.utils.DiscordBot;
 import net.mat0u5.do2manager.utils.DiscordUtils;
+import net.mat0u5.do2manager.utils.MSPTUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
+import net.mat0u5.do2manager.world.FakeSign;
+import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.block.CommandBlock;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -61,6 +66,14 @@ public class Events {
         System.out.println("[DO2-Manager] - Detected Server Shutdown");
         isServerShuttingDown = true;
         Main.saveRunInfoToConfig();
+
+        RunInfoParser.shutdownExecutor();
+        DiscordBot.shutdownExecutor();
+        MSPTUtils.shutdownExecutor();
+        GuiInventory_Database.shutdownExecutor();
+        Main.shutdownExecutor();
+        FakeSign.shutdownExecutor();
+        shutdownExecutor();
     }
     private static void onServerTickEnd(MinecraftServer server) {
         try {
@@ -84,5 +97,15 @@ public class Events {
     private static void onServerStart(MinecraftServer server) {
         Main.server = server;
         System.out.println("MinecraftServer instance captured.");
+    }
+    public static void shutdownExecutor() {
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+        }
     }
 }

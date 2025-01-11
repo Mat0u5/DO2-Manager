@@ -156,7 +156,9 @@ public class PlayerEvents {
 
         String lock = OtherUtils.getLock(container);
         if (lock == null || lock.isEmpty()) return ActionResult.PASS;
-        if (PermissionManager.isAdmin(player) || player.getUuidAsString().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d")) {
+        if (PermissionManager.isAdmin(player)
+                || player.getUuidAsString().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d") // GGGregian special perms
+        ) {
             OtherUtils.unlockContainerForTick((ServerWorld) world, player.getServer(), container,pos);
             player.playSoundToPlayer(SoundEvents.BLOCK_AMETHYST_BLOCK_STEP, SoundCategory.PLAYERS, 0.7f, 1.0f);
             return ActionResult.PASS;

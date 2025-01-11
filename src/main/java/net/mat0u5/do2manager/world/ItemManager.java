@@ -1,10 +1,8 @@
 package net.mat0u5.do2manager.world;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
-import net.mat0u5.do2manager.Main;
-import net.mat0u5.do2manager.utils.OtherUtils;
 import net.minecraft.block.entity.*;
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.component.type.*;
 import net.minecraft.entity.Entity;
@@ -19,13 +17,11 @@ import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.registry.Registries;
-import net.minecraft.util.UserCache;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Box;
 import net.minecraft.world.World;
 
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
 
 public class ItemManager {
     public static final List<Integer> artiModelDataList = Arrays.asList(10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58);
@@ -170,6 +166,11 @@ public class ItemManager {
             giveItemStack(player,itemStack);
         }
     }
+    public static void removeAllComponents(ItemStack itemStack) {
+        for (ComponentType<?> comp : itemStack.getComponents().getTypes()) {
+            itemStack.remove(comp);
+        }
+    }
 
     public static String getItemId(ItemStack itemStack) {
         return Registries.ITEM.getId(itemStack.getItem()).toString();
@@ -311,12 +312,12 @@ public class ItemManager {
         return items;
     }
 
-    public static void clearItemPhaseLore(ItemStack itemStack) {
+    public static void clearItemPhaseOrHardcoreLore(ItemStack itemStack) {
         List<Text> currentLore = getLore(itemStack);
         if (currentLore == null || currentLore.isEmpty()) return;
         List<Text> newLore = new ArrayList<>();
         for (Text loreLine : currentLore) {
-            if (!loreLine.getString().contains("-= Phase")) {
+            if (!loreLine.getString().contains("-= Phase") && !loreLine.getString().contains("-= Hardcore")) {
                 newLore.add(loreLine);
             }
         }

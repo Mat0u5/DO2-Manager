@@ -20,13 +20,14 @@ import java.util.Map.Entry;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static net.mat0u5.do2manager.Main.allAbridgedRuns;
 
 public class GuiInventory_Database extends GuiPlayerSpecific {
     private final int INVENTORY_SIZE = 54;
-    private ExecutorService executor = Executors.newSingleThreadExecutor();
+    private static ExecutorService executor = Executors.newSingleThreadExecutor();
     private AtomicReference<CompletableFuture<Void>> currentFuture = new AtomicReference<>();
     private AtomicReference<PreparedStatement> currentStatement = new AtomicReference<>();
 
@@ -209,6 +210,16 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         currentFuture.set(newFuture);
 
         return newFuture;
+    }
+    public static void shutdownExecutor() {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+        }
     }
 
     public void sortRuns() {

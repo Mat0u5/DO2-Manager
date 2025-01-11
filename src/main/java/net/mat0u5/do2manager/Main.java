@@ -1,10 +1,10 @@
 package net.mat0u5.do2manager;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.PropertyMap;
 import net.fabricmc.api.ModInitializer;
 
 import net.mat0u5.do2manager.blockblocker.BlockBlocker;
+import net.mat0u5.do2manager.command.CustomGiveCommand;
 import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
@@ -14,9 +14,6 @@ import net.mat0u5.do2manager.tcg.TCG_Items;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
-import net.minecraft.SharedConstants;
-import net.minecraft.block.VaultBlock;
-import net.minecraft.block.vault.VaultConfig;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
@@ -28,6 +25,7 @@ import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 public class Main implements ModInitializer {
@@ -58,6 +56,7 @@ public class Main implements ModInitializer {
 		simulator = new Simulator();
 		dungeonQueue.loadQueueFromConfig();
 		TCG_Items.reload();
+		CustomGiveCommand.loadItemStacks();
 		BlockBlocker.onInitialize();
 	}
 
@@ -95,6 +94,16 @@ public class Main implements ModInitializer {
 				reloadedRuns = true;
 			}
 		}, executor);
+	}
+	public static void shutdownExecutor() {
+		executor.shutdown();
+		try {
+			if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+				executor.shutdownNow();
+			}
+		} catch (InterruptedException e) {
+			executor.shutdownNow();
+		}
 	}
 	public static void addRun(DO2Run run) {
 		if (run.date==null||run.date.isEmpty()) {

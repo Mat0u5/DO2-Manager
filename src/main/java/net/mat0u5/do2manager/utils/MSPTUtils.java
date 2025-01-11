@@ -6,10 +6,11 @@ import net.minecraft.server.MinecraftServer;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public abstract class MSPTUtils {
     private static final double DESIRED_MAX_MSPT = 45;
-    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private static final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private static MinecraftServer server;
     public boolean running = true;
 
@@ -51,8 +52,18 @@ public abstract class MSPTUtils {
 
     public void stop() {
         running = false;
-        executorService.shutdown();
+        shutdownExecutor();
         stoppedFunction();
+    }
+    public static void shutdownExecutor() {
+        executorService.shutdown();
+        try {
+            if (!executorService.awaitTermination(1, TimeUnit.SECONDS)) {
+                executorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executorService.shutdownNow();
+        }
     }
     public static void waitForNextServerTicks(int ticks) {
         CountDownLatch latch = new CountDownLatch(ticks);

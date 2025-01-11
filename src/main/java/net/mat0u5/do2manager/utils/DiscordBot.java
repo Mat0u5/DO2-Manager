@@ -77,7 +77,7 @@ public class DiscordBot extends ListenerAdapter {
         shutdownExecutor();
     }
 
-    private void shutdownExecutor() {
+    public static void shutdownExecutor() {
         // Allow current tasks to complete before shutting down the executor
         if (executor == null) return;
         if (executor.isShutdown()) return;

@@ -25,7 +25,7 @@ import net.minecraft.util.math.BlockPos;
 import org.sqlite.SQLiteErrorCode;
 
 public class DatabaseManager {
-    public static final String DB_VERSION = "v.1.1.0";
+    public static final String DB_VERSION = "v.1.1.1";
 
     private static final String FOLDER_PATH = "./config/"+ Main.MOD_ID;
     private static final String FILE_PATH = FOLDER_PATH+"/"+Main.MOD_ID+".db";
@@ -47,6 +47,7 @@ public class DatabaseManager {
                         createFunctionsTable(connection);
                         createPlayersTable(connection);
                         createTCGTable(connection);
+                        createCustomItemsTable(connection);
                     }
                     System.out.println("Database initialized.");
                 } else {
@@ -182,6 +183,11 @@ public class DatabaseManager {
         PreparedStatement statement = connection.prepareStatement(sql);
         statement.executeUpdate();
     }
+    private static void createCustomItemsTable(Connection connection) throws SQLException {
+        String sql = "CREATE TABLE \"custom_items\" (\"id\" INTEGER,\"db_version\" TEXT,\"name\" TEXT,\"item\" TEXT,PRIMARY KEY(\"id\" AUTOINCREMENT));";
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.executeUpdate();
+    }
     public static void updateTable() throws SQLException {
         String old_db_ver = Main.config.getProperty("db_version");
         HashMap<List<String>,List<String>> versionUpdates = new HashMap<>();
@@ -192,6 +198,7 @@ public class DatabaseManager {
         versionUpdates.put(List.of("v.1.0.5"),List.of("v.1.0.6","ALTER TABLE runs ADD crowns_counted INTEGER;"));
         versionUpdates.put(List.of("v.1.0.6"),List.of("v.1.0.7","CREATE TABLE \"tcg_items\" (\"id\" INTEGER,\"db_version\" TEXT,\"item\" TEXT,PRIMARY KEY(\"id\" AUTOINCREMENT));"));
         versionUpdates.put(List.of("v.1.0.7"),List.of("v.1.1.0",""));
+        versionUpdates.put(List.of("v.1.1.0"),List.of("v.1.1.1","CREATE TABLE \"custom_items\" (\"id\" INTEGER,\"db_version\" TEXT,\"name\" TEXT,\"item\" TEXT,PRIMARY KEY(\"id\" AUTOINCREMENT));"));
         //
         try (Connection connection = DriverManager.getConnection(URL)) {
             if (connection != null) {
@@ -237,6 +244,15 @@ public class DatabaseManager {
     }
     public static void deleteTCGItems() {
         String sql = "DELETE FROM tcg_items";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void deleteCustomItems() {
+        String sql = "DELETE FROM custom_items";
         try (Connection connection = DriverManager.getConnection(URL);
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.executeUpdate();
@@ -387,6 +403,48 @@ public class DatabaseManager {
                 String itemStr = resultSet.getString("item");
                 String db_version = resultSet.getString("db_version");
                 result.add(ItemStackCodec.deserializeItemStack(itemStr));
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return result;
+    }
+    public static void addCustomItems(String name, ItemStack itemStack) {
+        String sql = "INSERT INTO custom_items(db_version, name, item) VALUES(?, ?, ?)";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, DB_VERSION);
+            statement.setString(2, name);
+            statement.setString(3, ItemStackCodec.serializeItemStack(itemStack));
+
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void deleteCustomItem(String name) {
+        String sql = "DELETE FROM custom_items WHERE name = ?";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, name);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static HashMap<String, ItemStack> getAllCustomItems() {
+        HashMap<String, ItemStack> result = new HashMap<>();
+        String sql = "SELECT * from custom_items";
+        try (Connection connection = DriverManager.getConnection(URL);
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+                String db_version = resultSet.getString("db_version");
+                String item_name = resultSet.getString("name");
+                String itemStr = resultSet.getString("item");
+                result.put(item_name, ItemStackCodec.deserializeItemStack(itemStr));
             }
 
         } catch (SQLException e) {

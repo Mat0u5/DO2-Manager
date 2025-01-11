@@ -14,6 +14,7 @@ import net.minecraft.util.math.BlockPos;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class RunInfoParser {
     public static java.lang.Integer getRunNum(MinecraftServer server) {
@@ -63,6 +64,16 @@ public class RunInfoParser {
             }
             return fastestRun;
         });
+    }
+    public static void shutdownExecutor() {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(1, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+        }
     }
     public static List<PlayerEntity> getCurrentRunners(MinecraftServer server) {
         List<PlayerEntity> runners = new ArrayList<>();

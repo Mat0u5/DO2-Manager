@@ -14,13 +14,11 @@ import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.inventory.SimpleInventory;
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
 import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.ScreenHandlerType;
 import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.function.CommandFunction;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.MutableText;
@@ -170,20 +168,23 @@ public class OtherCommand {
         return false;
     }
     public static int invScanner(ServerCommandSource source, Collection<? extends ServerPlayerEntity> targets, String scanType) {
-        MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
-
         for (ServerPlayerEntity player : targets) {
             if (scanType.equalsIgnoreCase("tagExpanded")) {
-                self.sendMessage(Text.of("Tagging "+player.getNameForScoreboard()+"'s Custom Cards"));
+                source.sendMessage(Text.of("Tagging "+player.getNameForScoreboard()+"'s Custom Cards"));
                 ItemConvertor.convertCustomItems(player,-1);
-                self.sendMessage(Text.of("Tagging complete."));
+                source.sendMessage(Text.of("Tagging complete."));
             }
             if (scanType.equalsIgnoreCase("removePhase")) {
-                self.sendMessage(Text.of("Converting "+player.getNameForScoreboard()+"'s Items from phase to casual"));
+                source.sendMessage(Text.of("Converting "+player.getNameForScoreboard()+"'s Items from phase to casual"));
                 ItemConvertor.convertPhaseItems(player,-1);
-                self.sendMessage(Text.of("Conversion complete."));
+                source.sendMessage(Text.of("Conversion complete."));
             }
+            if (scanType.equalsIgnoreCase("deleteHardcore")) {
+                source.sendMessage(Text.of("Deleting "+player.getNameForScoreboard()+"'s Hardcore Items"));
+                ItemConvertor.deleteHardcoreItems(player,-1);
+                source.sendMessage(Text.of("Deletion complete."));
+            }
+
         }
         return 1;
     }
@@ -200,22 +201,41 @@ public class OtherCommand {
 
         ItemStack holdingItem = ItemManager.getHoldingItem(self);
         ItemManager.setRoleplayData(holdingItem,(byte) 2);
-        List<Text> lore = ItemManager.getLore(holdingItem);
-        boolean alreadyHasPhaseLore = false;
-        for (Text loreLine : lore) {
-            if (loreLine.getString().contains("-= Phase")) {
-                alreadyHasPhaseLore = true;
-                break;
-            }
-        }
-        if (!alreadyHasPhaseLore) {
+        ItemManager.clearItemPhaseOrHardcoreLore(holdingItem);
 
-            Text phaseLore = Text.literal("-= Phase Item =-").formatted(Formatting.RED);
-            if (ItemManager.isDungeonCard(holdingItem)) {
-                phaseLore = Text.literal("-= Phase Card =-").formatted(Formatting.RED);
-            }
-            ItemManager.addLoreToItemStack(holdingItem,List.of(Text.of(phaseLore)));
+        Text phaseLore = Text.literal("-= Phase Item =-").formatted(Formatting.RED);
+        if (ItemManager.isDungeonCard(holdingItem)) {
+            phaseLore = Text.literal("-= Phase Card =-").formatted(Formatting.RED);
         }
+        ItemManager.addLoreToItemStack(holdingItem,List.of(Text.of(phaseLore)));
+
+        return 1;
+    }
+    public static int makeHardcore(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final ServerPlayerEntity self = source.getPlayer();
+        if (self == null) return -1;
+
+        ItemStack holdingItem = ItemManager.getHoldingItem(self);
+        ItemManager.setRoleplayData(holdingItem,(byte) 3);
+        ItemManager.clearItemPhaseOrHardcoreLore(holdingItem);
+
+        Text phaseLore = Text.literal("-= Hardcore Item =-").formatted(Formatting.RED);
+        if (ItemManager.isDungeonCard(holdingItem)) {
+            phaseLore = Text.literal("-= Hardcore Card =-").formatted(Formatting.RED);
+        }
+        ItemManager.addLoreToItemStack(holdingItem,List.of(Text.of(phaseLore)));
+
+        return 1;
+    }
+    public static int makeCasual(ServerCommandSource source) {
+        MinecraftServer server = source.getServer();
+        final ServerPlayerEntity self = source.getPlayer();
+        if (self == null) return -1;
+
+        ItemStack holdingItem = ItemManager.getHoldingItem(self);
+        ItemManager.setRoleplayData(holdingItem,(byte) 1);
+        ItemManager.clearItemPhaseOrHardcoreLore(holdingItem);
 
         return 1;
     }

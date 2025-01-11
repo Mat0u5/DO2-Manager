@@ -223,4 +223,14 @@ public class FakeSign {
         }
         return num;
     }
+    public static void shutdownExecutor() {
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(1, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+        }
+    }
 }

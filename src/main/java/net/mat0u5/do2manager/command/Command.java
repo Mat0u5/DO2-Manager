@@ -4,6 +4,7 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
+import com.mojang.brigadier.builder.RequiredArgumentBuilder;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
@@ -18,10 +19,12 @@ import net.minecraft.command.CommandSource;
 import net.minecraft.command.argument.BlockPosArgumentType;
 import net.minecraft.command.argument.CommandFunctionArgumentType;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.command.argument.ItemStackArgumentType;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.FunctionCommand;
+import net.minecraft.server.command.GiveCommand;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.function.CommandFunctionManager;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -438,7 +441,6 @@ public class Command {
                     )
                 )
                 .then(literal("invScanner")
-                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
                         .then(argument("targets", EntityArgumentType.players())
                             .then(literal("tagExpanded")
                                 .executes(context -> OtherCommand.invScanner(
@@ -450,6 +452,12 @@ public class Command {
                                 .executes(context -> OtherCommand.invScanner(
                                     context.getSource(),
                                     EntityArgumentType.getPlayers(context, "targets"),"removePhase")
+                                )
+                            )
+                            .then(literal("deleteHardcore")
+                                .executes(context -> OtherCommand.invScanner(
+                                    context.getSource(),
+                                    EntityArgumentType.getPlayers(context, "targets"),"deleteHardcore")
                                 )
                             )
                         )
@@ -540,6 +548,33 @@ public class Command {
                         54,
                         "Decked Out 2 Items",
                         "_-629,11,1966;0;1",false)
+                )
+                .then(literal("customGive")
+                    .requires(source -> (isModOwner(source.getPlayer())))
+                    .then(literal("add")
+                        .then(argument("name", StringArgumentType.string())
+                            .executes(context -> CustomGiveCommand.addMainHandItem(
+                                context.getSource(), StringArgumentType.getString(context, "name"))
+                            )
+                        )
+                    )
+                    .then(literal("remove")
+                        .then(argument("name", StringArgumentType.string())
+                            .executes(context -> CustomGiveCommand.removeItem(
+                                context.getSource(), StringArgumentType.getString(context, "name"))
+                            )
+                        )
+                    )
+                    .then(literal("removeAll")
+                        .executes(context -> CustomGiveCommand.removeAllItems(
+                            context.getSource())
+                        )
+                    )
+                    .then(literal("reload")
+                        .executes(context -> CustomGiveCommand.reloadItems(
+                            context.getSource())
+                        )
+                    )
                 )
         );
         dispatcher.register(
@@ -741,10 +776,22 @@ public class Command {
         );
 
         dispatcher.register(
-            literal("makephase")
+            literal("convert")
                 .requires(source -> (isAdmin(source.getPlayer())))
-                .executes(context -> OtherCommand.makePhase(
+                .then(literal("casual")
+                    .executes(context -> OtherCommand.makeCasual(
                         context.getSource())
+                    )
+                )
+                .then(literal("hardcore")
+                    .executes(context -> OtherCommand.makeHardcore(
+                        context.getSource())
+                    )
+                )
+                .then(literal("phase")
+                    .executes(context -> OtherCommand.makePhase(
+                        context.getSource())
+                    )
                 )
         );
         dispatcher.register(
@@ -824,7 +871,27 @@ public class Command {
                 )
         );
 
-
+        dispatcher.register(
+            literal("gib")
+            .requires(source -> (isAdmin(source.getPlayer())))
+            .then(argument("targets", EntityArgumentType.players())
+                .then(argument("item", StringArgumentType.string())
+                    .suggests((context, builder) -> CommandSource.suggestMatching(CustomGiveCommand.getAllItems(), builder))
+                    .executes(context -> CustomGiveCommand.execute(
+                            context.getSource(), StringArgumentType.getString(context, "item"),
+                            EntityArgumentType.getPlayers(context, "targets"), 1
+                        )
+                    )
+                    .then(argument("count", IntegerArgumentType.integer(1))
+                        .executes(context -> CustomGiveCommand.execute(
+                                context.getSource(), StringArgumentType.getString(context, "item"),
+                                EntityArgumentType.getPlayers(context, "targets"), IntegerArgumentType.getInteger(context, "count")
+                            )
+                        )
+                    )
+                )
+            )
+        );
     }
     public static final SuggestionProvider<ServerCommandSource> FUNCTION_COMMAND_SUGGESTION = (context, builder) -> {
         CommandFunctionManager commandFunctionManager = ((ServerCommandSource)context.getSource()).getServer().getCommandFunctionManager();
