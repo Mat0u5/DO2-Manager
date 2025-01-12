@@ -11,6 +11,7 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.command.RestartCommand;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.mat0u5.do2manager.queue.QueueEvents;
+import net.mat0u5.do2manager.gui.StatsViewer;
 import net.mat0u5.do2manager.utils.DiscordBot;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.MSPTUtils;
@@ -20,6 +21,7 @@ import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.block.CommandBlock;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -73,6 +75,7 @@ public class Events {
         GuiInventory_Database.shutdownExecutor();
         Main.shutdownExecutor();
         FakeSign.shutdownExecutor();
+        StatsViewer.shutdownExecutor();
         shutdownExecutor();
     }
     private static void onServerTickEnd(MinecraftServer server) {
@@ -90,6 +93,7 @@ public class Events {
                 discordDescriptionUpdate=0;
                 new DiscordUtils().updateDiscordChannelDescription();
             }
+            StatsViewer.onTick(server);
         }catch (Exception e) {
             e.printStackTrace();
         }
