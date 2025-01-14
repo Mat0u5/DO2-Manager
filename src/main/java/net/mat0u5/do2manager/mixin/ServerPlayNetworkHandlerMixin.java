@@ -1,16 +1,15 @@
 package net.mat0u5.do2manager.mixin;
 
 import net.mat0u5.do2manager.database.DatabaseManager;
-import net.mat0u5.do2manager.events.CommandBlockEvents;
+import net.mat0u5.do2manager.gui.ingamescreen.StatsViewer;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.TextUtils;
 import net.mat0u5.do2manager.world.CommandBlockData;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.block.entity.CommandBlockBlockEntity;
-import net.minecraft.network.message.MessageType;
-import net.minecraft.network.message.SentMessage;
 import net.minecraft.network.message.SignedMessage;
+import net.minecraft.network.packet.c2s.play.PlayerInteractItemC2SPacket;
 import net.minecraft.network.packet.c2s.play.UpdateCommandBlockC2SPacket;
 import net.minecraft.server.network.ServerPlayNetworkHandler;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -59,5 +58,12 @@ public class ServerPlayNetworkHandlerMixin {
             // Update the database with the new command block data
             DatabaseManager.updateCommandBlock(data);
         }
+    }
+    @Inject(method = "onPlayerInteractItem", at = @At("HEAD"))
+    private void onPlayerAction(PlayerInteractItemC2SPacket packet, CallbackInfo ci) {
+        // Get the packet's player
+        ServerPlayNetworkHandler handler = (ServerPlayNetworkHandler) (Object) this;
+        ServerPlayerEntity player = handler.player;
+        StatsViewer.onPlayerUse(player);
     }
 }

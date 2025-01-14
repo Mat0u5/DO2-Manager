@@ -11,7 +11,7 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.command.RestartCommand;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.mat0u5.do2manager.queue.QueueEvents;
-import net.mat0u5.do2manager.gui.StatsViewer;
+import net.mat0u5.do2manager.gui.ingamescreen.StatsViewer;
 import net.mat0u5.do2manager.utils.DiscordBot;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.MSPTUtils;
