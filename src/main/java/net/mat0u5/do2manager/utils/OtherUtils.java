@@ -54,6 +54,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.*;
 
+import static net.mat0u5.do2manager.Main.server;
+
 public class OtherUtils {
 
     public static double roundToNPlaces(double value, int n) {
@@ -167,13 +169,19 @@ public class OtherUtils {
         ServerCommandSource commandSource = server.getCommandSource().withSilent();
         manager.executeWithPrefix(commandSource,command);
     }
+    public static void executeCommand(String command) {
+        if (server == null) return;
+        CommandManager manager = server.getCommandManager();
+        ServerCommandSource commandSource = server.getCommandSource().withSilent();
+        manager.executeWithPrefix(commandSource,command);
+    }
     public static void broadcastMessage(MinecraftServer server, Text message) {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             player.sendMessage(message, false);
         }
     }
     public static void broadcastMessage(Text message) {
-        for (ServerPlayerEntity player : Main.server.getPlayerManager().getPlayerList()) {
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             player.sendMessage(message, false);
         }
     }
@@ -183,7 +191,7 @@ public class OtherUtils {
         return player != null;
     }
     public static boolean isPlayerOnline(String username) {
-        return isPlayerOnline(Main.server,username);
+        return isPlayerOnline(server,username);
     }
     public static String getPlayerNameFromUUID(String uuid) {
         if (Main.allPlayers.containsKey(uuid)) return Main.allPlayers.get(uuid);
@@ -323,7 +331,7 @@ public class OtherUtils {
         return null;
     }
     public static String getLock(LockableContainerBlockEntity container) {
-        RegistryWrapper.WrapperLookup registryLookup = Main.server.getRegistryManager();
+        RegistryWrapper.WrapperLookup registryLookup = server.getRegistryManager();
         NbtCompound nbt = container.createNbt(registryLookup);
         if (nbt == null) return null;
         if (!nbt.contains("Lock")) return null;

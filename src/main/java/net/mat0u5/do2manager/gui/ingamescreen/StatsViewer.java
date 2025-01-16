@@ -114,17 +114,13 @@ public class StatsViewer {
     public static int clickCooldown = 5;
 
     public static boolean currentlyReloading = false;
-
     public static void onTick(MinecraftServer server) {
-        /*
-        TODO add back :)
         playerChecker(server);
         if (currentPlayer != null) {
-            updateCursor();
-            playerCursorSet();
+            //updateCursor();
+            //playerCursorSet();
         }
         if (clickCooldown > 0) clickCooldown--;
-        */
     }
 
     public static void playerCursorSet() {
@@ -271,8 +267,8 @@ public class StatsViewer {
         if (currentPlayer == null) return;
         filteredRuns = new ArrayList<>();
         for (DO2RunAbridged run : abridgedRuns) {
-            if (FILTER_SUCCESS.equalsIgnoreCase("successful") && !run.getSuccessAdvanced(List.of(currentPlayer.getUuid().toString()))) continue;
-            if (FILTER_SUCCESS.equalsIgnoreCase("failed") && run.getSuccessAdvanced(List.of(currentPlayer.getUuid().toString()))) continue;
+            if (FILTER_SUCCESS.equalsIgnoreCase("successful") && !run.getSuccessFor(currentPlayer.getUuid().toString())) continue;
+            if (FILTER_SUCCESS.equalsIgnoreCase("failed") && run.getSuccessFor(currentPlayer.getUuid().toString())) continue;
             if (FILTER_DIFFICULTY.equalsIgnoreCase("easy") && run.difficulty != 1) continue;
             if (FILTER_DIFFICULTY.equalsIgnoreCase("normal") && run.difficulty != 2) continue;
             if (FILTER_DIFFICULTY.equalsIgnoreCase("hard") && run.difficulty != 3) continue;
@@ -284,7 +280,7 @@ public class StatsViewer {
             filteredRuns.add(run);
         }
         updateAllDisplays();
-        GraphGenerator.generateGraph(server.getOverworld(), filteredRuns, GRAPH);
+        GraphGenerator.generateGraph(server.getOverworld(), filteredRuns, GRAPH, currentPlayer);
     }
 
     public static void updateAllDisplays() {
@@ -487,9 +483,9 @@ public class StatsViewer {
 
         int currentWinStreak = 0;
         int currentLossStreak = 0;
-        List<String> uuid = List.of(currentPlayer.getUuid().toString());
+        String uuid = currentPlayer.getUuid().toString();
         for (DO2RunAbridged run : filteredRuns) {
-            if (run.getSuccessAdvanced(uuid)) {
+            if (run.getSuccessFor(uuid)) {
                 successfulRuns++;
                 totalEmbers += run.embers_counted;
                 totalCrowns += run.crowns_counted;
