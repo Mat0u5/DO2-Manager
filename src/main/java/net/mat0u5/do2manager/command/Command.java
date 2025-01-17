@@ -211,6 +211,19 @@ public class Command {
                         )
                     )
                 )
+                .then(literal("statsViewer")
+                    .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
+                        .then(literal("disable")
+                                .executes(context -> OtherCommand.statsViewer(
+                                        context.getSource(), true)
+                                )
+                        )
+                        .then(literal("enable")
+                            .executes(context -> OtherCommand.statsViewer(
+                                context.getSource(), false)
+                            )
+                        )
+                )
                 .then(literal("gui")
                     .requires(source -> (isAdmin(source.getPlayer())))
                     .executes(context -> new GuiInventory_Database().openRunInventory(

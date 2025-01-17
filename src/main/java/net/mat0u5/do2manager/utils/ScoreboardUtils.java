@@ -24,6 +24,7 @@ public class ScoreboardUtils {
         return getPlayerScore(server, player.getNameForScoreboard(),objectiveName);
     }
     public static java.lang.Integer getPlayerScore(MinecraftServer server, String playerName, String objectiveName) {
+        if (server == null) return null;
         Scoreboard scoreboard = server.getScoreboard();
         ScoreboardObjective objective = scoreboard.getNullableObjective(objectiveName);
         if (objective != null) {

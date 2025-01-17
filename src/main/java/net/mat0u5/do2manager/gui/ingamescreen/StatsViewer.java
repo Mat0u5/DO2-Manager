@@ -23,10 +23,7 @@ import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.Box;
 import net.minecraft.util.math.Vec3d;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -77,7 +74,6 @@ public class StatsViewer {
     public static List<DO2RunAbridged> filteredRuns = new ArrayList<>();
     public static final Box box = new Box(-535, 121, 1945, -507, 104, 1968);
     public static final Box interactableBox = new Box(-533, 120, 1945.5, -508, 106, 1946.1);
-    public static final Box graphBox = new Box(-528.0989, 107.5056, 1946.1, -512.9092, 116.6702, 1946.1);
     public static HashMap<Double, String> selectMap = new HashMap<Double, String>() {{
         put(117.0918, "stats_filters_run_all");
         put(116.5918, "stats_filters_run_casual");
@@ -115,15 +111,21 @@ public class StatsViewer {
 
     public static boolean currentlyReloading = false;
     public static void onTick(MinecraftServer server) {
-        playerChecker(server);
-        if (currentPlayer != null) {
-            //updateCursor();
-            //playerCursorSet();
+        if (Main.statsViewerDisabled) return;
+        try {
+            playerChecker(server);
+            if (currentPlayer != null) {
+                updateCursor();
+                playerCursorSet();
+            }
+            if (clickCooldown > 0) clickCooldown--;
+        }catch(Exception e) {
+            Main.LOGGER.error(e.getMessage());
         }
-        if (clickCooldown > 0) clickCooldown--;
     }
 
     public static void playerCursorSet() {
+        if (Main.statsViewerDisabled) return;
         if (currentPlayer == null) return;
         ItemStack cursor = new ItemStack(Items.IRON_NUGGET, 1);
         ItemManager.setModelData(cursor, 521);
@@ -153,32 +155,38 @@ public class StatsViewer {
     }
 
     public static void onPlayerUse(ServerPlayerEntity player) {
-        Map.Entry<Double, String> pointingAt = getPointingBox();
-        if (pointingAt == null) return;
-        if (clickCooldown > 0) return;
-        clickCooldown = 5;
-        String clicked = pointingAt.getValue();
-        if (clicked.startsWith("stats_filters_run_")) {
-            String newClicked = clicked.replaceFirst("stats_filters_run_", "");
-            FILTER_RUNTYPE = newClicked;
+        if (Main.statsViewerDisabled) return;
+        try {
+            Map.Entry<Double, String> pointingAt = getPointingBox();
+            if (pointingAt == null) return;
+            if (clickCooldown > 0) return;
+            clickCooldown = 5;
+            String clicked = pointingAt.getValue();
+            if (clicked.startsWith("stats_filters_run_")) {
+                String newClicked = clicked.replaceFirst("stats_filters_run_", "");
+                FILTER_RUNTYPE = newClicked;
+            }
+            else if (clicked.startsWith("stats_filters_difficulty_")) {
+                String newClicked = clicked.replaceFirst("stats_filters_difficulty_", "");
+                FILTER_DIFFICULTY = newClicked;
+            }
+            else if (clicked.startsWith("stats_filters_success_")) {
+                String newClicked = clicked.replaceFirst("stats_filters_success_", "");
+                FILTER_SUCCESS = newClicked;
+            }
+            else if (clicked.startsWith("stats_graph_")) {
+                String newClicked = clicked.replaceFirst("stats_graph_", "");
+                GRAPH = newClicked;
+            }
+            player.getServerWorld().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.UI_BUTTON_CLICK, SoundCategory.PLAYERS, 0.8F, 1.0F);
+            updateFilters();
+        }catch(Exception e) {
+            Main.LOGGER.error(e.getMessage());
         }
-        else if (clicked.startsWith("stats_filters_difficulty_")) {
-            String newClicked = clicked.replaceFirst("stats_filters_difficulty_", "");
-            FILTER_DIFFICULTY = newClicked;
-        }
-        else if (clicked.startsWith("stats_filters_success_")) {
-            String newClicked = clicked.replaceFirst("stats_filters_success_", "");
-            FILTER_SUCCESS = newClicked;
-        }
-        else if (clicked.startsWith("stats_graph_")) {
-            String newClicked = clicked.replaceFirst("stats_graph_", "");
-            GRAPH = newClicked;
-        }
-        player.getServerWorld().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.UI_BUTTON_CLICK, SoundCategory.PLAYERS, 0.8F, 1.0F);
-        updateFilters();
     }
 
     public static void playerChecker(MinecraftServer server) {
+        if (Main.statsViewerDisabled) return;
         List<ServerPlayerEntity> playersInBox = new ArrayList<>();
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             if (box.intersects(player.getBoundingBox())) playersInBox.add(player);
@@ -243,14 +251,14 @@ public class StatsViewer {
 
         setDisplayEntityText("stats_name", player.getStyledDisplayName());
         currentPlayer = player;
-        abridgedRuns = new ArrayList<>();
-        filteredRuns = new ArrayList<>();
+        List<DO2RunAbridged> newAbridgedRuns = new ArrayList<>();
         String uuid = player.getUuid().toString();
         for (DO2RunAbridged abridgedRun : Main.allAbridgedRuns) {
             if (abridgedRun.runners.contains(uuid)) {
-                abridgedRuns.add(abridgedRun);
+                newAbridgedRuns.add(abridgedRun);
             }
         }
+        abridgedRuns = newAbridgedRuns;
         updateFilters();
     }
 
@@ -280,7 +288,8 @@ public class StatsViewer {
             filteredRuns.add(run);
         }
         updateAllDisplays();
-        GraphGenerator.generateGraph(server.getOverworld(), filteredRuns, GRAPH, currentPlayer);
+        boolean noFilters = FILTER_SUCCESS.equalsIgnoreCase("all") && FILTER_DIFFICULTY.equalsIgnoreCase("all") && FILTER_RUNTYPE.equalsIgnoreCase("all");
+        GraphGenerator.generateGraph(server.getOverworld(), new ArrayList<>(filteredRuns), GRAPH, noFilters, currentPlayer);
     }
 
     public static void updateAllDisplays() {
@@ -440,8 +449,8 @@ public class StatsViewer {
 
         setDisplayEntityText("stats_graph_winpercent", Text.literal("Win Percent"));
         setDisplayEntityText("stats_graph_runs", Text.literal("Runs"));
-        setDisplayEntityText("stats_graph_embers", Text.literal("Avg. Embers"));
-        setDisplayEntityText("stats_graph_crowns", Text.literal("Avg. Crowns"));
+        setDisplayEntityText("stats_graph_embers", Text.literal("Run Embers"));
+        setDisplayEntityText("stats_graph_crowns", Text.literal("Run Crowns"));
         setDisplayEntityText("stats_graph_totalembers", Text.literal("Total Embers"));
         setDisplayEntityText("stats_graph_totalcrowns", Text.literal("Total Crowns"));
 
@@ -463,8 +472,8 @@ public class StatsViewer {
 
         if (GRAPH.equalsIgnoreCase("winpercent")) setDisplayEntityText("stats_graph_winpercent", Text.literal("§aWin Percent"));
         else if (GRAPH.equalsIgnoreCase("runs")) setDisplayEntityText("stats_graph_runs", Text.literal("§6Runs"));
-        else if (GRAPH.equalsIgnoreCase("embers")) setDisplayEntityText("stats_graph_embers", Text.literal("§3Avg. Embers"));
-        else if (GRAPH.equalsIgnoreCase("crowns")) setDisplayEntityText("stats_graph_crowns", Text.literal("§6Avg. Crowns"));
+        else if (GRAPH.equalsIgnoreCase("embers")) setDisplayEntityText("stats_graph_embers", Text.literal("§3Run Embers"));
+        else if (GRAPH.equalsIgnoreCase("crowns")) setDisplayEntityText("stats_graph_crowns", Text.literal("§6Run Crowns"));
         else if (GRAPH.equalsIgnoreCase("totalembers")) setDisplayEntityText("stats_graph_totalembers", Text.literal("§3Total Embers"));
         else if (GRAPH.equalsIgnoreCase("totalcrowns")) setDisplayEntityText("stats_graph_totalcrowns", Text.literal("§6Total Crowns"));
     }

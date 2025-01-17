@@ -32,6 +32,11 @@ import java.util.Collection;
 import java.util.List;
 
 public class OtherCommand {
+    public static int statsViewer(ServerCommandSource source, boolean newValue) {
+        Main.statsViewerDisabled = newValue;
+        source.sendError(Text.of("StatsViewer is now " + (Main.statsViewerDisabled ? "disabled" : "enabled")));
+        return 1;
+    }
     public static int executeSpeedrun(ServerCommandSource source) {
         MinecraftServer server = source.getServer();
         final PlayerEntity self = source.getPlayer();

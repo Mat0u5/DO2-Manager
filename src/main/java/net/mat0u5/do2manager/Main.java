@@ -43,6 +43,7 @@ public class Main implements ModInitializer {
 	public static boolean reloadedRuns = false;
 	public static Simulator simulator;
 	public static DungeonQueue dungeonQueue = new DungeonQueue();
+	public static boolean statsViewerDisabled = false;
 
 	@Override
 	public void onInitialize() {

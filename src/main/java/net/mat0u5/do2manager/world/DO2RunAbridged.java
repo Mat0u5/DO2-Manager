@@ -1,6 +1,7 @@
 package net.mat0u5.do2manager.world;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,10 +45,10 @@ public class DO2RunAbridged {
         if (runners.size() == 1) return false;
         return true;
     }
-    public int timestampDate() {
+    public long timestampDate() {
         if (date==null || date.isEmpty()) return -1;
         DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dateTime = LocalDateTime.parse(date, inputFormatter);
-        return dateTime.getSecond();
+        return dateTime.toEpochSecond(ZoneOffset.UTC);
     }
 }

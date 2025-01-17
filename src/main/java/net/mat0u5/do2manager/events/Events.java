@@ -36,6 +36,7 @@ public class Events {
 
     public static void register() {
         ServerLifecycleEvents.SERVER_STARTING.register(Events::onServerStart);
+        ServerLifecycleEvents.SERVER_STARTED.register(Events::onServerStarted);
         ServerLifecycleEvents.SERVER_STOPPING.register(Events::onServerStopping);
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> PlayerEvents.onPlayerJoin(server, handler.getPlayer()));
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
@@ -101,6 +102,9 @@ public class Events {
     private static void onServerStart(MinecraftServer server) {
         Main.server = server;
         System.out.println("MinecraftServer instance captured.");
+    }
+    private static void onServerStarted(MinecraftServer server) {
+        Main.reloadAllAbridgedRunsAsync();
     }
     public static void shutdownExecutor() {
         scheduler.shutdown();
