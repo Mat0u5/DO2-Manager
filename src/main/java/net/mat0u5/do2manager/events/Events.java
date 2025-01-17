@@ -104,6 +104,7 @@ public class Events {
         System.out.println("MinecraftServer instance captured.");
     }
     private static void onServerStarted(MinecraftServer server) {
+        OtherUtils.executeCommand("kill @e[tag=graph_var]");
         Main.reloadAllAbridgedRunsAsync();
     }
     public static void shutdownExecutor() {

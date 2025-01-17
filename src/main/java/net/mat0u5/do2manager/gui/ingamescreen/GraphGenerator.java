@@ -21,16 +21,16 @@ import static net.mat0u5.do2manager.Main.server;
 public class GraphGenerator {
 
     public static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM. dd", Locale.ENGLISH);
-    public static final Box graphBox = new Box(-528.0989, 107.5056, 1946.1, -512.9092, 116.6702, 1946.1);
+    public static final Box graphBox = new Box(-528.0989, 105.5056, 1946.1, -512.9092, 114.6702, 1946.1);
 
     public static final int Y_AXIS_LABELS = 5;
     public static final int X_AXIS_POINTS = 10;
 
     public static void generateGraph(ServerWorld world, List<DO2RunAbridged> runs, String metric, boolean noFilters, ServerPlayerEntity player) {
+        OtherUtils.executeCommand("kill @e[tag=graph_var]");
         if (Main.statsViewerDisabled) return;
         if (runs.isEmpty()) return;
         Collections.sort(runs, Comparator.comparingInt(DO2RunAbridged::getRunNum));
-        OtherUtils.executeCommand("kill @e[tag=graph_var]");
         String uuid = player.getUuidAsString();
 
         // Step 1: Calculate graph boundaries

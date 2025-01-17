@@ -72,33 +72,33 @@ public class StatsViewer {
     public static ServerPlayerEntity currentPlayer;
     public static List<DO2RunAbridged> abridgedRuns = new ArrayList<>();
     public static List<DO2RunAbridged> filteredRuns = new ArrayList<>();
-    public static final Box box = new Box(-535, 121, 1945, -507, 104, 1968);
-    public static final Box interactableBox = new Box(-533, 120, 1945.5, -508, 106, 1946.1);
+    public static final Box box = new Box(-535, 119, 1945, -507, 102, 1968);
+    public static final Box interactableBox = new Box(-533, 118, 1945.5, -508, 104, 1946.1);
     public static HashMap<Double, String> selectMap = new HashMap<Double, String>() {{
-        put(117.0918, "stats_filters_run_all");
-        put(116.5918, "stats_filters_run_casual");
-        put(116.0918, "stats_filters_run_phase");
-        put(115.5918, "stats_filters_run_hardcore");
+        put(115.0918, "stats_filters_run_all");
+        put(114.5918, "stats_filters_run_casual");
+        put(114.0918, "stats_filters_run_phase");
+        put(113.5918, "stats_filters_run_hardcore");
 
-        put(114.8418, "stats_filters_difficulty_all");
-        put(114.4043, "stats_filters_difficulty_easy");
-        put(113.9043, "stats_filters_difficulty_normal");
-        put(113.4043, "stats_filters_difficulty_hard");
-        put(112.9043, "stats_filters_difficulty_deadly");
-        put(112.4043, "stats_filters_difficulty_deepfrost");
-
-
-        put(111.6543, "stats_filters_success_all");
-        put(111.1543, "stats_filters_success_successful");
-        put(110.6543, "stats_filters_success_failed");
+        put(112.8418, "stats_filters_difficulty_all");
+        put(112.4043, "stats_filters_difficulty_easy");
+        put(111.9043, "stats_filters_difficulty_normal");
+        put(111.4043, "stats_filters_difficulty_hard");
+        put(110.9043, "stats_filters_difficulty_deadly");
+        put(110.4043, "stats_filters_difficulty_deepfrost");
 
 
-        put(108.8410, "stats_graph_winpercent");
-        put(108.4043, "stats_graph_runs");
-        put(107.9668, "stats_graph_embers");
-        put(107.5293, "stats_graph_crowns");
-        put(107.0918, "stats_graph_totalembers");
-        put(106.6543, "stats_graph_totalcrowns");
+        put(109.6543, "stats_filters_success_all");
+        put(109.1543, "stats_filters_success_successful");
+        put(108.6543, "stats_filters_success_failed");
+
+
+        put(106.8410, "stats_graph_winpercent");
+        put(106.4043, "stats_graph_runs");
+        put(105.9668, "stats_graph_embers");
+        put(105.5293, "stats_graph_crowns");
+        put(105.0918, "stats_graph_totalembers");
+        put(104.6543, "stats_graph_totalcrowns");
 
     }};
 
@@ -555,9 +555,6 @@ public class StatsViewer {
             return;
         }
 
-        // Define the area to search for the TextDisplay entities
-        final Box box = new Box(-535, 121, 1945, -507, 104, 1968);
-
         ServerWorld world = server.getOverworld();
         if (world == null) {
             System.err.println("World not found.");
@@ -599,9 +596,6 @@ public class StatsViewer {
             System.err.println("Invalid tag or text provided.");
             return;
         }
-
-        // Define the area to search for the TextDisplay entities
-        final Box box = new Box(-535, 121, 1945, -507, 104, 1968);
 
         ServerWorld world = server.getOverworld();
         if (world == null) {
