@@ -129,7 +129,8 @@ public class StatsViewer {
         if (currentPlayer == null) return;
         ItemStack cursor = new ItemStack(Items.IRON_NUGGET, 1);
         ItemManager.setModelData(cursor, 521);
-        cursor.set(DataComponentTypes.CUSTOM_NAME, Text.of("Cursor"));
+        cursor.set(DataComponentTypes.CUSTOM_NAME, Text.of("§r§lCursor"));
+        ItemManager.addLoreToItemStack(cursor, List.of(Text.of("§5§oRight click to use.")));
         if (!box.intersects(currentPlayer.getBoundingBox())) {
             currentPlayer.getInventory().removeOne(cursor);
             return;
@@ -142,9 +143,6 @@ public class StatsViewer {
     }
 
     public static void removeCursorFromPlayer(ServerPlayerEntity player) {
-        ItemStack cursor = new ItemStack(Items.IRON_NUGGET, 1);
-        ItemManager.setModelData(cursor, 521);
-        cursor.set(DataComponentTypes.CUSTOM_NAME, Text.of("Cursor"));
         for (int pos = 0; pos < player.getInventory().size(); pos++) {
             ItemStack itemAtPos = player.getInventory().getStack(pos);
             if (ItemManager.getModelData(itemAtPos) == 521) {
@@ -263,6 +261,7 @@ public class StatsViewer {
     }
 
     public static void onLastPlayerLeave() {
+        OtherUtils.executeCommand("kill @e[tag=graph_var]");
         if (currentPlayer != null) {
             removeCursorFromPlayer(currentPlayer);
         }
@@ -419,8 +418,8 @@ public class StatsViewer {
 
         if (targetPos.x > -529.7) return null;
         if (targetPos.x < -533) return null;
-        if (targetPos.y > 117.5) return null;
-        if (targetPos.y < 106) return null;
+        if (targetPos.y > 115.5) return null;
+        if (targetPos.y < 104) return null;
 
         for (Map.Entry<Double, String> entry : selectMap.entrySet()) {
             Double posY = entry.getKey();

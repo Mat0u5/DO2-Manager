@@ -166,10 +166,60 @@ public class ItemManager {
             giveItemStack(player,itemStack);
         }
     }
-    public static void removeAllComponents(ItemStack itemStack) {
-        for (ComponentType<?> comp : itemStack.getComponents().getTypes()) {
-            itemStack.remove(comp);
-        }
+    public static void removeAllComponents(ItemStack itemStack) {itemStack.set(DataComponentTypes.CUSTOM_DATA, itemStack.getDefaultComponents().get(DataComponentTypes.CUSTOM_DATA));
+        itemStack.set(DataComponentTypes.MAX_STACK_SIZE, itemStack.getDefaultComponents().get(DataComponentTypes.MAX_STACK_SIZE));
+        itemStack.set(DataComponentTypes.MAX_DAMAGE, itemStack.getDefaultComponents().get(DataComponentTypes.MAX_DAMAGE));
+        itemStack.set(DataComponentTypes.DAMAGE, itemStack.getDefaultComponents().get(DataComponentTypes.DAMAGE));
+        itemStack.set(DataComponentTypes.UNBREAKABLE, itemStack.getDefaultComponents().get(DataComponentTypes.UNBREAKABLE));
+        itemStack.set(DataComponentTypes.CUSTOM_NAME, itemStack.getDefaultComponents().get(DataComponentTypes.CUSTOM_NAME));
+        itemStack.set(DataComponentTypes.ITEM_NAME, itemStack.getDefaultComponents().get(DataComponentTypes.ITEM_NAME));
+        itemStack.set(DataComponentTypes.LORE, itemStack.getDefaultComponents().get(DataComponentTypes.LORE));
+        itemStack.set(DataComponentTypes.RARITY, itemStack.getDefaultComponents().get(DataComponentTypes.RARITY));
+        itemStack.set(DataComponentTypes.ENCHANTMENTS, itemStack.getDefaultComponents().get(DataComponentTypes.ENCHANTMENTS));
+        itemStack.set(DataComponentTypes.CAN_PLACE_ON, itemStack.getDefaultComponents().get(DataComponentTypes.CAN_PLACE_ON));
+        itemStack.set(DataComponentTypes.CAN_BREAK, itemStack.getDefaultComponents().get(DataComponentTypes.CAN_BREAK));
+        itemStack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, itemStack.getDefaultComponents().get(DataComponentTypes.ATTRIBUTE_MODIFIERS));
+        itemStack.set(DataComponentTypes.CUSTOM_MODEL_DATA, itemStack.getDefaultComponents().get(DataComponentTypes.CUSTOM_MODEL_DATA));
+        itemStack.set(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, itemStack.getDefaultComponents().get(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP));
+        itemStack.set(DataComponentTypes.HIDE_TOOLTIP, itemStack.getDefaultComponents().get(DataComponentTypes.HIDE_TOOLTIP));
+        itemStack.set(DataComponentTypes.REPAIR_COST, itemStack.getDefaultComponents().get(DataComponentTypes.REPAIR_COST));
+        itemStack.set(DataComponentTypes.CREATIVE_SLOT_LOCK, itemStack.getDefaultComponents().get(DataComponentTypes.CREATIVE_SLOT_LOCK));
+        itemStack.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, itemStack.getDefaultComponents().get(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE));
+        itemStack.set(DataComponentTypes.INTANGIBLE_PROJECTILE, itemStack.getDefaultComponents().get(DataComponentTypes.INTANGIBLE_PROJECTILE));
+        itemStack.set(DataComponentTypes.FOOD, itemStack.getDefaultComponents().get(DataComponentTypes.FOOD));
+        itemStack.set(DataComponentTypes.FIRE_RESISTANT, itemStack.getDefaultComponents().get(DataComponentTypes.FIRE_RESISTANT));
+        itemStack.set(DataComponentTypes.TOOL, itemStack.getDefaultComponents().get(DataComponentTypes.TOOL));
+        itemStack.set(DataComponentTypes.STORED_ENCHANTMENTS, itemStack.getDefaultComponents().get(DataComponentTypes.STORED_ENCHANTMENTS));
+        itemStack.set(DataComponentTypes.DYED_COLOR, itemStack.getDefaultComponents().get(DataComponentTypes.DYED_COLOR));
+        itemStack.set(DataComponentTypes.MAP_COLOR, itemStack.getDefaultComponents().get(DataComponentTypes.MAP_COLOR));
+        itemStack.set(DataComponentTypes.MAP_ID, itemStack.getDefaultComponents().get(DataComponentTypes.MAP_ID));
+        itemStack.set(DataComponentTypes.MAP_DECORATIONS, itemStack.getDefaultComponents().get(DataComponentTypes.MAP_DECORATIONS));
+        itemStack.set(DataComponentTypes.MAP_POST_PROCESSING, itemStack.getDefaultComponents().get(DataComponentTypes.MAP_POST_PROCESSING));
+        itemStack.set(DataComponentTypes.CHARGED_PROJECTILES, itemStack.getDefaultComponents().get(DataComponentTypes.CHARGED_PROJECTILES));
+        itemStack.set(DataComponentTypes.BUNDLE_CONTENTS, itemStack.getDefaultComponents().get(DataComponentTypes.BUNDLE_CONTENTS));
+        itemStack.set(DataComponentTypes.POTION_CONTENTS, itemStack.getDefaultComponents().get(DataComponentTypes.POTION_CONTENTS));
+        itemStack.set(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS, itemStack.getDefaultComponents().get(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS));
+        itemStack.set(DataComponentTypes.WRITABLE_BOOK_CONTENT, itemStack.getDefaultComponents().get(DataComponentTypes.WRITABLE_BOOK_CONTENT));
+        itemStack.set(DataComponentTypes.WRITTEN_BOOK_CONTENT, itemStack.getDefaultComponents().get(DataComponentTypes.WRITTEN_BOOK_CONTENT));
+        itemStack.set(DataComponentTypes.TRIM, itemStack.getDefaultComponents().get(DataComponentTypes.TRIM));
+        itemStack.set(DataComponentTypes.DEBUG_STICK_STATE, itemStack.getDefaultComponents().get(DataComponentTypes.DEBUG_STICK_STATE));
+        itemStack.set(DataComponentTypes.ENTITY_DATA, itemStack.getDefaultComponents().get(DataComponentTypes.ENTITY_DATA));
+        itemStack.set(DataComponentTypes.BUCKET_ENTITY_DATA, itemStack.getDefaultComponents().get(DataComponentTypes.BUCKET_ENTITY_DATA));
+        itemStack.set(DataComponentTypes.BLOCK_ENTITY_DATA, itemStack.getDefaultComponents().get(DataComponentTypes.BLOCK_ENTITY_DATA));
+        itemStack.set(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER, itemStack.getDefaultComponents().get(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER));
+        itemStack.set(DataComponentTypes.JUKEBOX_PLAYABLE, itemStack.getDefaultComponents().get(DataComponentTypes.JUKEBOX_PLAYABLE));
+        itemStack.set(DataComponentTypes.LODESTONE_TRACKER, itemStack.getDefaultComponents().get(DataComponentTypes.LODESTONE_TRACKER));
+        itemStack.set(DataComponentTypes.FIREWORK_EXPLOSION, itemStack.getDefaultComponents().get(DataComponentTypes.FIREWORK_EXPLOSION));
+        itemStack.set(DataComponentTypes.FIREWORKS, itemStack.getDefaultComponents().get(DataComponentTypes.FIREWORKS));
+        itemStack.set(DataComponentTypes.PROFILE, itemStack.getDefaultComponents().get(DataComponentTypes.PROFILE));
+        itemStack.set(DataComponentTypes.NOTE_BLOCK_SOUND, itemStack.getDefaultComponents().get(DataComponentTypes.NOTE_BLOCK_SOUND));
+        itemStack.set(DataComponentTypes.BANNER_PATTERNS, itemStack.getDefaultComponents().get(DataComponentTypes.BANNER_PATTERNS));
+        itemStack.set(DataComponentTypes.BASE_COLOR, itemStack.getDefaultComponents().get(DataComponentTypes.BASE_COLOR));
+        itemStack.set(DataComponentTypes.POT_DECORATIONS, itemStack.getDefaultComponents().get(DataComponentTypes.POT_DECORATIONS));
+        itemStack.set(DataComponentTypes.CONTAINER, itemStack.getDefaultComponents().get(DataComponentTypes.CONTAINER));
+        itemStack.set(DataComponentTypes.BLOCK_STATE, itemStack.getDefaultComponents().get(DataComponentTypes.BLOCK_STATE));
+        itemStack.set(DataComponentTypes.LOCK, itemStack.getDefaultComponents().get(DataComponentTypes.LOCK));
+        itemStack.set(DataComponentTypes.CONTAINER_LOOT, itemStack.getDefaultComponents().get(DataComponentTypes.CONTAINER_LOOT));
     }
 
     public static String getItemId(ItemStack itemStack) {
