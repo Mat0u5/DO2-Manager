@@ -189,7 +189,15 @@ public class OtherCommand {
                 ItemConvertor.deleteHardcoreItems(player,-1);
                 source.sendMessage(Text.of("Deletion complete."));
             }
-
+            if (scanType.startsWith("deleteCRD") && scanType.contains("_")) {
+                String crdStr = scanType.split("_")[1];
+                try {
+                    int crd = Integer.parseInt(crdStr);
+                    source.sendMessage(Text.of("Deleting "+player.getNameForScoreboard()+"'s Items with CRD:"+crd));
+                    ItemConvertor.deleteCRDItems(player,crd);
+                    source.sendMessage(Text.of("Deletion complete."));
+                }catch(Exception ignore) {}
+            }
         }
         return 1;
     }

@@ -473,6 +473,14 @@ public class Command {
                                     EntityArgumentType.getPlayers(context, "targets"),"deleteHardcore")
                                 )
                             )
+                            .then(literal("deleteCustomRoleplayData")
+                                .then(argument("crd", IntegerArgumentType.integer(1))
+                                    .executes(context -> OtherCommand.invScanner(
+                                        context.getSource(),
+                                        EntityArgumentType.getPlayers(context, "targets"),"deleteCRD_"+IntegerArgumentType.getInteger(context, "crd"))
+                                    )
+                                )
+                            )
                         )
                 )
                 .then(literal("queueRestart")

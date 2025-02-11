@@ -55,6 +55,19 @@ public class ItemConvertor extends PlayerInventoryScanner {
         player.getInventory().markDirty();
         player.getEnderChestInventory().markDirty();
     }
+    public static void deleteCRDItems(ServerPlayerEntity player, int crd) {
+        String playerUUID = player.getUuidAsString();
+        System.out.println("Deleting "+player.getNameForScoreboard()+"'s Items with CRD:"+crd);
+
+        List<ItemStack> items = PlayerInventoryScanner.getALLPlayerItems(player);
+        for (ItemStack item : items) {
+            deleteCRDItem(item,crd);
+        }
+
+        System.out.println("Deletion complete.");
+        player.getInventory().markDirty();
+        player.getEnderChestInventory().markDirty();
+    }
     public static void convertCustomItems(ServerPlayerEntity player, int updateToNum) {
         String playerUUID = player.getUuidAsString();
         System.out.println("Tagging "+player.getNameForScoreboard()+"'s Custom Cards");
@@ -95,6 +108,17 @@ public class ItemConvertor extends PlayerInventoryScanner {
         ItemManager.removeAllComponents(itemStack);
         ItemManager.setModelData(itemStack, 1111);
         itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.of("§7The remains of a Hardcore item..."));
+    }
+    public static void deleteCRDItem(ItemStack itemStack, int crd) {
+        if (itemStack == null) return;
+
+        if (!ItemManager.hasCustomComponentEntry(itemStack, "CustomRoleplayData")) return;
+
+        byte roleplayData = ItemManager.getCustomComponentByte(itemStack, "CustomRoleplayData");
+        if (roleplayData != crd) return;
+        ItemManager.removeAllComponents(itemStack);
+        ItemManager.setModelData(itemStack, 1111);
+        itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.of("§7The remains of an item..."));
     }
     public static void tagExtendedItems(ItemStack itemStack) {
         if (itemStack == null) return;
