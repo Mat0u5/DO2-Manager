@@ -98,6 +98,32 @@ public class OtherUtils {
 
         return readableTime.toString();
     }
+    public static String convertSecondsToLongReadableTime(long totalSeconds) {
+        long days = totalSeconds / 86400;
+        long hours = (totalSeconds % 86400) / 3600;
+        long minutes = (totalSeconds % 3600) / 60;
+        long seconds = totalSeconds % 60;
+
+        StringBuilder readableTime = new StringBuilder();
+
+        if (days > 0) {
+            readableTime.append(days).append("d");
+        }
+
+        if (hours > 0) {
+            readableTime.append(hours).append("h");
+        }
+
+        if (minutes > 0) {
+            readableTime.append(minutes).append("m");
+        }
+
+        if (seconds > 0) {
+            readableTime.append(seconds).append("s");
+        }
+
+        return readableTime.toString();
+    }
     public static String convertTicksToClockTime(long ticks) {
         return convertTicksToClockTime(ticks, false);
     }
@@ -143,10 +169,12 @@ public class OtherUtils {
         if (result.contains("-")) result = "-" + result.replaceAll("-","");
         return result;
     }
+
     public static String removeQuotes(String str) {
         while (str.startsWith("\"") && str.endsWith("\"")) str = str.substring(1,str.length()-1);
         return str;
     }
+
     public static int findStringPosInString(String str, String find) {
         int deletedChars = 0;
         while(!str.startsWith(find) && str.length() != 0) {

@@ -2,6 +2,7 @@ package net.mat0u5.do2manager.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+import com.mojang.brigadier.arguments.LongArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.builder.RequiredArgumentBuilder;
@@ -912,6 +913,17 @@ public class Command {
                     )
                 )
             )
+        );
+
+
+        dispatcher.register(
+            literal("remainingTicks")
+                .requires(source -> (isAdmin(source.getPlayer())))
+                .then(argument("timestamp", LongArgumentType.longArg())
+                        .executes(context -> OtherCommand.remainingTicks(
+                                context.getSource(), LongArgumentType.getLong(context, "timestamp")
+                        ))
+                )
         );
     }
     public static final SuggestionProvider<ServerCommandSource> FUNCTION_COMMAND_SUGGESTION = (context, builder) -> {

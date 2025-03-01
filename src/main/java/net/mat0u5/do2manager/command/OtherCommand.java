@@ -32,6 +32,31 @@ import java.util.Collection;
 import java.util.List;
 
 public class OtherCommand {
+    public static int remainingTicks(ServerCommandSource source, long timestamp) {
+        long timestampMillis = 0;
+        if (timestamp >= 1000000000L && timestamp < 1000000000000L) {
+            //Timestamp is in seconds.
+            timestampMillis = timestamp * 1000;
+        }
+        else if (timestamp >= 1000000000000L && timestamp < 1000000000000000L) {
+            //Timestamp is in millis.
+            timestampMillis = timestamp;
+        }
+        else if (timestamp >= 1000000000000000L && timestamp < 1000000000000000000L) {
+            //Timestamp is in microseconds.
+            timestampMillis = timestamp / 1000;
+        }
+        else if (timestamp >= 1000000000000000000L) {
+            //Timestamp is in nanos.
+            timestampMillis = timestamp / 1000000;
+        }
+        long remainingMillis = timestampMillis - System.currentTimeMillis();
+        long remainingSeconds = (int) (remainingMillis / 1000);
+        int remainingTicks = (int) (remainingMillis / 50);
+        source.sendMessage(Text.of("There are "+remainingTicks+" ticks remaining. ("+OtherUtils.convertSecondsToLongReadableTime(remainingSeconds)+")"));
+        return remainingTicks;
+    }
+
     public static int statsViewer(ServerCommandSource source, boolean newValue) {
         Main.statsViewerDisabled = newValue;
         source.sendError(Text.of("StatsViewer is now " + (Main.statsViewerDisabled ? "disabled" : "enabled")));
