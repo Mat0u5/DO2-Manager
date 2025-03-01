@@ -32,7 +32,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class OtherCommand {
-    public static int remainingTicks(ServerCommandSource source, long timestamp) {
+    public static int remainingTime(ServerCommandSource source, long timestamp) {
         long timestampMillis = 0;
         if (timestamp >= 1000000000L && timestamp < 1000000000000L) {
             //Timestamp is in seconds.
@@ -52,9 +52,8 @@ public class OtherCommand {
         }
         long remainingMillis = timestampMillis - System.currentTimeMillis();
         long remainingSeconds = (int) (remainingMillis / 1000);
-        int remainingTicks = (int) (remainingMillis / 50);
-        source.sendMessage(Text.of("There are "+remainingTicks+" ticks remaining. ("+OtherUtils.convertSecondsToLongReadableTime(remainingSeconds)+")"));
-        return remainingTicks;
+        source.sendMessage(Text.of("There are "+remainingSeconds+" seconds remaining. ("+OtherUtils.convertSecondsToLongReadableTime(remainingSeconds)+")"));
+        return (int) remainingSeconds;
     }
 
     public static int statsViewer(ServerCommandSource source, boolean newValue) {

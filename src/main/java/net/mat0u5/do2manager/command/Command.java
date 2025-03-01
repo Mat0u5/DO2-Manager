@@ -917,10 +917,10 @@ public class Command {
 
 
         dispatcher.register(
-            literal("remainingTicks")
+            literal("remainingTime")
                 .requires(source -> (isAdmin(source.getPlayer())))
                 .then(argument("timestamp", LongArgumentType.longArg())
-                        .executes(context -> OtherCommand.remainingTicks(
+                        .executes(context -> OtherCommand.remainingTime(
                                 context.getSource(), LongArgumentType.getLong(context, "timestamp")
                         ))
                 )
