@@ -213,7 +213,7 @@ public class Command {
                     )
                 )
                 .then(literal("statsViewer")
-                    .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
+                    .requires(source -> (isAdmin(source.getPlayer()) || (source.getEntity() == null)))
                         .then(literal("disable")
                                 .executes(context -> OtherCommand.statsViewer(
                                         context.getSource(), true)

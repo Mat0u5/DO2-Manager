@@ -29,8 +29,9 @@ public class GraphGenerator {
     public static void generateGraph(ServerWorld world, List<DO2RunAbridged> runs, String metric, boolean noFilters, ServerPlayerEntity player) {
         OtherUtils.executeCommand("kill @e[tag=graph_var]");
         if (Main.statsViewerDisabled) return;
+        if (runs == null) return;
         if (runs.isEmpty()) return;
-        Collections.sort(runs, Comparator.comparingInt(DO2RunAbridged::getRunNum));
+        runs.sort(Comparator.comparingInt(DO2RunAbridged::getRunNum));
         String uuid = player.getUuidAsString();
 
         // Step 1: Calculate graph boundaries

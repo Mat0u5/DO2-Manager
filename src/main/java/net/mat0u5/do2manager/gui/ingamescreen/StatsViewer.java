@@ -74,7 +74,7 @@ public class StatsViewer {
     public static List<DO2RunAbridged> filteredRuns = new ArrayList<>();
     public static final Box box = new Box(-535, 119, 1945, -507, 102, 1968);
     public static final Box interactableBox = new Box(-533, 118, 1945.5, -508, 104, 1946.1);
-    public static HashMap<Double, String> selectMap = new HashMap<Double, String>() {{
+    public static Map<Double, String> selectMap = new HashMap<>() {{
         put(115.0918, "stats_filters_run_all");
         put(114.5918, "stats_filters_run_casual");
         put(114.0918, "stats_filters_run_phase");
@@ -155,6 +155,9 @@ public class StatsViewer {
     public static void onPlayerUse(ServerPlayerEntity player) {
         if (Main.statsViewerDisabled) return;
         try {
+            if (player == null) return;
+            if (currentPlayer == null) return;
+            if (player.getUuid() != player.getUuid()) return;
             Map.Entry<Double, String> pointingAt = getPointingBox();
             if (pointingAt == null) return;
             if (clickCooldown > 0) return;
@@ -261,34 +264,38 @@ public class StatsViewer {
     }
 
     public static void onLastPlayerLeave() {
-        OtherUtils.executeCommand("kill @e[tag=graph_var]");
-        if (currentPlayer != null) {
-            removeCursorFromPlayer(currentPlayer);
-        }
-        currentPlayer = null;
-        abridgedRuns = new ArrayList<>();
-        filteredRuns = new ArrayList<>();
+        try {
+            OtherUtils.executeCommand("kill @e[tag=graph_var]");
+            if (currentPlayer != null) {
+                removeCursorFromPlayer(currentPlayer);
+            }
+            currentPlayer = null;
+            abridgedRuns = new ArrayList<>();
+            filteredRuns = new ArrayList<>();
+        }catch(Exception e) {}
     }
 
     public static void updateFilters() {
-        if (currentPlayer == null) return;
-        filteredRuns = new ArrayList<>();
-        for (DO2RunAbridged run : abridgedRuns) {
-            if (FILTER_SUCCESS.equalsIgnoreCase("successful") && !run.getSuccessFor(currentPlayer.getUuid().toString())) continue;
-            if (FILTER_SUCCESS.equalsIgnoreCase("failed") && run.getSuccessFor(currentPlayer.getUuid().toString())) continue;
-            if (FILTER_DIFFICULTY.equalsIgnoreCase("easy") && run.difficulty != 1) continue;
-            if (FILTER_DIFFICULTY.equalsIgnoreCase("normal") && run.difficulty != 2) continue;
-            if (FILTER_DIFFICULTY.equalsIgnoreCase("hard") && run.difficulty != 3) continue;
-            if (FILTER_DIFFICULTY.equalsIgnoreCase("deadly") && run.difficulty != 4) continue;
-            if (FILTER_DIFFICULTY.equalsIgnoreCase("deepfrost") && run.difficulty != 5) continue;
-            if (FILTER_RUNTYPE.equalsIgnoreCase("casual") && !run.run_type.equalsIgnoreCase("casual")) continue;
-            if (FILTER_RUNTYPE.equalsIgnoreCase("phase") && !run.run_type.equalsIgnoreCase("phase")) continue;
-            if (FILTER_RUNTYPE.equalsIgnoreCase("hardcore") && !run.run_type.equalsIgnoreCase("hardcore")) continue;
-            filteredRuns.add(run);
-        }
-        updateAllDisplays();
-        boolean noFilters = FILTER_SUCCESS.equalsIgnoreCase("all") && FILTER_DIFFICULTY.equalsIgnoreCase("all") && FILTER_RUNTYPE.equalsIgnoreCase("all");
-        GraphGenerator.generateGraph(server.getOverworld(), new ArrayList<>(filteredRuns), GRAPH, noFilters, currentPlayer);
+        try {
+            if (currentPlayer == null) return;
+            filteredRuns = new ArrayList<>();
+            for (DO2RunAbridged run : abridgedRuns) {
+                if (FILTER_SUCCESS.equalsIgnoreCase("successful") && !run.getSuccessFor(currentPlayer.getUuid().toString())) continue;
+                if (FILTER_SUCCESS.equalsIgnoreCase("failed") && run.getSuccessFor(currentPlayer.getUuid().toString())) continue;
+                if (FILTER_DIFFICULTY.equalsIgnoreCase("easy") && run.difficulty != 1) continue;
+                if (FILTER_DIFFICULTY.equalsIgnoreCase("normal") && run.difficulty != 2) continue;
+                if (FILTER_DIFFICULTY.equalsIgnoreCase("hard") && run.difficulty != 3) continue;
+                if (FILTER_DIFFICULTY.equalsIgnoreCase("deadly") && run.difficulty != 4) continue;
+                if (FILTER_DIFFICULTY.equalsIgnoreCase("deepfrost") && run.difficulty != 5) continue;
+                if (FILTER_RUNTYPE.equalsIgnoreCase("casual") && !run.run_type.equalsIgnoreCase("casual")) continue;
+                if (FILTER_RUNTYPE.equalsIgnoreCase("phase") && !run.run_type.equalsIgnoreCase("phase")) continue;
+                if (FILTER_RUNTYPE.equalsIgnoreCase("hardcore") && !run.run_type.equalsIgnoreCase("hardcore")) continue;
+                filteredRuns.add(run);
+            }
+            updateAllDisplays();
+            boolean noFilters = FILTER_SUCCESS.equalsIgnoreCase("all") && FILTER_DIFFICULTY.equalsIgnoreCase("all") && FILTER_RUNTYPE.equalsIgnoreCase("all");
+            GraphGenerator.generateGraph(server.getOverworld(), new ArrayList<>(filteredRuns), GRAPH, noFilters, currentPlayer);
+        }catch(Exception e) {}
     }
 
     public static void updateAllDisplays() {
