@@ -3,6 +3,7 @@ package net.mat0u5.do2manager.world;
 import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.Dynamic;
 import net.mat0u5.do2manager.Main;
+import net.mat0u5.do2manager.utils.OtherUtils;
 import net.minecraft.SharedConstants;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.datafixer.TypeReferences;
@@ -18,15 +19,27 @@ import java.util.List;
 
 public class ItemConvertor extends PlayerInventoryScanner {
     public static List<Integer> expandedModelDatas = List.of(136,137,138,139,140);//plus <142;197>
-    public static final int INV_UPDATE = 4;
+
+    public static Integer getInvUpdate() {
+        String invUpdate = Main.config.getProperty("inv_update");
+        try {
+            return Integer.parseInt(invUpdate);
+        }catch(Exception e) {}
+        return null;
+    }
+
+    public static void setInvUpdate(int i) {
+        Main.config.setProperty("inv_update", String.valueOf(i));
+    }
 
     public static void onPlayerJoin(ServerPlayerEntity player) {
-        while (getPlayerUpdateNum(player) < INV_UPDATE) {
+        Integer invUpdate = getInvUpdate();
+        if (invUpdate == null) return;
+        while (getPlayerUpdateNum(player) < invUpdate) {
             int num = getPlayerUpdateNum(player);
             if (num == 0) convertPhaseItems(player,1);
             if (num == 1) convertCustomItems(player,2);
-            if (num == 2) convertPhaseItems(player,3);
-            if (num == 3) convertPhaseItems(player,4);
+            if (num >= 2) convertPhaseItems(player, invUpdate);
         }
     }
     public static void convertPhaseItems(ServerPlayerEntity player, int updateToNum) {

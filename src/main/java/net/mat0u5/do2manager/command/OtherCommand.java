@@ -26,6 +26,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.GameMode;
+import net.minecraft.world.updater.WorldUpdater;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -196,6 +197,18 @@ public class OtherCommand {
         }
         return false;
     }
+
+    public static int invScannerIncrement(ServerCommandSource source) {
+        Integer currentInvUpdate = ItemConvertor.getInvUpdate();
+        if (currentInvUpdate == null) currentInvUpdate = 0;
+        ItemConvertor.setInvUpdate(currentInvUpdate+1);
+        for (ServerPlayerEntity player : source.getServer().getPlayerManager().getPlayerList()) {
+            ItemConvertor.onPlayerJoin(player);
+        }
+        source.sendMessage(Text.of("Updated index from " + currentInvUpdate + " to " + (currentInvUpdate+1)));
+        return 1;
+    }
+
     public static int invScanner(ServerCommandSource source, Collection<? extends ServerPlayerEntity> targets, String scanType) {
         for (ServerPlayerEntity player : targets) {
             if (scanType.equalsIgnoreCase("tagExpanded")) {
