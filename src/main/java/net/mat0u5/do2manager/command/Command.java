@@ -455,6 +455,7 @@ public class Command {
                     )
                 )
                 .then(literal("invScanner")
+                        .requires(source -> (isAdmin(source.getPlayer()) || (source.getEntity() == null)))
                         .then(argument("targets", EntityArgumentType.players())
                             .then(literal("tagExpanded")
                                 .executes(context -> OtherCommand.invScanner(
