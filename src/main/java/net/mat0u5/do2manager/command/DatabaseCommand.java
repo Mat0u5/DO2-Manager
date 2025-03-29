@@ -177,7 +177,7 @@ public class DatabaseCommand {
         self.sendMessage(Text.of("Deleting all stored command block data..."));
         DatabaseManager.deleteAllCommandBlocks();
         self.sendMessage(Text.of("Started Command Block Search..."));
-        new BlockScanner().scanArea("command_block",server.getOverworld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
+        BlockScanner.scanArea("command_block",server.getOverworld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
         return 1;
     }
     public static int executeFunctionUpdateDatabase(ServerCommandSource source) {

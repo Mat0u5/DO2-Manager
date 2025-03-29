@@ -3,7 +3,6 @@ package net.mat0u5.do2manager.command;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.database.DatabaseManager;
-import net.mat0u5.do2manager.simulator.Simulator;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.utils.TextUtils;
@@ -83,7 +82,7 @@ public class OtherCommand {
         final PlayerEntity self = source.getPlayer();
         if (self == null) return -1;
         self.sendMessage(Text.of("Started Block Lock Search..."));
-        new BlockScanner().scanArea(type, (ServerWorld) self.getWorld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
+        BlockScanner.scanArea(type, (ServerWorld) self.getWorld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
         return 1;
     }
     public static int reload() {
@@ -139,7 +138,7 @@ public class OtherCommand {
         if (self == null) return -1;
         if (isRunner(server, self) && !self.hasPermissionLevel(2)) return -1;
 
-        List<ItemStack> currentCards = new Simulator().getDeckItemsFromProcessor(server.getOverworld());
+        List<ItemStack> currentCards = RunInfoParser.getDeckItemsFromProcessor(server.getOverworld());
 
         SimpleInventory inventory = new SimpleInventory(27);
         for (ItemStack item : currentCards) {

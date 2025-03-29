@@ -14,8 +14,8 @@ import net.mat0u5.do2manager.queue.QueueEvents;
 import net.mat0u5.do2manager.gui.ingamescreen.StatsViewer;
 import net.mat0u5.do2manager.utils.DiscordBot;
 import net.mat0u5.do2manager.utils.DiscordUtils;
-import net.mat0u5.do2manager.utils.MSPTUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
+import net.mat0u5.do2manager.world.BlockScanner;
 import net.mat0u5.do2manager.world.FakeSign;
 import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.block.CommandBlock;
@@ -72,7 +72,6 @@ public class Events {
 
         RunInfoParser.shutdownExecutor();
         DiscordBot.shutdownExecutor();
-        MSPTUtils.shutdownExecutor();
         GuiInventory_Database.shutdownExecutor();
         Main.shutdownExecutor();
         FakeSign.shutdownExecutor();
@@ -95,6 +94,7 @@ public class Events {
                 new DiscordUtils().updateDiscordChannelDescription();
             }
             StatsViewer.onTick(server);
+            BlockScanner.onTickEnd();
         }catch (Exception e) {
             e.printStackTrace();
         }

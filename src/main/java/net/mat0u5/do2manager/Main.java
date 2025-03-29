@@ -9,14 +9,12 @@ import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
 import net.mat0u5.do2manager.queue.DungeonQueue;
-import net.mat0u5.do2manager.simulator.Simulator;
 import net.mat0u5.do2manager.tcg.TCG_Items;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
 
 public class Main implements ModInitializer {
 	public static final String MOD_ID = "do2manager";
@@ -42,9 +39,8 @@ public class Main implements ModInitializer {
 	public static HashMap<String, PropertyMap> allPlayerProfiles = new HashMap<>();
 	public static MinecraftServer server;
 	public static boolean reloadedRuns = false;
-	public static Simulator simulator;
 	public static DungeonQueue dungeonQueue = new DungeonQueue();
-	public static boolean statsViewerDisabled = false;
+	public static boolean statsViewerDisabled = true;
 
 	@Override
 	public void onInitialize() {
@@ -55,7 +51,6 @@ public class Main implements ModInitializer {
 		DatabaseManager.checkForDBUpdates();
 		ModRegistries.registerModStuff();
 		LOGGER.info("Initializing DO2-Manager");
-		simulator = new Simulator();
 		dungeonQueue.loadQueueFromConfig();
 		TCG_Items.reload();
 		CustomGiveCommand.loadItemStacks();

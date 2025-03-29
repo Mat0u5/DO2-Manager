@@ -8,8 +8,10 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.world.ServerWorld;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -138,4 +140,16 @@ public class RunInfoParser {
                 playerPos.getZ() >= minZ && playerPos.getZ() <= maxZ;
     }
 
+    public static List<ItemStack> getDeckItemsFromProcessor(World world) {
+        List<ItemStack> entityItems = ItemManager.getContentsOfEntitiesAtPosition(world,new BlockPos(-565, 40, 1913),2);
+        List<ItemStack> hopper1 = ItemManager.getHopperItems((ServerWorld) world,new BlockPos(-565, 39, 1914));
+        List<ItemStack> hopper2 = ItemManager.getHopperItems((ServerWorld) world,new BlockPos(-565, 39, 1913));
+        List<ItemStack> dropper1 = ItemManager.getDropperItems((ServerWorld) world,new BlockPos(-564, 39, 1913));
+        List<ItemStack> dropper2 = ItemManager.getDropperItems((ServerWorld) world,new BlockPos(-564, 40, 1913));
+        entityItems.addAll(hopper1);
+        entityItems.addAll(hopper2);
+        entityItems.addAll(dropper1);
+        entityItems.addAll(dropper2);
+        return entityItems;
+    }
 }

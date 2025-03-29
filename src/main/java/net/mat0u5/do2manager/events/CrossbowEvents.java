@@ -17,11 +17,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 public class CrossbowEvents {
 
-    public static final Identifier GUNSHOT_ID = Identifier.of("minecraft", "gunshot");
+    public static final Identifier GUNSHOT_ID = Identifier.of("minecraft", "do2.weapon.gunshot");
     public static final SoundEvent GUNSHOT = SoundEvent.of(GUNSHOT_ID);
-    public static final Identifier GUNLOAD_ID = Identifier.of("minecraft", "gunload");
+    public static final Identifier GUNLOAD_ID = Identifier.of("minecraft", "do2.weapon.gun_loading");
     public static final SoundEvent GUNLOAD = SoundEvent.of(GUNLOAD_ID);
-    public static final Identifier GUNLOAD_FINISH_ID = Identifier.of("minecraft", "gunload_finish");
+    public static final Identifier GUNLOAD_FINISH_ID = Identifier.of("minecraft", "do2.weapon.gun_load_fin");
     public static final SoundEvent GUNLOAD_FINISH = SoundEvent.of(GUNLOAD_FINISH_ID);
 
     public static void onCrossbowUse(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {

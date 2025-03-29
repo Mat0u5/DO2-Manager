@@ -25,37 +25,40 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-public class BlockScanner extends MSPTUtils {
-    List<Integer> percentCompleted = new ArrayList<>();
-    String scanType = "";
-    String blockPassword = "";
-    int lockOrUnlock=0;
-    int listPos=0;
+import static net.mat0u5.do2manager.Main.server;
 
-    Integer positionsToCheckInt;
-    ServerWorld world = null;
-    PlayerEntity player = null;
-    ServerChunkManager chunkManager;
-    final Set<Block> lockableBlocks = Set.of(
+public class BlockScanner {
+    public static List<Integer> percentCompleted = new ArrayList<>();
+    public static String scanType = "";
+    public static String blockPassword = "";
+    public static int lockOrUnlock=0;
+    public static int listPos = 0;
+
+    public static Integer positionsToCheckInt;
+    public static ServerWorld world = null;
+    public static PlayerEntity player = null;
+    public static ServerChunkManager chunkManager;
+    public static final Set<Block> lockableBlocks = Set.of(
             Blocks.CHEST, Blocks.HOPPER, Blocks.TRAPPED_CHEST,
             Blocks.DISPENSER, Blocks.DROPPER, Blocks.FURNACE,
             Blocks.BARREL, Blocks.SMOKER, Blocks.BLAST_FURNACE
     );
-    final Set<Block> commandBlocks = Set.of(
+    public static final Set<Block> commandBlocks = Set.of(
             Blocks.COMMAND_BLOCK, Blocks.CHAIN_COMMAND_BLOCK, Blocks.REPEATING_COMMAND_BLOCK
     );
-    Integer minX;
-    Integer minY;
-    Integer minZ;
-    Integer maxX;
-    Integer maxY;
-    Integer maxZ;
-    List<CommandBlockData> commandBlocksList = new ArrayList<>();
+    public static Integer minX;
+    public static Integer minY;
+    public static Integer minZ;
+    public static Integer maxX;
+    public static Integer maxY;
+    public static Integer maxZ;
+    public static List<CommandBlockData> commandBlocksList = new ArrayList<>();
+    public static boolean running = false;
 
 
-    public void scanArea(String scanFor, ServerWorld world, BlockPos startPos, BlockPos endPos, PlayerEntity player) {
-        this.world = world;
-        this.player = player;
+    public static void scanArea(String scanFor, ServerWorld world, BlockPos startPos, BlockPos endPos, PlayerEntity player) {
+        BlockScanner.world = world;
+        BlockScanner.player = player;
         listPos = 0;
         commandBlocksList.clear();
         percentCompleted = new ArrayList<>();
@@ -73,20 +76,36 @@ public class BlockScanner extends MSPTUtils {
         positionsToCheckInt = (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);
         chunkManager = world.getChunkManager();
 
-        startBoosted(Main.server);
+        start();
+    }
+    private static void start() {
+        running = true;
     }
 
-    @Override
-    protected void complexFunction() {
-        if (!running) {
+    public static void onTickEnd() {
+        if (server == null || !running) {
+            return;
+        }
+        // Check the server's MSPT
+        float currentMSPT = server.getAverageTickTime();
+
+        // Adjust the workload based on current MSPT
+        if (currentMSPT < 45) {
+            complexFunction();
+        }
+    }
+
+    protected static void complexFunction() {
+        if (!running || positionsToCheckInt == null) {
             return;
         }
         if (listPos >= positionsToCheckInt) {
             System.out.println("Stopping...");
-            stop();
+            running = false;
+            stoppedFunction();
         }
         else {
-            int batchSize = 2_500_000;
+            int batchSize = 1_000_000;
             int batchEndPos = Math.min(listPos + batchSize, positionsToCheckInt);
             for (int i = listPos; i < batchEndPos; i++) {
                 processPosition(i);
@@ -110,7 +129,7 @@ public class BlockScanner extends MSPTUtils {
             }
         }
     }
-    private void processPosition(int posIndex) {
+    private static void processPosition(int posIndex) {
         int x = minX + (posIndex % (maxX - minX + 1));
         int y = minY + ((posIndex / (maxX - minX + 1)) % (maxY - minY + 1));
         int z = minZ + (posIndex / ((maxX - minX + 1) * (maxY - minY + 1)));
@@ -133,7 +152,7 @@ public class BlockScanner extends MSPTUtils {
             processContainerBlockPos(block,pos);
         }
     }
-    private void processCommandBlockPos(Block block, BlockPos pos) {
+    private static void processCommandBlockPos(Block block, BlockPos pos) {
         if (!commandBlocks.contains(block)) return;
         CommandBlockBlockEntity commandBlockEntity = (CommandBlockBlockEntity) world.getBlockEntity(pos);
         if (commandBlockEntity == null) return;
@@ -145,7 +164,7 @@ public class BlockScanner extends MSPTUtils {
         boolean auto = commandBlockEntity.isAuto();
         commandBlocksList.add(new CommandBlockData(pos.getX(), pos.getY(), pos.getZ(), type, conditional, auto, command));
     }
-    private void processContainerBlockPos(Block block, BlockPos pos) {
+    private static void processContainerBlockPos(Block block, BlockPos pos) {
         if (!lockableBlocks.contains(block) && !block.asItem().toString().contains("shulker_box")) return;
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity == null) return;
@@ -171,8 +190,7 @@ public class BlockScanner extends MSPTUtils {
         }
     }
 
-    @Override
-    protected void stoppedFunction() {
+    protected static void stoppedFunction() {
         player.sendMessage(Text.of("§aBlock scan complete."));
         System.out.println("Block scan complete.");
         if (scanType.equalsIgnoreCase("command_block")) {
@@ -182,7 +200,7 @@ public class BlockScanner extends MSPTUtils {
             player.sendMessage(Text.of("-Modified " + lockOrUnlock + " blocks."));
         }
     }
-    private void addCommandBlockData() {
+    private static void addCommandBlockData() {
         player.sendMessage(Text.of("§aSaving Data to database."));
         if (!commandBlocksList.isEmpty()) DatabaseManager.addCommandBlocks(commandBlocksList);
         player.sendMessage(Text.of("§aData saved."));

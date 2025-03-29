@@ -314,54 +314,6 @@ public class Command {
                                 )
                         )
                 )
-                .then(literal("simulator")
-                    .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
-                    .then(literal("card_played")
-                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
-                        .executes(context -> Main.simulator.cardPlayed(
-                            context.getSource())
-                        )
-                    )
-                    .then(literal("save_permanents")
-                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
-                        .executes(context -> Main.simulator.saveHand(
-                            context.getSource())
-                        )
-                    )
-                    .then(literal("hand_deck")
-                        .executes(context -> Main.simulator.runHand(
-                            context.getSource(),5000,false)
-                        )
-                        .then(argument("simulate_runs_num", IntegerArgumentType.integer(1))
-                            .executes(context -> Main.simulator.runHand(
-                                context.getSource(),
-                                IntegerArgumentType.getInteger(context, "simulate_runs_num"),false)
-                            )
-                            .then(literal("dont_skip_cards")
-                                .executes(context -> Main.simulator.runHand(
-                                    context.getSource(),IntegerArgumentType.getInteger(context, "simulate_runs_num"),true)
-                                )
-                            )
-                        )
-                    )
-                    .then(literal("stop_sim")
-                        .executes(context -> Main.simulator.stopSimCommand(
-                            context.getSource())
-                        )
-                    )
-                    .then(literal("disable")
-                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
-                        .executes(context -> Main.simulator.enOrDis(
-                            context.getSource(),"false")
-                        )
-                    )
-                    .then(literal("enable")
-                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
-                        .executes(context -> Main.simulator.enOrDis(
-                            context.getSource(),"true")
-                        )
-                    )
-                )
                 .then(literal("commandBlockSearch")
                     .requires(source -> (isAdmin(source.getPlayer())))
                     .then(literal("containsString")
@@ -382,16 +334,6 @@ public class Command {
                                     )
                             )
                     )
-                        /* SQLite does not support regex
-                        .then(literal("matchRegex")
-                                .then(argument("string", StringArgumentType.string())
-                                        .executes(context -> DatabaseCommand.executeCommandBlockSearch(
-                                                context.getSource(),
-                                                StringArgumentType.getString(context, "string"),
-                                                "matchRegex")
-                                        )
-                                )
-                        )*/
                     .then(literal("startsWithString")
                         .then(argument("string", StringArgumentType.string())
                             .executes(context -> DatabaseCommand.executeCommandBlockSearch(
