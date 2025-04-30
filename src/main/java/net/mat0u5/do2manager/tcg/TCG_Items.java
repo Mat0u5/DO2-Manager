@@ -1,7 +1,11 @@
 package net.mat0u5.do2manager.tcg;
 
+import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
+import net.mat0u5.do2manager.world.ItemManager;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,45 +15,45 @@ public class TCG_Items {
     private static Random rnd = new Random();
     private static List<ItemStack> allCards = new ArrayList<>();
     private static List<String> hermits = new ArrayList<>();
-    private static List<String> hermits_ultra_rare = List.of("TFC ★ ultra rare ★ Miner Type", "Etho ★ ultra rare ★ PVP Type", "Beef ★ ultra rare ★ Explorer Type");
-    private static List<String> hermits_rare = List.of("Hypno ★ rare ★ Miner Type", "Bdubs ★ rare ★ Balanced Type", "Cubfan ★ rare ★ Speedrunner Type", "DocM ★ rare ★ Farm Type", "Etho ★ rare ★ Redstone Type", "False ★ rare ★ Builder Type", "Gem ★ rare ★ Terraform Type", "Grian ★ rare ★ Prankster Type", "Iskall ★ rare ★ Farm Type", "Joe Hills ★ rare ★ Farm Type", "Keralis ★ rare ★ Terraform Type", "Pearl ★ rare ★ Terraform Type", "Rendog ★ rare ★ Builder Type", "Scar ★ rare ★ Builder Type", "Impulse ★ rare ★ Redstone Type", "Jevin ★ rare ★ Speedrunner Type", "TFC ★ rare ★ Miner Type", "Stress ★ rare ★ Prankster Type", "Tango ★ rare ★ Farm Type", "Beef ★ rare ★ Builder Type", "Wels ★ rare ★ PVP Type", "Mumbo ★ rare ★ Prankster Type", "xB ★ rare ★ Explorer Type", "Xisuma ★ rare ★ Redstone Type", "Zedaph ★ rare ★ Explorer Type", "Cleo ★ rare ★ PVP Type");
-    private static List<String> hermits_common = List.of("Rendog ■ common ■ Balanced Type", "Bdubs ■ common ■ Builder Type", "DocM ■ common ■ Redstone Type", "Hypno ■ common ■ Balanced Type", "False ■ common ■ PVP Type", "Gem ■ common ■ Builder Type", "Grian ■ common ■ Builder Type", "Etho ■ common ■ Balanced Type", "Jevin ■ common ■ Explorer Type", "Joe Hills ■ common ■ Explorer Type", "Mumbo ■ common ■ Redstone Type", "Cubfan ■ common ■ Balanced Type", "Scar ■ common ■ Terraform Type", "Impulse ■ common ■ Farm Type", "Iskall ■ common ■ Balanced Type", "Stress ■ common ■ Builder Type", "Beef ■ common ■ Balanced Type", "Tango ■ common ■ Redstone Type", "TFC ■ common ■ Miner Type", "Wels ■ common ■ Builder Type", "Pearl ■ common ■ Builder Type", "Keralis ■ common ■ Builder Type", "xB ■ common ■ PVP Type", "Xisuma ■ common ■ Farm Type", "Zedaph ■ common ■ Redstone Type", "Cleo ■ common ■ Builder Type");
-    private static List<String> hermits_alter_ego = List.of("Llamadad ★ rare ★ Balanced Type", "Evil Jevin ■ common ■ Miner Type", "Potato Boy ★ rare ★ Farm Type", "Poultry Man ■ common ■ Prankster Type", "Renbob ★ rare ★ Explorer Type", "Jingler ★ rare ★ Speedrunner Type", "Hotguy ★ rare ★ Explorer Type", "Beetlejhost ■ common ■ Speedrunner Type", "Goatfather ★ rare ★ Prankster Type", "Human Cleo ★ rare ★ PVP Type", "Evil X ★ rare ★ Balanced Type", "Helsknight ★ rare ★ PVP Type");
-    private static List<String> hermits_alter_ego_rare = List.of("Helsknight ★ rare ★ PVP Type", "Evil X ★ rare ★ Balanced Type", "Human Cleo ★ rare ★ PVP Type", "Llamadad ★ rare ★ Balanced Type", "Goatfather ★ rare ★ Prankster Type", "Hotguy ★ rare ★ Explorer Type", "Jingler ★ rare ★ Speedrunner Type", "Renbob ★ rare ★ Explorer Type", "Potato Boy ★ rare ★ Farm Type");
-    private static List<String> hermits_alter_ego_common = List.of("Beetlejhost ■ common ■ Speedrunner Type", "Evil Jevin ■ common ■ Miner Type", "Poultry Man ■ common ■ Prankster Type");
+    private static List<String> hermits_ultra_rare = new ArrayList<>();
+    private static List<String> hermits_rare = new ArrayList<>();
+    private static List<String> hermits_common = new ArrayList<>();
+    private static List<String> hermits_alter_ego = new ArrayList<>();
+    private static List<String> hermits_alter_ego_ultra_rare = new ArrayList<>();
+    private static List<String> hermits_alter_ego_rare = new ArrayList<>();
+    private static List<String> hermits_alter_ego_common = new ArrayList<>();
 
-    private static List<String> type_miner = List.of("TFC ★ rare ★ Miner Type", "Hypno ★ rare ★ Miner Type", "TFC ■ common ■ Miner Type", "TFC ★ ultra rare ★ Miner Type", "Evil Jevin ■ common ■ Miner Type", "Miner", "Miner ★ double ★");
-    private static List<String> type_speedrunner = List.of("Cubfan ★ rare ★ Speedrunner Type", "Jevin ★ rare ★ Speedrunner Type", "Beetlejhost ■ common ■ Speedrunner Type", "Jingler ★ rare ★ Speedrunner Type", "Speedrunner", "Speedrunner ★ double ★");
-    private static List<String> type_balanced = List.of("Bdubs ★ rare ★ Balanced Type", "Rendog ■ common ■ Balanced Type", "Hypno ■ common ■ Balanced Type", "Etho ■ common ■ Balanced Type", "Cubfan ■ common ■ Balanced Type", "Iskall ■ common ■ Balanced Type", "Beef ■ common ■ Balanced Type", "Evil X ★ rare ★ Balanced Type", "Llamadad ★ rare ★ Balanced Type", "Balanced", "Balanced ★ double ★");
-    private static List<String> type_builder = List.of("False ★ rare ★ Builder Type", "Rendog ★ rare ★ Builder Type", "Scar ★ rare ★ Builder Type", "Beef ★ rare ★ Builder Type", "Bdubs ■ common ■ Builder Type", "Wels ■ common ■ Builder Type", "Cleo ■ common ■ Builder Type", "Stress ■ common ■ Builder Type", "Pearl ■ common ■ Builder Type", "Keralis ■ common ■ Builder Type", "Grian ■ common ■ Builder Type", "Gem ■ common ■ Builder Type", "Builder", "Builder ★ double ★");
-    private static List<String> type_redstoner = List.of("Tango ■ common ■ Redstone Type", "DocM ■ common ■ Redstone Type", "Mumbo ■ common ■ Redstone Type", "Zedaph ■ common ■ Redstone Type", "Etho ★ rare ★ Redstone Type", "Impulse ★ rare ★ Redstone Type", "Xisuma ★ rare ★ Redstone Type", "Redstone", "Redstone ★ double ★");
-    private static List<String> type_farm = List.of("Potato Boy ★ rare ★ Farm Type", "DocM ★ rare ★ Farm Type", "Joe Hills ★ rare ★ Farm Type", "Iskall ★ rare ★ Farm Type", "Tango ★ rare ★ Farm Type", "Impulse ■ common ■ Farm Type", "Xisuma ■ common ■ Farm Type", "Farm", "Farm ★ double ★");
-    private static List<String> type_prankster = List.of("Mumbo ★ rare ★ Prankster Type", "Stress ★ rare ★ Prankster Type", "Grian ★ rare ★ Prankster Type", "Goatfather ★ rare ★ Prankster Type", "Poultry Man ■ common ■ Prankster Type", "Prankster", "Prankster ★ double ★");
-    private static List<String> type_terraform = List.of("Gem ★ rare ★ Terraform Type", "Keralis ★ rare ★ Terraform Type", "Pearl ★ rare ★ Terraform Type", "Scar ■ common ■ Terraform Type", "Terraform", "Terraform ★ double ★");
-    private static List<String> type_pvp = List.of("Cleo ★ rare ★ PVP Type", "Wels ★ rare ★ PVP Type", "xB ■ common ■ PVP Type", "False ■ common ■ PVP Type", "Etho ★ ultra rare ★ PVP Type", "Human Cleo ★ rare ★ PVP Type", "Helsknight ★ rare ★ PVP Type", "PVP", "PVP ★ double ★");
-    private static List<String> type_explorer = List.of("Zedaph ★ rare ★ Explorer Type", "xB ★ rare ★ Explorer Type", "Joe Hills ■ common ■ Explorer Type", "Jevin ■ common ■ Explorer Type", "Beef ★ ultra rare ★ Explorer Type", "Hotguy ★ rare ★ Explorer Type", "Renbob ★ rare ★ Explorer Type", "Explorer", "Explorer ★ double ★");
+    private static List<String> type_miner = new ArrayList<>();
+    private static List<String> type_speedrunner = new ArrayList<>();
+    private static List<String> type_balanced = new ArrayList<>();
+    private static List<String> type_builder = new ArrayList<>();
+    private static List<String> type_redstoner = new ArrayList<>();
+    private static List<String> type_farm = new ArrayList<>();
+    private static List<String> type_prankster = new ArrayList<>();
+    private static List<String> type_terraform = new ArrayList<>();
+    private static List<String> type_pvp = new ArrayList<>();
+    private static List<String> type_explorer = new ArrayList<>();
 
     private static List<String> effects = new ArrayList<>();
-    private static List<String> effects_ultra_rare = List.of("Mending ★ ultra rare ★ Single Use", "Fortune ★ ultra rare ★ Single Use", "Clock ★ ultra rare ★ Single Use", "Totem Of Undying ★ ultra rare ★ Attach", "Fishing Rod ★ ultra rare ★ Single Use", "Netherite Sword ★ ultra rare ★ Single Use", "Bed ★ ultra rare ★ Attach", "Golden Apple ★ ultra rare ★ Single Use", "Netherite Armour ★ ultra rare ★ Attach", "Armour Stand ★ ultra rare ★ Attach", "Sweeping Edge ★ ultra rare ★ Single Use", "Thorns III ★ ultra rare ★ Attach", "Ladder ★ ultra rare ★ Single Use");
-    private static List<String> effects_rare = List.of("Emerald ★ rare ★ Single Use", "Knockback ★ rare ★ Single Use", "Loyalty ★ rare ★ Attach", "Efficiency ★ rare ★ Single Use", "Looting ★ rare ★ Attach", "Invisibility ★ rare ★ Single Use", "Instant Health II ★ rare ★ Single Use", "Splash Potion Of Poison ★ rare ★ Single Use", "Lava Bucket ★ rare ★ Single Use", "Wolf ★ rare ★ Attach", "Diamond Armour ★ rare ★ Attach", "Golden Axe ★ rare ★ Single Use", "Chest ★ rare ★ Single Use", "Diamond Sword ★ rare ★ Single Use", "Spyglass ★ rare ★ Single Use", "Crossbow ★ rare ★ Single Use", "Thorns II ★ rare ★ Attach", "String ★ rare ★ Attach", "Egg ★ rare ★ Single Use", "Target Block ★ rare ★ Single Use", "Trident ★ rare ★ Single Use", "Splash Potion Of Healing II ★ rare ★ Single Use", "Bad Omen ★ rare ★ Single Use", "Command Block ★ rare ★ Attach", "Turtle Shell ★ rare ★ Attach", "Anvil ★ rare ★ Single Use");
-    private static List<String> effects_common = List.of("Curse Of Binding ■ common ■ Single Use", "Curse Of Vanishing ■ common ■ Single Use", "Thorns ■ common ■ Attach", "Lead ■ common ■ Single Use", "Chorus Fruit ■ common ■ Single Use", "Iron Armour ■ common ■ Attach", "Gold Armour ■ common ■ Attach", "Shield ■ common ■ Attach", "Water Bucket ■ common ■ Single Use OR Attach", "Milk Bucket ■ common ■ Single Use OR Attach", "Instant Health ■ common ■ Single Use", "Bow ■ common ■ Single Use", "TNT ■ common ■ Single Use", "Iron Sword ■ common ■ Single Use", "Flint And Steel ■ common ■ Single Use", "Composter ■ common ■ Single Use", "Splash Potion Of Healing ■ common ■ Single Use", "Fire Charge ■ common ■ Single Use", "Chainmail Armour ■ common ■ Attach", "Ender Pearl ■ common ■ Single Use", "Lightning Rod ■ common ■ Attach", "Piston ■ common ■ Single Use", "Potion Of Slowness ■ common ■ Single Use", "Potion Of Weakness ■ common ■ Single Use");
+    private static List<String> effects_ultra_rare = new ArrayList<>();
+    private static List<String> effects_rare = new ArrayList<>();
+    private static List<String> effects_common = new ArrayList<>();
 
     private static List<String> items = new ArrayList<>();
-    private static List<String> items_rare = List.of("Builder ★ double ★", "Redstone ★ double ★", "PVP ★ double ★", "Explorer ★ double ★", "Speedrunner ★ double ★", "Balanced ★ double ★", "Prankster ★ double ★", "Terraform ★ double ★", "Miner ★ double ★", "Farm ★ double ★");
-    private static List<String> items_common = List.of("Builder", "Redstone", "PVP", "Explorer", "Speedrunner", "Balanced", "Prankster", "Terraform", "Miner", "Farm");
+    private static List<String> items_ultra_rare = new ArrayList<>();
+    private static List<String> items_rare = new ArrayList<>();
+    private static List<String> items_common = new ArrayList<>();
 
     public static void reload() {
         List<ItemStack> allCards = DatabaseManager.getAllTCGItems();
+        /*
         List<String> ids = new ArrayList<>();
         for (ItemStack item : allCards) {
             if (item == null) continue;
-            /*
-            int mapId = ItemManager.getMapId(item);
-            if (mapId == -1) continue;
-            */
             ids.add(String.valueOf(item.getName().getString()));
         }
         //System.out.println("\""+String.join("\", \"",ids)+"\"");
+        */
         TCG_Items.setAllCards(allCards);
     }
     public static void setAllCards(List<ItemStack> newCards) {
@@ -60,25 +64,137 @@ public class TCG_Items {
         }
         reloadLists();
     }
+
+    public static final String NBT_TCG = "tcg";
+    public static final String NBT_HERMITS = "hermits";
+    public static final String NBT_ALTEREGO = "alter_ego";
+    public static final String NBT_EFFECTS = "effect_card";
+    public static final String NBT_ITEMS = "item_card";
+    public static final String NBT_TYPE = "type";
+
     public static void reloadLists() {
+        for (ItemStack item : allCards) {
+            if (item == null) continue;
+            String itemName = item.getName().getString();
+            if (item.get(DataComponentTypes.CUSTOM_NAME) != null) itemName = item.get(DataComponentTypes.CUSTOM_NAME).getString();
+            List<String> errors = new ArrayList<>();
+            int added = 0;
+            int checkLayer1 = 0;
+            int checkLayer2 = 0;
+            int checkLayer3 = 0;
+
+            Integer rarity = null;
+            if (ItemManager.hasCustomComponentEntry(item, "common")) rarity = 1;
+            if (ItemManager.hasCustomComponentEntry(item, "rare")) rarity = 2;
+            if (ItemManager.hasCustomComponentEntry(item, "ultra_rare")) rarity = 3;
+
+            if (ItemManager.hasCustomComponentEntry(item, NBT_TCG) && rarity != null) {
+                checkLayer1++;
+                if (ItemManager.hasCustomComponentEntry(item, NBT_HERMITS)) {
+                    if (rarity == 1) hermits_common.add(itemName);
+                    if (rarity == 2) hermits_rare.add(itemName);
+                    if (rarity == 3) hermits_ultra_rare.add(itemName);
+                    checkLayer2++;
+                    added++;
+                }
+                if (ItemManager.hasCustomComponentEntry(item, NBT_ALTEREGO)) {
+                    if (rarity == 1) hermits_alter_ego_common.add(itemName);
+                    if (rarity == 2) hermits_alter_ego_rare.add(itemName);
+                    if (rarity == 3) hermits_alter_ego_ultra_rare.add(itemName);
+                    checkLayer2++;
+                    added++;
+                }
+                if (ItemManager.hasCustomComponentEntry(item, NBT_EFFECTS)) {
+                    if (rarity == 1) effects_common.add(itemName);
+                    if (rarity == 2) effects_rare.add(itemName);
+                    if (rarity == 3) effects_ultra_rare.add(itemName);
+                    checkLayer2++;
+                    added++;
+                    checkLayer3 = 1;
+                }
+                if (ItemManager.hasCustomComponentEntry(item, NBT_ITEMS)) {
+                    if (rarity == 1) items_common.add(itemName);
+                    if (rarity == 2) items_rare.add(itemName);
+                    if (rarity == 3) items_ultra_rare.add(itemName);
+                    checkLayer2++;
+                    added++;
+                }
+
+                if (ItemManager.hasCustomComponentEntry(item, NBT_TYPE)) {
+                    String type = ItemManager.getCustomComponentString(item, NBT_TYPE);
+                    checkLayer3 = 1;
+                    added++;
+                    if (type != null) {
+                        if (type.equalsIgnoreCase("miner")) type_miner.add(itemName);
+                        else if (type.equalsIgnoreCase("speedrunner")) type_speedrunner.add(itemName);
+                        else if (type.equalsIgnoreCase("balanced")) type_balanced.add(itemName);
+                        else if (type.equalsIgnoreCase("builder")) type_builder.add(itemName);
+                        else if (type.equalsIgnoreCase("redstoner")) type_redstoner.add(itemName);
+                        else if (type.equalsIgnoreCase("farm")) type_farm.add(itemName);
+                        else if (type.equalsIgnoreCase("prankster")) type_prankster.add(itemName);
+                        else if (type.equalsIgnoreCase("terraformer")) type_terraform.add(itemName);
+                        else if (type.equalsIgnoreCase("pvp")) type_pvp.add(itemName);
+                        else if (type.equalsIgnoreCase("explorer")) type_explorer.add(itemName);
+                        else {
+                             checkLayer3 = 0;
+                             added--;
+                         }
+                    }
+                    else {
+                        checkLayer3 = 0;
+                        added--;
+                    }
+                }
+            }
+            if (checkLayer1 == 0) errors.add("Item NBT does not contain " + NBT_TCG);
+
+            if (rarity == null) {
+                errors.add("Item NBT does not contain item rarity.");
+            }
+            else if (rarity <= 0 || rarity >= 4) {
+                errors.add("Item NBT rarity must be set to 1/2/3");
+            }
+
+            if (checkLayer2 == 0) errors.add("Item NBT does not contain the Item Rarity");
+            if (checkLayer2 > 1) errors.add("Item NBT contains more than one Item Rarity");
+
+            if (checkLayer3 == 0) errors.add("Item NBT does not contain the Item Type");
+
+            if (added == 0) errors.add("Item was not added to any list.");
+            if (!errors.isEmpty()) {
+                Main.LOGGER.warn("[TCG ITEMS DATABASE] -------");
+                Main.LOGGER.warn("[TCG ITEMS DATABASE] NBT errors in item: " + item.toString());
+                for (String s : errors) {
+                    Main.LOGGER.warn("[TCG ITEMS DATABASE] Error in item: " + itemName + " - " + s);
+                }
+                Main.LOGGER.warn("[TCG ITEMS DATABASE] -------");
+            }
+        }
         items = new ArrayList<>();
         effects = new ArrayList<>();
         hermits = new ArrayList<>();
+        hermits_alter_ego = new ArrayList<>();
         items.addAll(items_common);
         items.addAll(items_rare);
+        items.addAll(items_ultra_rare);
 
         effects.addAll(effects_ultra_rare);
         effects.addAll(effects_rare);
         effects.addAll(effects_common);
 
+        hermits_alter_ego.addAll(hermits_alter_ego_common);
+        hermits_alter_ego.addAll(hermits_alter_ego_rare);
+        hermits_alter_ego.addAll(hermits_alter_ego_ultra_rare);
+
         hermits.addAll(hermits_ultra_rare);
         hermits.addAll(hermits_rare);
         hermits.addAll(hermits_common);
         hermits.addAll(hermits_alter_ego);
+
     }
     private static ItemStack randomElement(List<ItemStack> list) {
-        if (list == null) return null;
-        if (list.isEmpty()) return null;
+        if (list == null) return Items.DIRT.getDefaultStack();
+        if (list.isEmpty()) return Items.DIRT.getDefaultStack();
         return list.get(rnd.nextInt(list.size()));
     }
     private static List<ItemStack> getMatchingCard(List<String> validNames) {
@@ -137,8 +253,10 @@ public class TCG_Items {
     public static ItemStack getRandomTypeHermit(String type) {
         return randomElement(getMatchingCard(getAllHermits(),getTypeFilter(type)));
     }
-    public static ItemStack getRandomTypeUltraRareHermit(String type) {
-        return randomElement(getMatchingCard(getUltraRareHermits(),getTypeFilter(type)));
+    public static ItemStack getRandomTypeUltraRareHermit(String type, boolean includeAlterEgo) {
+        List<ItemStack> hermits = getUltraRareHermits();
+        if (includeAlterEgo) hermits.addAll(getMatchingCard(hermits_alter_ego_ultra_rare));
+        return randomElement(getMatchingCard(hermits,getTypeFilter(type)));
     }
     public static ItemStack getRandomTypeRareHermit(String type, boolean includeAlterEgo) {
         List<ItemStack> hermits = getRareHermits();
@@ -152,6 +270,9 @@ public class TCG_Items {
     }
     public static ItemStack getRandomTypeItem(String type) {
         return randomElement(getMatchingCard(getAllItems(),getTypeFilter(type)));
+    }
+    public static ItemStack getRandomTypeUltraRareItem(String type) {
+        return randomElement(getMatchingCard(getUltraRareItems(),getTypeFilter(type)));
     }
     public static ItemStack getRandomTypeRareItem(String type) {
         return randomElement(getMatchingCard(getRareItems(),getTypeFilter(type)));
@@ -221,6 +342,9 @@ public class TCG_Items {
     public static List<ItemStack> getAllItems() {
         return getMatchingCard(items);
     }
+    public static List<ItemStack> getUltraRareItems() {
+        return getMatchingCard(items_ultra_rare);
+    }
     public static List<ItemStack> getRareItems() {
         return getMatchingCard(items_rare);
     }
@@ -229,6 +353,9 @@ public class TCG_Items {
     }
     public static ItemStack getRandomItem() {
         return randomElement(getAllItems());
+    }
+    public static ItemStack getRandomUltraRareItem() {
+        return randomElement(getUltraRareItems());
     }
     public static ItemStack getRandomRareItem() {
         return randomElement(getRareItems());

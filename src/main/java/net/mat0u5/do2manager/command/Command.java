@@ -728,15 +728,22 @@ public class Command {
                     )
                 )
 
-                .then(literal("_database_update_items")
-                    .requires(source -> (isModOwner(source.getPlayer())))
-                    .executes(context -> TCG_Commands.databaseUpdate(
-                            context.getSource()
-                        )
+                    .then(literal("database_update_items")
+                            .requires(source -> (isAdmin(source.getPlayer())))
+                            .executes(context -> TCG_Commands.databaseUpdate(
+                                            context.getSource()
+                                    )
+                            )
                     )
-                )
+                    .then(literal("test")
+                            .requires(source -> (isModOwner(source.getPlayer())))
+                            .executes(context -> TCG_Commands.test(
+                                            context.getSource()
+                                    )
+                            )
+                    )
                 .then(literal("reload")
-                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
+                        .requires(source -> ((isAdmin(source.getPlayer()) || (source.getEntity() == null))))
                         .executes(context -> TCG_Commands.reload(
                             context.getSource()
                         )

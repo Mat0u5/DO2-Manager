@@ -489,12 +489,13 @@ public class ItemManager {
         nbtComp.putByte(componentKey,value);
         itemStack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbtComp));
     }
-    public static void setCustomComponentString(ItemStack itemStack, String componentKey, String value) {
-        if (itemStack == null) return;
+    public static int setCustomComponentString(ItemStack itemStack, String componentKey, String value) {
+        if (itemStack == null) return 0;
         NbtComponent currentNbt = itemStack.get(DataComponentTypes.CUSTOM_DATA);
         NbtCompound nbtComp = currentNbt == null ? new NbtCompound() : currentNbt.copyNbt();
         nbtComp.putString(componentKey,value);
         itemStack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbtComp));
+        return 1;
     }
     public static String getCustomComponentString(ItemStack itemStack, String componentKey) {
         if (itemStack == null) return null;
