@@ -146,10 +146,10 @@ public class RunInfoParser {
         List<ItemStack> hopper2 = ItemManager.getHopperItems((ServerWorld) world,new BlockPos(-565, 39, 1913));
         List<ItemStack> dropper1 = ItemManager.getDropperItems((ServerWorld) world,new BlockPos(-564, 39, 1913));
         List<ItemStack> dropper2 = ItemManager.getDropperItems((ServerWorld) world,new BlockPos(-564, 40, 1913));
-        entityItems.addAll(hopper1);
-        entityItems.addAll(hopper2);
-        entityItems.addAll(dropper1);
-        entityItems.addAll(dropper2);
+        if (hopper1 != null) entityItems.addAll(hopper1);
+        if (hopper2 != null) entityItems.addAll(hopper2);
+        if (dropper1 != null) entityItems.addAll(dropper1);
+        if (dropper2 != null) entityItems.addAll(dropper2);
         return entityItems;
     }
 }

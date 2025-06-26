@@ -379,23 +379,6 @@ public class Command {
                         )
                     )
                 )
-                .then(literal("currentRun")
-                    .then(literal("getInfo")
-                        .executes(context -> OtherCommand.getInfo(
-                            context.getSource())
-                        )
-                    )
-                    .then(literal("viewDeck")
-                        .executes(context -> OtherCommand.viewDeck(
-                            context.getSource())
-                        )
-                    )
-                    .then(literal("viewRunnerInv")
-                        .executes(context -> OtherCommand.viewInv(
-                            context.getSource())
-                        )
-                    )
-                )
                 .then(literal("invScanner")
                         .requires(source -> (isAdmin(source.getPlayer()) || (source.getEntity() == null)))
                         .then(argument("targets", EntityArgumentType.players())
@@ -488,6 +471,11 @@ public class Command {
                             );
                         })
                     )
+                    .then(literal("all")
+                        .executes(context -> OtherCommand.executeLock(
+                                context.getSource(), -700, 300,1757,-400,-64,2600, StringArgumentType.getString(context, "lock_or_unlock")
+                        ))
+                    )
                 )
         );
         dispatcher.register(
@@ -548,11 +536,11 @@ public class Command {
         );
         dispatcher.register(
             literal("run")
-                .then(literal("getInfo")
-                        .executes(context -> OtherCommand.getInfo(
-                                context.getSource())
-                        )
-                )
+                //.then(literal("getInfo")
+                //        .executes(context -> OtherCommand.getInfo(
+                //                context.getSource())
+                //        )
+                //)
                 .then(literal("viewDeck")
                         .executes(context -> OtherCommand.viewDeck(
                                 context.getSource())
