@@ -6,6 +6,8 @@ import net.mat0u5.do2manager.command.validator.CommandAnalyzer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
+import net.minecraft.sound.SoundEvents;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,6 +22,7 @@ public class CommandManagerMixin {
             CommandContext<ServerCommandSource> context = parseResults.getContext().build(command);
             if (CommandAnalyzer.shouldConfirm(command, context)) {
                 CommandAnalyzer.sendConfirmationMessage(player, command, context);
+                player.playSoundToPlayer(SoundEvents.BLOCK_NOTE_BLOCK_DIDGERIDOO.value(), SoundCategory.BLOCKS, 1, 1);
                 ci.cancel();
             }
         }

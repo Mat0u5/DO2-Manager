@@ -1,6 +1,5 @@
 package net.mat0u5.do2manager;
 
-import com.mojang.authlib.properties.PropertyMap;
 import net.fabricmc.api.ModInitializer;
 
 import net.mat0u5.do2manager.blockblocker.BlockBlocker;
@@ -36,7 +35,6 @@ public class Main implements ModInitializer {
 	public static List<DO2RunAbridged> allAbridgedRuns = new ArrayList<>();
 	public static HashMap<PlayerEntity, GuiPlayerSpecific> openGuis = new HashMap<>();
 	public static HashMap<String, String> allPlayers = new HashMap<>();
-	public static HashMap<String, PropertyMap> allPlayerProfiles = new HashMap<>();
 	public static MinecraftServer server;
 	public static boolean reloadedRuns = false;
 	public static DungeonQueue dungeonQueue = new DungeonQueue();

@@ -2,10 +2,13 @@ package net.mat0u5.do2manager.command.validator;
 
 import com.mojang.brigadier.context.CommandContext;
 import net.mat0u5.do2manager.Main;
-import net.mat0u5.do2manager.utils.OtherUtils;
 import net.minecraft.command.EntitySelector;
+import net.minecraft.command.argument.ScoreHolderArgumentType;
+import net.minecraft.command.argument.ScoreboardObjectiveArgumentType;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.scoreboard.ScoreHolder;
+import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ClickEvent;
@@ -16,6 +19,7 @@ import net.minecraft.util.Formatting;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
+import java.util.Collection;
 import java.util.List;
 
 public class CommandAnalyzer {
@@ -24,6 +28,7 @@ public class CommandAnalyzer {
     private static final int MAX_PLAYERS = 1;
     private static final int MAX_LIVING_ENTITIES = 25;
     private static final int MAX_ENTITIES = 50;
+    private static final int MAX_SCOREBOARD_MODIFICATIONS = 50;
     private static final int MAX_BLOCKS = 10_000;
 
     public static boolean shouldConfirm(String command, CommandContext<ServerCommandSource> context) {
@@ -31,22 +36,21 @@ public class CommandAnalyzer {
         ServerCommandSource source = context.getSource();
 
         switch (commandName.toLowerCase()) {
-            case "kill":
-                return entityConstraints("targets", context);
             case "fill":
                 return shouldConfirmFill(command, source);
             case "clone":
                 return shouldConfirmClone(command, source);
+            case "execute":
+            case "kill":
             case "effect":
             case "tp":
             case "teleport":
-            case "give": //getPlayers
-            case "clear": //getPlayers
-                return entityConstraints("targets", context);
-            case "gamemode": //getPlayers
-                return entityConstraints("target", context);
+            case "give":
+            case "clear":
+            case "gamemode":
+                return entityConstraints(List.of("target", "targets", "entity", "entities"), context);
             case "scoreboard":
-                return shouldConfirmScoreboard(command);
+                return shouldConfirmScoreboard(command, "targets", context);
             default:
                 return false;
         }
@@ -57,19 +61,42 @@ public class CommandAnalyzer {
         return parts.length > 0 ? parts[0] : "";
     }
 
-    private static List<? extends Entity> getEntities(String argumentName, CommandContext<ServerCommandSource> context) {
+    private static Collection<? extends Entity> getEntities(String argumentName, CommandContext<ServerCommandSource> context) {
+        return getEntities(List.of(argumentName), context);
+    }
+    private static Collection<? extends Entity> getEntities(List<String> arguments, CommandContext<ServerCommandSource> context) {
         try {
-            return (context.getArgument(argumentName, EntitySelector.class)).getEntities(context.getSource());
+            for (String argumentName : arguments) {
+                try {
+                    Collection<? extends Entity> entities = (context.getArgument(argumentName, EntitySelector.class)).getEntities(context.getSource());
+                    if (!entities.isEmpty()) return entities;
+                }catch(IllegalArgumentException e) {}
+
+                try {
+                    Collection<? extends Entity> players = (context.getArgument(argumentName, EntitySelector.class)).getPlayers(context.getSource());
+                    if (!players.isEmpty()) return players;
+                }catch(IllegalArgumentException e) {}
+            }
         }catch(Exception e) {
             Main.LOGGER.error("[CommandAnalyzer] error3:" + e.getMessage());
-            OtherUtils.broadcastMessage(Text.of("error3: " + e.getMessage()));
         }
         return List.of();
     }
 
-    private static boolean entityConstraints(String argumentName, CommandContext<ServerCommandSource> context) {
+    private static Collection<ScoreHolder> getScoreHolders(String argumentName, CommandContext<ServerCommandSource> context) {
         try {
-            List<? extends Entity> entities = getEntities(argumentName, context);
+            try {
+                return ScoreHolderArgumentType.getScoreboardScoreHolders(context, argumentName);
+            }catch(IllegalArgumentException e) {}
+        }catch(Exception e) {
+            Main.LOGGER.error("[CommandAnalyzer] error4:" + e.getMessage());
+        }
+        return List.of();
+    }
+
+    private static boolean entityConstraints(List<String> arguments, CommandContext<ServerCommandSource> context) {
+        try {
+            Collection<? extends Entity> entities = getEntities(arguments, context);
 
             int playerEntityCount = 0;
             int livingEntityCount = 0;
@@ -84,18 +111,12 @@ public class CommandAnalyzer {
                 }
             }
 
-            OtherUtils.broadcastMessage(Text.of("Selector matched " + entityCount + " entities."));
-            OtherUtils.broadcastMessage(Text.of("Selector matched " + livingEntityCount + " living entities."));
-            OtherUtils.broadcastMessage(Text.of("Selector matched " + playerEntityCount + " players."));
-
-
             if (entityCount > MAX_ENTITIES) return true;
             if (livingEntityCount > MAX_LIVING_ENTITIES) return true;
             if (playerEntityCount > MAX_PLAYERS) return true;
             return false;
         } catch (Exception e) {
             Main.LOGGER.error("[CommandAnalyzer] error5:" + e.getMessage());
-            OtherUtils.broadcastMessage(Text.of("error5: " + e.getMessage()));
             return true;
         }
     }
@@ -113,7 +134,6 @@ public class CommandAnalyzer {
                 return volume > MAX_BLOCKS;
             } catch (Exception e) {
                 Main.LOGGER.error("[CommandAnalyzer] error6:" + e.getMessage());
-                OtherUtils.broadcastMessage(Text.of("error6: " + e.getMessage()));
                 return true;
             }
         }
@@ -133,7 +153,6 @@ public class CommandAnalyzer {
                 return volume > MAX_BLOCKS;
             } catch (Exception e) {
                 Main.LOGGER.error("[CommandAnalyzer] error7:" + e.getMessage());
-                OtherUtils.broadcastMessage(Text.of("error7: " + e.getMessage()));
                 return true;
             }
         }
@@ -165,8 +184,15 @@ public class CommandAnalyzer {
         }
     }
 
-    private static boolean shouldConfirmScoreboard(String command) {
-        return command.toLowerCase().contains("reset") && (command.contains("@a") || command.contains("*"));
+    private static boolean shouldConfirmScoreboard(String command, String argumentName, CommandContext<ServerCommandSource> context) {
+        if (command.toLowerCase().contains("scoreboard players reset ")) {
+            try {
+                ScoreboardObjective test = ScoreboardObjectiveArgumentType.getObjective(context, "objective");
+            } catch(Exception e) {
+                return true;
+            }
+        }
+        return getScoreHolders(argumentName, context).size() > MAX_SCOREBOARD_MODIFICATIONS;
     }
 
     private static int calculateBlockVolume(BlockPos from, BlockPos to) {
@@ -186,16 +212,16 @@ public class CommandAnalyzer {
                 return generateFillWarning(command, context);
             case "clone":
                 return generateCloneWarning(command, context);
+            case "execute":
             case "effect":
             case "tp":
             case "teleport":
             case "give":
             case "clear":
-                return generateEntityWarning("targets", context);
             case "gamemode":
-                return generateEntityWarning("target", context);
+                return generateEntityWarning(List.of("target", "targets", "entity", "entities"), context);
             case "scoreboard":
-                return "This will reset scoreboard data permanently!";
+                return generateScoreboardWarning(command, "targets", context);
             default:
                 return "This command may have significant effects!";
         }
@@ -205,14 +231,9 @@ public class CommandAnalyzer {
         try {
             int actualCount = getEntities(argumentName, context).size();
 
-            if (actualCount == 0) {
-                return "No entities match this selector.";
-            } else if (actualCount == 1) {
-                return "This will kill 1 entity!";
-            } else {
-                return String.format("This will kill %d entities!", actualCount);
-            }
+            return String.format("This will kill %d entities!", actualCount);
         } catch (Exception e) {
+            Main.LOGGER.error("[CommandAnalyzer] error8:" + e.getMessage());
             return "This will kill entities (count could not be determined)!";
         }
     }
@@ -228,6 +249,7 @@ public class CommandAnalyzer {
                 return String.format("This will modify %,d blocks!", volume);
             }
         } catch (Exception e) {
+            Main.LOGGER.error("[CommandAnalyzer] error9:" + e.getMessage());
         }
         return "This will modify blocks (area could not be determined)!";
     }
@@ -243,33 +265,36 @@ public class CommandAnalyzer {
                 return String.format("This will clone %,d blocks!", volume);
             }
         } catch (Exception e) {
+            Main.LOGGER.error("[CommandAnalyzer] error10:" + e.getMessage());
         }
         return "This will clone blocks (area could not be determined)!";
     }
 
-    private static String generateEntityWarning(String command, CommandContext<ServerCommandSource> context) {
+    private static String generateEntityWarning(List<String> arguments, CommandContext<ServerCommandSource> context) {
         try {
-            // Find the largest entity selector in the command
-            String[] parts = command.split("\\s+");
-            int maxCount = 0;
-            for (String part : parts) {
-                if (part.startsWith("@")) {
-                    int count = getEntities(part, context).size();
-                    maxCount = Math.max(maxCount, count);
-                }
-            }
-
-            if (maxCount == 0) {
-                return String.format("No entities match the command.");
-            } else if (maxCount == 1) {
-                return "This will affect 1 entity!";
-            } else {
-                return String.format("This will affect %d entities!", maxCount);
-            }
+            int actualCount = getEntities(arguments, context).size();
+            return String.format("This will affect %d entities!", actualCount);
         } catch (Exception e) {
-            // Fall through to generic message
+            Main.LOGGER.error("[CommandAnalyzer] error11:" + e.getMessage());
         }
         return "This will affect ? entities (count could not be determined)!";
+    }
+
+    private static String generateScoreboardWarning(String command, String argumentName, CommandContext<ServerCommandSource> context) {
+        try {
+            if (command.toLowerCase().contains("scoreboard players reset ")) {
+                try {
+                    ScoreboardObjective test = ScoreboardObjectiveArgumentType.getObjective(context, "objective");
+                } catch(Exception e) {
+                    return String.format("No objective specified, this will affect all scores!");
+                }
+            }
+            int actualCount = getScoreHolders(argumentName, context).size();
+            return String.format("This will affect %d score holders!", actualCount);
+        } catch (Exception e) {
+            Main.LOGGER.error("[CommandAnalyzer] error12:" + e.getMessage());
+        }
+        return "This will affect ? score holders (count could not be determined)!";
     }
 
     public static void sendConfirmationMessage(ServerPlayerEntity player, String command, CommandContext<ServerCommandSource> context) {
