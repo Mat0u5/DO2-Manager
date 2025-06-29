@@ -1,18 +1,19 @@
 {
-	"required": true,
-	"package": "net.mat0u5.do2manager.mixin",
-	"compatibilityLevel": "JAVA_17",
-	"mixins": [
-		"PlayerEntityMixin",
-		"ItemEntityMixin",
-		"ScreenHandlerMixin",
-		"SignBlockEntityMixin",
-		"ServerPlayNetworkHandlerMixin",
-		"PlayerManagerMixin",
-		"CrossbowItemMixin",
-		"ServerPlayerInteractionManagerMixin"
-	],
-	"injectors": {
-		"defaultRequire": 1
+  "required": true,
+  "package": "net.mat0u5.do2manager.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "CommandManagerMixin",
+    "CrossbowItemMixin",
+    "ItemEntityMixin",
+    "PlayerEntityMixin",
+    "PlayerManagerMixin",
+    "ScreenHandlerMixin",
+    "ServerPlayerInteractionManagerMixin",
+    "ServerPlayNetworkHandlerMixin",
+    "SignBlockEntityMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
 	}
 }
