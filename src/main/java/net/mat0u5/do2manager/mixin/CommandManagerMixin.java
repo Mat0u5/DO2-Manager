@@ -1,6 +1,7 @@
 package net.mat0u5.do2manager.mixin;
 
 import com.mojang.brigadier.ParseResults;
+import com.mojang.brigadier.context.CommandContext;
 import net.mat0u5.do2manager.command.validator.CommandAnalyzer;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
@@ -16,8 +17,9 @@ public class CommandManagerMixin {
     private void onCommandExecute(ParseResults<ServerCommandSource> parseResults, String command, CallbackInfo ci) {
         ServerCommandSource source = parseResults.getContext().getSource();
         if (source.getEntity() instanceof ServerPlayerEntity player) {
-            if (CommandAnalyzer.shouldConfirm(command, source)) {
-                CommandAnalyzer.sendConfirmationMessage(player, command, source);
+            CommandContext<ServerCommandSource> context = parseResults.getContext().build(command);
+            if (CommandAnalyzer.shouldConfirm(command, context)) {
+                CommandAnalyzer.sendConfirmationMessage(player, command, context);
                 ci.cancel();
             }
         }

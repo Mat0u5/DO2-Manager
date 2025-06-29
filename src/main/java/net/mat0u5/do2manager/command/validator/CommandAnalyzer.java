@@ -1,6 +1,11 @@
 package net.mat0u5.do2manager.command.validator;
 
-
+import com.mojang.brigadier.context.CommandContext;
+import net.mat0u5.do2manager.Main;
+import net.mat0u5.do2manager.utils.OtherUtils;
+import net.minecraft.command.EntitySelector;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.ClickEvent;
@@ -8,20 +13,26 @@ import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
+
+import java.util.List;
 
 public class CommandAnalyzer {
 
     // Configurable limits
-    private static final int MAX_ENTITIES = 50;  // Max entities to affect before confirmation
-    private static final int MAX_BLOCKS = 5000;  // Max blocks to modify before confirmation
+    private static final int MAX_PLAYERS = 1;
+    private static final int MAX_LIVING_ENTITIES = 25;
+    private static final int MAX_ENTITIES = 50;
+    private static final int MAX_BLOCKS = 10_000;
 
-    public static boolean shouldConfirm(String command, ServerCommandSource source) {
+    public static boolean shouldConfirm(String command, CommandContext<ServerCommandSource> context) {
         String commandName = getCommandName(command);
+        ServerCommandSource source = context.getSource();
 
         switch (commandName.toLowerCase()) {
             case "kill":
-                return shouldConfirmKill(command, source);
+                return entityConstraints("targets", context);
             case "fill":
                 return shouldConfirmFill(command, source);
             case "clone":
@@ -29,10 +40,11 @@ public class CommandAnalyzer {
             case "effect":
             case "tp":
             case "teleport":
-            case "gamemode":
-            case "give":
-            case "clear":
-                return shouldConfirmEntityCommand(command, source);
+            case "give": //getPlayers
+            case "clear": //getPlayers
+                return entityConstraints("targets", context);
+            case "gamemode": //getPlayers
+                return entityConstraints("target", context);
             case "scoreboard":
                 return shouldConfirmScoreboard(command);
             default:
@@ -45,72 +57,47 @@ public class CommandAnalyzer {
         return parts.length > 0 ? parts[0] : "";
     }
 
-    private static boolean shouldConfirmKill(String command, ServerCommandSource source) {
+    private static List<? extends Entity> getEntities(String argumentName, CommandContext<ServerCommandSource> context) {
         try {
-            // Parse the target selector manually
-            String[] parts = command.split("\\s+", 2);
-            if (parts.length < 2) return false;
-
-            String selector = parts[1];
-            int estimatedCount = estimateEntityCount(selector, source);
-            return estimatedCount > MAX_ENTITIES;
-        } catch (Exception e) {
-            return false;
+            return (context.getArgument(argumentName, EntitySelector.class)).getEntities(context.getSource());
+        }catch(Exception e) {
+            Main.LOGGER.error("[CommandAnalyzer] error3:" + e.getMessage());
+            OtherUtils.broadcastMessage(Text.of("error3: " + e.getMessage()));
         }
+        return List.of();
     }
 
-    private static boolean shouldConfirmEntityCommand(String command, ServerCommandSource source) {
+    private static boolean entityConstraints(String argumentName, CommandContext<ServerCommandSource> context) {
         try {
-            // Find the entity selector in the command
-            String[] parts = command.split("\\s+");
-            for (String part : parts) {
-                if (part.startsWith("@")) {
-                    int estimatedCount = estimateEntityCount(part, source);
-                    if (estimatedCount > MAX_ENTITIES) {
-                        return true;
-                    }
+            List<? extends Entity> entities = getEntities(argumentName, context);
+
+            int playerEntityCount = 0;
+            int livingEntityCount = 0;
+            int entityCount = entities.size();
+
+            for (Entity entity : entities) {
+                if (entity instanceof ServerPlayerEntity) {
+                    playerEntityCount++;
+                }
+                if (entity instanceof LivingEntity) {
+                    livingEntityCount++;
                 }
             }
+
+            OtherUtils.broadcastMessage(Text.of("Selector matched " + entityCount + " entities."));
+            OtherUtils.broadcastMessage(Text.of("Selector matched " + livingEntityCount + " living entities."));
+            OtherUtils.broadcastMessage(Text.of("Selector matched " + playerEntityCount + " players."));
+
+
+            if (entityCount > MAX_ENTITIES) return true;
+            if (livingEntityCount > MAX_LIVING_ENTITIES) return true;
+            if (playerEntityCount > MAX_PLAYERS) return true;
             return false;
         } catch (Exception e) {
-            return false;
+            Main.LOGGER.error("[CommandAnalyzer] error5:" + e.getMessage());
+            OtherUtils.broadcastMessage(Text.of("error5: " + e.getMessage()));
+            return true;
         }
-    }
-
-    private static int estimateEntityCount(String selector, ServerCommandSource source) {
-        if (selector.equals("@a")) {
-            // Count all players
-            return source.getServer().getPlayerManager().getPlayerList().size();
-        } else if (selector.equals("@e")) {
-            // Estimate all entities (this is tricky, we'll be conservative)
-            return 999; // Assume high count to trigger confirmation
-        } else if (selector.equals("@r")) {
-            // Random player - just 1
-            return 1;
-        } else if (selector.equals("@s")) {
-            // Self - just 1
-            return 1;
-        } else if (selector.equals("@p")) {
-            // Nearest player - just 1
-            return 1;
-        } else if (selector.startsWith("@")) {
-            // Complex selector - we can't easily determine count, so be conservative
-            // Parse some basic parameters if possible
-            if (selector.contains("limit=")) {
-                try {
-                    String limitStr = selector.substring(selector.indexOf("limit=") + 6);
-                    limitStr = limitStr.split("[,\\]]")[0];
-                    return Integer.parseInt(limitStr);
-                } catch (Exception e) {
-                    // If we can't parse limit, assume it could be many
-                    return MAX_ENTITIES + 1;
-                }
-            }
-            // No explicit limit, could be many entities
-            return MAX_ENTITIES + 1;
-        }
-        // Not a selector, probably a player name
-        return 1;
     }
 
     private static boolean shouldConfirmFill(String command, ServerCommandSource source) {
@@ -119,13 +106,14 @@ public class CommandAnalyzer {
             try {
                 Vec3d playerPos = source.getPosition();
 
-                Vec3d from = parseCoordinates(parts[1], parts[2], parts[3], playerPos);
-                Vec3d to = parseCoordinates(parts[4], parts[5], parts[6], playerPos);
+                BlockPos from = parseBlockCoordinates(parts[1], parts[2], parts[3], playerPos);
+                BlockPos to = parseBlockCoordinates(parts[4], parts[5], parts[6], playerPos);
 
-                int volume = calculateVolume(from, to);
+                int volume = calculateBlockVolume(from, to);
                 return volume > MAX_BLOCKS;
             } catch (Exception e) {
-                // If we can't parse coordinates, assume it might be large
+                Main.LOGGER.error("[CommandAnalyzer] error6:" + e.getMessage());
+                OtherUtils.broadcastMessage(Text.of("error6: " + e.getMessage()));
                 return true;
             }
         }
@@ -138,73 +126,74 @@ public class CommandAnalyzer {
             try {
                 Vec3d playerPos = source.getPosition();
 
-                Vec3d from = parseCoordinates(parts[1], parts[2], parts[3], playerPos);
-                Vec3d to = parseCoordinates(parts[4], parts[5], parts[6], playerPos);
+                BlockPos from = parseBlockCoordinates(parts[1], parts[2], parts[3], playerPos);
+                BlockPos to = parseBlockCoordinates(parts[4], parts[5], parts[6], playerPos);
 
-                int volume = calculateVolume(from, to);
+                int volume = calculateBlockVolume(from, to);
                 return volume > MAX_BLOCKS;
             } catch (Exception e) {
-                // If we can't parse coordinates, assume it might be large
+                Main.LOGGER.error("[CommandAnalyzer] error7:" + e.getMessage());
+                OtherUtils.broadcastMessage(Text.of("error7: " + e.getMessage()));
                 return true;
             }
         }
         return false;
     }
 
-    private static Vec3d parseCoordinates(String xStr, String yStr, String zStr, Vec3d playerPos) {
-        double x = parseCoordinate(xStr, playerPos.x);
-        double y = parseCoordinate(yStr, playerPos.y);
-        double z = parseCoordinate(zStr, playerPos.z);
-        return new Vec3d(x, y, z);
+    private static BlockPos parseBlockCoordinates(String xStr, String yStr, String zStr, Vec3d playerPos) {
+        int x = parseBlockCoordinate(xStr, (int)playerPos.x);
+        int y = parseBlockCoordinate(yStr, (int)playerPos.y);
+        int z = parseBlockCoordinate(zStr, (int)playerPos.z);
+        return new BlockPos(x, y, z);
     }
 
-    private static double parseCoordinate(String coord, double playerCoord) throws NumberFormatException {
+    private static int parseBlockCoordinate(String coord, int playerCoord) throws NumberFormatException {
         if (coord.startsWith("~")) {
             String relative = coord.substring(1);
             if (relative.isEmpty()) {
                 return playerCoord;
             } else {
-                return playerCoord + Double.parseDouble(relative);
+                return playerCoord + Integer.parseInt(relative);
             }
         } else if (coord.startsWith("^")) {
-            // Local coordinates - too complex to parse without full context, assume 0 offset
+            // Local coordinates - this is complex and would require full rotation context
+            // For now, we'll treat it as relative to player position
             String local = coord.substring(1);
-            return local.isEmpty() ? 0 : Double.parseDouble(local);
+            return local.isEmpty() ? playerCoord : playerCoord + Integer.parseInt(local);
         } else {
-            return Double.parseDouble(coord);
+            return Integer.parseInt(coord);
         }
     }
 
     private static boolean shouldConfirmScoreboard(String command) {
-        // Only confirm scoreboard reset commands that affect all players or many objectives
-        return command.toLowerCase().contains("reset") &&
-                (command.contains("@a") || command.contains("*"));
+        return command.toLowerCase().contains("reset") && (command.contains("@a") || command.contains("*"));
     }
 
-    private static int calculateVolume(Vec3d from, Vec3d to) {
-        int width = (int) Math.abs(to.x - from.x) + 1;
-        int height = (int) Math.abs(to.y - from.y) + 1;
-        int depth = (int) Math.abs(to.z - from.z) + 1;
+    private static int calculateBlockVolume(BlockPos from, BlockPos to) {
+        int width = Math.abs(to.getX() - from.getX()) + 1;
+        int height = Math.abs(to.getY() - from.getY()) + 1;
+        int depth = Math.abs(to.getZ() - from.getZ()) + 1;
         return width * height * depth;
     }
 
-    public static String generateWarning(String command, ServerCommandSource source) {
+    public static String generateWarning(String command, CommandContext<ServerCommandSource> context) {
         String commandName = getCommandName(command);
 
         switch (commandName.toLowerCase()) {
             case "kill":
-                return generateKillWarning(command, source);
+                return generateKillWarning("targets", context);
             case "fill":
-                return generateFillWarning(command, source);
+                return generateFillWarning(command, context);
             case "clone":
-                return generateCloneWarning(command, source);
+                return generateCloneWarning(command, context);
             case "effect":
             case "tp":
             case "teleport":
-            case "gamemode":
             case "give":
             case "clear":
-                return generateEntityWarning(command, source, commandName);
+                return generateEntityWarning("targets", context);
+            case "gamemode":
+                return generateEntityWarning("target", context);
             case "scoreboard":
                 return "This will reset scoreboard data permanently!";
             default:
@@ -212,81 +201,79 @@ public class CommandAnalyzer {
         }
     }
 
-    private static String generateKillWarning(String command, ServerCommandSource source) {
+    private static String generateKillWarning(String argumentName, CommandContext<ServerCommandSource> context) {
         try {
-            String[] parts = command.split("\\s+", 2);
-            if (parts.length < 2) return "This will kill entities!";
+            int actualCount = getEntities(argumentName, context).size();
 
-            String selector = parts[1];
-            int estimatedCount = estimateEntityCount(selector, source);
-
-            if (estimatedCount == 999) {
-                return "This will kill ALL entities in the world!";
+            if (actualCount == 0) {
+                return "No entities match this selector.";
+            } else if (actualCount == 1) {
+                return "This will kill 1 entity!";
             } else {
-                return String.format("This will kill approximately %d entities!", estimatedCount);
+                return String.format("This will kill %d entities!", actualCount);
             }
         } catch (Exception e) {
-            return "This will kill multiple entities!";
+            return "This will kill entities (count could not be determined)!";
         }
     }
 
-    private static String generateFillWarning(String command, ServerCommandSource source) {
+    private static String generateFillWarning(String command, CommandContext<ServerCommandSource> context) {
         try {
             String[] parts = command.split("\\s+");
             if (parts.length >= 7) {
-                Vec3d playerPos = source.getPosition();
-                Vec3d from = parseCoordinates(parts[1], parts[2], parts[3], playerPos);
-                Vec3d to = parseCoordinates(parts[4], parts[5], parts[6], playerPos);
-                int volume = calculateVolume(from, to);
+                Vec3d playerPos = context.getSource().getPosition();
+                BlockPos from = parseBlockCoordinates(parts[1], parts[2], parts[3], playerPos);
+                BlockPos to = parseBlockCoordinates(parts[4], parts[5], parts[6], playerPos);
+                int volume = calculateBlockVolume(from, to);
                 return String.format("This will modify %,d blocks!", volume);
             }
         } catch (Exception e) {
-            // Fall through to generic message
         }
-        return "This will modify a large area of blocks!";
+        return "This will modify blocks (area could not be determined)!";
     }
 
-    private static String generateCloneWarning(String command, ServerCommandSource source) {
+    private static String generateCloneWarning(String command, CommandContext<ServerCommandSource> context) {
         try {
             String[] parts = command.split("\\s+");
             if (parts.length >= 7) {
-                Vec3d playerPos = source.getPosition();
-                Vec3d from = parseCoordinates(parts[1], parts[2], parts[3], playerPos);
-                Vec3d to = parseCoordinates(parts[4], parts[5], parts[6], playerPos);
-                int volume = calculateVolume(from, to);
-                return String.format("This will copy/move %,d blocks!", volume);
+                Vec3d playerPos = context.getSource().getPosition();
+                BlockPos from = parseBlockCoordinates(parts[1], parts[2], parts[3], playerPos);
+                BlockPos to = parseBlockCoordinates(parts[4], parts[5], parts[6], playerPos);
+                int volume = calculateBlockVolume(from, to);
+                return String.format("This will clone %,d blocks!", volume);
             }
         } catch (Exception e) {
-            // Fall through to generic message
         }
-        return "This will copy/move a large area of blocks!";
+        return "This will clone blocks (area could not be determined)!";
     }
 
-    private static String generateEntityWarning(String command, ServerCommandSource source, String commandName) {
+    private static String generateEntityWarning(String command, CommandContext<ServerCommandSource> context) {
         try {
             // Find the largest entity selector in the command
             String[] parts = command.split("\\s+");
             int maxCount = 0;
             for (String part : parts) {
                 if (part.startsWith("@")) {
-                    int count = estimateEntityCount(part, source);
+                    int count = getEntities(part, context).size();
                     maxCount = Math.max(maxCount, count);
                 }
             }
 
-            if (maxCount == 999) {
-                return String.format("This will %s ALL entities!", commandName.toLowerCase());
-            } else if (maxCount > 0) {
-                return String.format("This will %s approximately %d entities!", commandName.toLowerCase(), maxCount);
+            if (maxCount == 0) {
+                return String.format("No entities match the command.");
+            } else if (maxCount == 1) {
+                return "This will affect 1 entity!";
+            } else {
+                return String.format("This will affect %d entities!", maxCount);
             }
         } catch (Exception e) {
             // Fall through to generic message
         }
-        return String.format("This will %s multiple entities!", commandName.toLowerCase());
+        return "This will affect ? entities (count could not be determined)!";
     }
 
-    public static void sendConfirmationMessage(ServerPlayerEntity player, String command, ServerCommandSource source) {
-        String warning = generateWarning(command, source);
+    public static void sendConfirmationMessage(ServerPlayerEntity player, String command, CommandContext<ServerCommandSource> context) {
+        String warning = generateWarning(command, context);
         CommandValidator.addPendingCommand(player.getUuid(), command, warning);
         CommandValidator.PendingCommand pending = CommandValidator.getPendingCommand(player.getUuid());
 
