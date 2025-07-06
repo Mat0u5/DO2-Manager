@@ -14,6 +14,7 @@ import net.mat0u5.do2manager.queue.QueueEvents;
 import net.mat0u5.do2manager.gui.ingamescreen.StatsViewer;
 import net.mat0u5.do2manager.utils.DiscordBot;
 import net.mat0u5.do2manager.utils.DiscordUtils;
+import net.mat0u5.do2manager.utils.MSPTUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.BlockScanner;
 import net.mat0u5.do2manager.world.FakeSign;
@@ -72,6 +73,7 @@ public class Events {
 
         RunInfoParser.shutdownExecutor();
         DiscordBot.shutdownExecutor();
+        MSPTUtils.shutdownExecutor();
         GuiInventory_Database.shutdownExecutor();
         Main.shutdownExecutor();
         FakeSign.shutdownExecutor();

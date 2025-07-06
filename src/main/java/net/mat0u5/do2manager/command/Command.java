@@ -314,6 +314,50 @@ public class Command {
                                 )
                         )
                 )
+                .then(literal("simulator")
+                        .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
+                        .then(literal("card_played")
+                                .executes(context -> Main.simulator.cardPlayed(
+                                        context.getSource())
+                                )
+                        )
+                        .then(literal("save_permanents")
+                                .executes(context -> Main.simulator.saveHand(
+                                        context.getSource())
+                                )
+                        )
+                        .then(literal("hand_deck")
+                                .executes(context -> Main.simulator.runHand(
+                                        context.getSource(),5000,false)
+                                )
+                                .then(argument("simulate_runs_num", IntegerArgumentType.integer(1))
+                                        .executes(context -> Main.simulator.runHand(
+                                                context.getSource(),
+                                                IntegerArgumentType.getInteger(context, "simulate_runs_num"),false)
+                                        )
+                                        .then(literal("dont_skip_cards")
+                                                .executes(context -> Main.simulator.runHand(
+                                                        context.getSource(),IntegerArgumentType.getInteger(context, "simulate_runs_num"),true)
+                                                )
+                                        )
+                                )
+                        )
+                        .then(literal("stop_sim")
+                                .executes(context -> Main.simulator.stopSimCommand(
+                                        context.getSource())
+                                )
+                        )
+                        .then(literal("disable")
+                                .executes(context -> Main.simulator.enOrDis(
+                                        context.getSource(),"false")
+                                )
+                        )
+                        .then(literal("enable")
+                                .executes(context -> Main.simulator.enOrDis(
+                                        context.getSource(),"true")
+                                )
+                        )
+                )
                 .then(literal("commandBlockSearch")
                     .requires(source -> (isAdmin(source.getPlayer())))
                     .then(literal("containsString")
@@ -820,7 +864,7 @@ public class Command {
 
         dispatcher.register(
             literal("previewFunction")
-                .requires(source -> (isAdmin(source.getPlayer())))
+                .requires(source -> (isAdmin(source.getPlayer()) || (source.getEntity() == null)))
                 .then(argument("name", CommandFunctionArgumentType.commandFunction())
                     .suggests(FUNCTION_COMMAND_SUGGESTION)
                     .executes(context -> FunctionPreview.previewFunction(
@@ -837,7 +881,7 @@ public class Command {
 
         dispatcher.register(
             literal("gib")
-            .requires(source -> (isAdmin(source.getPlayer())))
+            .requires(source -> (isAdmin(source.getPlayer()) || (source.getEntity() == null)))
             .then(argument("targets", EntityArgumentType.players())
                 .then(argument("item", StringArgumentType.string())
                     .suggests((context, builder) -> CommandSource.suggestMatching(CustomGiveCommand.getAllItems(), builder))
@@ -860,7 +904,7 @@ public class Command {
 
         dispatcher.register(
             literal("remainingTime")
-                .requires(source -> (isAdmin(source.getPlayer())))
+                .requires(source -> (isAdmin(source.getPlayer()) || (source.getEntity() == null)))
                 .then(argument("timestamp", LongArgumentType.longArg())
                         .executes(context -> OtherCommand.remainingTime(
                                 context.getSource(), LongArgumentType.getLong(context, "timestamp")
