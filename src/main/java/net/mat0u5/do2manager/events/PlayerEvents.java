@@ -121,7 +121,7 @@ public class PlayerEvents {
             }
             if (ItemManager.isDungeonArtifact(itemStack) && Main.currentRun.artifact_item == null) {
                 if (ItemManager.getModelData(itemStack) == 36) {
-                    OtherUtils.executeCommand(player.getServer(),"function dom:mat0u5/gui/other/mug_maniac_activate");
+                    OtherUtils.executeCommand(player.getServer(),"function dom:world/dungeon_functions/utilities/do2.map/other/mug_maniac_activate");
                 }
                 Main.currentRun.artifact_item = itemStack;
             }

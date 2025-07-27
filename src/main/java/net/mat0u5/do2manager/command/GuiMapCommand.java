@@ -18,7 +18,7 @@ public class GuiMapCommand {
             self.sendMessage(Text.of("§cInvalid gui scale!"));
             return -1;
         }
-        String command = "execute as "+self.getUuidAsString()+" run function dom:mat0u5/gui/scale/"+((guiScale==0)?"disable_map":"scale_"+guiScale);
+        String command = "execute as "+self.getUuidAsString()+" run dom:world/dungeon_functions/utilities/do2.map/scale/"+((guiScale==0)?"disable_map":"scale_"+guiScale);
 
         OtherUtils.executeCommand(server,command);
 
