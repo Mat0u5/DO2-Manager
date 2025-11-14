@@ -33,7 +33,8 @@ public class ConfigManager {
                 try (OutputStream output = new FileOutputStream(configFile)) {
                     properties.setProperty("current_run","");
                     properties.setProperty("current_queue","");
-                    properties.setProperty("db_version",DatabaseManager.DB_VERSION);
+                    // Note: db_version is intentionally NOT set here to avoid circular dependency
+                    // It will be set by DatabaseManager after successful initialization
                     properties.setProperty("testing","false");
                     properties.setProperty("current_run_is_speedrun","false");
                     properties.setProperty("webhook_url","");

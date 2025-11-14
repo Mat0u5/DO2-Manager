@@ -48,6 +48,10 @@ public class DatabaseManager {
                         createPlayersTable(connection);
                         createTCGTable(connection);
                         createCustomItemsTable(connection);
+
+                        // Only set db_version after successful table creation
+                        Main.config.setProperty("db_version", DB_VERSION);
+                        System.out.println("Database tables created successfully. Version set to " + DB_VERSION);
                     }
                     System.out.println("Database initialized.");
                 } else {
