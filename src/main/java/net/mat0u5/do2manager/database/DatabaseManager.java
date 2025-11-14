@@ -92,7 +92,7 @@ public class DatabaseManager {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "uuid TEXT NOT NULL UNIQUE," +
                 "name TEXT NOT NULL," +
-                "joined_at TEXT NOT NULL" +
+                "joined_at TEXT NOT NULL," +
                 "game_profile TEXT" +
                 ");";
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -121,8 +121,8 @@ public class DatabaseManager {
                 "run_type TEXT," +
                 "runners TEXT," +
                 "finishers TEXT," +
-                "run_length INTEGER" +
-                "embers_counted INTEGER" +
+                "run_length INTEGER," +
+                "embers_counted INTEGER," +
                 "crowns_counted INTEGER" +
                 ");";
         PreparedStatement statement = connection.prepareStatement(sql);
