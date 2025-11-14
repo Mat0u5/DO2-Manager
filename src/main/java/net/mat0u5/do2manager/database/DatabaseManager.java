@@ -83,7 +83,10 @@ public class DatabaseManager {
         }
         try {
             updateTable();
-        }catch(Exception e) {}
+        } catch (Exception e) {
+            System.err.println("Error updating database tables: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     private static void createFolderIfNotExists() {
         File folder = new File(FOLDER_PATH);
