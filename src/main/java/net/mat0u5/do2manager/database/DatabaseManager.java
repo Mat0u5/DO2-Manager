@@ -78,6 +78,8 @@ public class DatabaseManager {
         String lastRecordedDBVersion = Main.config.getProperty("db_version");
         if (DB_VERSION.equalsIgnoreCase(lastRecordedDBVersion)) return;
         if (lastRecordedDBVersion == null || lastRecordedDBVersion.isEmpty()) {
+            // First startup - initialize database
+            initialize();
             Main.config.setProperty("db_version",DB_VERSION);
             return;
         }
