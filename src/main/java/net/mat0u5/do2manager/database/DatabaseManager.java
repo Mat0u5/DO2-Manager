@@ -91,7 +91,12 @@ public class DatabaseManager {
     private static void createFolderIfNotExists() {
         File folder = new File(FOLDER_PATH);
         if (!folder.exists()) {
-            folder.mkdir();
+            boolean created = folder.mkdirs();
+            if (created) {
+                System.out.println("Created database folder: " + FOLDER_PATH);
+            } else {
+                System.err.println("Failed to create database folder: " + FOLDER_PATH);
+            }
         }
     }
     private static void createPlayersTable(Connection connection) throws SQLException {
