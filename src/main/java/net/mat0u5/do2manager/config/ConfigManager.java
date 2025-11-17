@@ -29,11 +29,21 @@ public class ConfigManager {
         File configFile = new File(filePath);
         if (!configFile.exists()) {
             try {
+                // Create parent directories first
+                File parentDir = configFile.getParentFile();
+                if (parentDir != null && !parentDir.exists()) {
+                    boolean dirsCreated = parentDir.mkdirs();
+                    if (!dirsCreated) {
+                        System.err.println("Failed to create config directory: " + parentDir.getAbsolutePath());
+                    }
+                }
+
                 configFile.createNewFile();
                 try (OutputStream output = new FileOutputStream(configFile)) {
                     properties.setProperty("current_run","");
                     properties.setProperty("current_queue","");
-                    properties.setProperty("db_version",DatabaseManager.DB_VERSION);
+                    // Note: db_version is intentionally NOT set here to avoid circular dependency
+                    // It will be set by DatabaseManager after successful initialization
                     properties.setProperty("testing","false");
                     properties.setProperty("current_run_is_speedrun","false");
                     properties.setProperty("webhook_url","");

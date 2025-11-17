@@ -48,6 +48,10 @@ public class DatabaseManager {
                         createPlayersTable(connection);
                         createTCGTable(connection);
                         createCustomItemsTable(connection);
+
+                        // Only set db_version after successful table creation
+                        Main.config.setProperty("db_version", DB_VERSION);
+                        System.out.println("Database tables created successfully. Version set to " + DB_VERSION);
                     }
                     System.out.println("Database initialized.");
                 } else {
@@ -74,17 +78,27 @@ public class DatabaseManager {
         String lastRecordedDBVersion = Main.config.getProperty("db_version");
         if (DB_VERSION.equalsIgnoreCase(lastRecordedDBVersion)) return;
         if (lastRecordedDBVersion == null || lastRecordedDBVersion.isEmpty()) {
+            // First startup - initialize database
+            initialize();
             Main.config.setProperty("db_version",DB_VERSION);
             return;
         }
         try {
             updateTable();
-        }catch(Exception e) {}
+        } catch (Exception e) {
+            System.err.println("Error updating database tables: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
     private static void createFolderIfNotExists() {
         File folder = new File(FOLDER_PATH);
         if (!folder.exists()) {
-            folder.mkdir();
+            boolean created = folder.mkdirs();
+            if (created) {
+                System.out.println("Created database folder: " + FOLDER_PATH);
+            } else {
+                System.err.println("Failed to create database folder: " + FOLDER_PATH);
+            }
         }
     }
     private static void createPlayersTable(Connection connection) throws SQLException {
@@ -92,7 +106,7 @@ public class DatabaseManager {
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "uuid TEXT NOT NULL UNIQUE," +
                 "name TEXT NOT NULL," +
-                "joined_at TEXT NOT NULL" +
+                "joined_at TEXT NOT NULL," +
                 "game_profile TEXT" +
                 ");";
         PreparedStatement statement = connection.prepareStatement(sql);
@@ -121,8 +135,8 @@ public class DatabaseManager {
                 "run_type TEXT," +
                 "runners TEXT," +
                 "finishers TEXT," +
-                "run_length INTEGER" +
-                "embers_counted INTEGER" +
+                "run_length INTEGER," +
+                "embers_counted INTEGER," +
                 "crowns_counted INTEGER" +
                 ");";
         PreparedStatement statement = connection.prepareStatement(sql);

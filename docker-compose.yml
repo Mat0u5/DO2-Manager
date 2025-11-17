@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  minecraft-server:
+    image: itzg/minecraft-server
+    container_name: do2-manager-test
+    environment:
+      # Basic server configuration
+      EULA: "TRUE"
+      TYPE: "FABRIC"
+      VERSION: "1.21"
+
+      # Server settings
+      SERVER_NAME: "DO2-Manager Test Server"
+      MOTD: "Testing DO2-Manager Database Initialization"
+      MAX_PLAYERS: 10
+      DIFFICULTY: "normal"
+      MODE: "survival"
+      ONLINE_MODE: "FALSE"  # Allow offline players for testing
+
+      # Performance settings
+      MEMORY: "2G"
+      JVM_OPTS: "-XX:+UseG1GC -XX:+ParallelRefProcEnabled -XX:MaxGCPauseMillis=200"
+
+      # Reduce verbose setup logs - only show essential output
+      DEBUG: "false"
+      LOG_TIMESTAMP: "true"
+
+      # Fabric loader version
+      FABRIC_LOADER_VERSION: "LATEST"
+
+      # Add Fabric API and Cloth Config via Modrinth
+      MODRINTH_PROJECTS: "fabric-api,cloth-config"
+
+      # Force server recreation for testing
+      FORCE_REDOWNLOAD: "false"
+
+    ports:
+      - "25565:25565"  # Minecraft server port
+      - "25575:25575"  # RCON port (optional)
+
+    volumes:
+      # Mount the built mod jar
+      - ./build/libs:/mods:ro
+      # Mount server data (config, worlds, logs)
+      - minecraft-data:/data
+      # Mount logs for easier debugging
+      - ./docker-logs:/data/logs
+
+    restart: "no"
+
+    # Resource limits to prevent system overload
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 1G
+
+volumes:
+  minecraft-data:
+    driver: local
