@@ -53,6 +53,7 @@ public class ConfigManager {
                     properties.setProperty("block_password","");
                     properties.setProperty("simulator_enabled","false");
                     properties.setProperty("server_chat_channel_id","");
+                    properties.setProperty("stop_discord_channel_update","true");
 
                     properties.store(output, null);
                 }
