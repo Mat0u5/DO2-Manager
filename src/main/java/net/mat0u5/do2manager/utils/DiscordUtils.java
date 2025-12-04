@@ -105,6 +105,9 @@ public class DiscordUtils {
     }
 
     public void updateDiscordChannelDescription() {
+        // My attempt at adding a config check?
+        boolean descriptionUpdate = Main.config.getProperty("stop_discord_channel_update").equalsIgnoreCase("true");
+            if (descriptionUpdate == false) {
         List<ServerPlayerEntity> players = Main.server.getPlayerManager().getPlayerList();
         List<String> playerNames = new ArrayList<>();
         for (ServerPlayerEntity player : players) {
@@ -113,7 +116,7 @@ public class DiscordUtils {
         if (playerNames.contains("TangoCam")) playerNames.remove("TangoCam");
         String description = "Players online (" + playerNames.size() + "): " + String.join(", ",playerNames);
         DiscordBot discordBot = new DiscordBot();
-        discordBot.startBot(getWebhookToken(), getChatChannelId(),true,description);
+        discordBot.startBot(getWebhookToken(), getChatChannelId(),true,description);}
     }
     public static void sendChangeInfo(String from, String change, String reason, String affected) {
         long timestamp = System.currentTimeMillis() / 1000;
