@@ -5,6 +5,8 @@ import com.mojang.brigadier.context.CommandContext;
 import net.mat0u5.do2manager.command.validator.CommandAnalyzer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -22,7 +24,12 @@ public class CommandManagerMixin {
             CommandContext<CommandSourceStack> context = parseResults.getContext().build(command);
             if (CommandAnalyzer.shouldConfirm(command, context)) {
                 CommandAnalyzer.sendConfirmationMessage(player, command, context);
-                player.playNotifySound(SoundEvents.NOTE_BLOCK_DIDGERIDOO.value(), SoundSource.BLOCKS, 1, 1);
+                player.connection
+                        .send(
+                                new ClientboundSoundPacket(
+                                        BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.NOTE_BLOCK_DIDGERIDOO.value()), SoundSource.BLOCKS, player.getX(), player.getY(), player.getZ(), 1, 1, player.getRandom().nextLong()
+                                )
+                        );
                 ci.cancel();
             }
         }

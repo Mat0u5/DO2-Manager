@@ -34,7 +34,7 @@ public abstract class ServerPlayerInteractionManagerMixin {
 
     @Inject(method = "useItemOn", at = @At("HEAD"), cancellable = true)
     private void onInteractBlock(ServerPlayer player, Level world, ItemStack stack, InteractionHand hand, BlockHitResult hitResult, CallbackInfoReturnable<InteractionResult> cir) {
-        if (player.hasPermissions(2)) return;
+        if (player.level().getServer().getPlayerList().isOp(player.nameAndId())) return;
         if (player.isCreative()) return;
 
         BlockState state = world.getBlockState(hitResult.getBlockPos());

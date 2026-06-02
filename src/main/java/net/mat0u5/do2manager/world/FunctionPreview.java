@@ -6,7 +6,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerScoreboard;
 import net.minecraft.server.level.ServerLevel;
@@ -35,7 +35,7 @@ public class FunctionPreview {
             self.sendSystemMessage(Component.nullToEmpty("Previewing "+function.id()));
 
             Path datapacksDirectory = server.getWorldPath(LevelResource.DATAPACK_DIR);
-            ResourceLocation functionId = function.id();
+            Identifier functionId = function.id();
             String namespace = functionId.getNamespace();
             String functionPath = functionId.getPath();
             Path functionFilePath = datapacksDirectory

@@ -15,7 +15,7 @@ public class GuiMapCommand {
         final Player self = source.getPlayer();
 
         if (guiScale < 0 || guiScale > 4) {
-            self.sendSystemMessage(Component.nullToEmpty("§cInvalid gui scale!"));
+            self.displayClientMessage(Component.nullToEmpty("§cInvalid gui scale!"), false);
             return -1;
         }
         String command = "execute as "+self.getStringUUID()+" run function dom:world/dungeon_functions/utilities/do2.map/scale/"+((guiScale==0)?"disable_map":"scale_"+guiScale);

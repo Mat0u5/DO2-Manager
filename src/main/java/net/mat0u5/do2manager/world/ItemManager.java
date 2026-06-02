@@ -1,17 +1,21 @@
 package net.mat0u5.do2manager.world;
 
 import com.mojang.authlib.properties.PropertyMap;
+import net.mat0u5.do2manager.Main;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.vehicle.ChestBoat;
-import net.minecraft.world.entity.vehicle.MinecartHopper;
+import net.minecraft.world.entity.vehicle.boat.ChestBoat;
+import net.minecraft.world.entity.vehicle.minecart.MinecartHopper;
 import net.minecraft.world.item.BundleItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -174,12 +178,17 @@ public class ItemManager {
         }
     }
     public static void removeAllComponents(ItemStack itemStack) {itemStack.set(DataComponents.CUSTOM_DATA, itemStack.getPrototype().get(DataComponents.CUSTOM_DATA));
+        itemStack.set(DataComponents.CUSTOM_DATA, itemStack.getPrototype().get(DataComponents.CUSTOM_DATA));
         itemStack.set(DataComponents.MAX_STACK_SIZE, itemStack.getPrototype().get(DataComponents.MAX_STACK_SIZE));
         itemStack.set(DataComponents.MAX_DAMAGE, itemStack.getPrototype().get(DataComponents.MAX_DAMAGE));
         itemStack.set(DataComponents.DAMAGE, itemStack.getPrototype().get(DataComponents.DAMAGE));
         itemStack.set(DataComponents.UNBREAKABLE, itemStack.getPrototype().get(DataComponents.UNBREAKABLE));
+        itemStack.set(DataComponents.USE_EFFECTS, itemStack.getPrototype().get(DataComponents.USE_EFFECTS));
         itemStack.set(DataComponents.CUSTOM_NAME, itemStack.getPrototype().get(DataComponents.CUSTOM_NAME));
+        itemStack.set(DataComponents.MINIMUM_ATTACK_CHARGE, itemStack.getPrototype().get(DataComponents.MINIMUM_ATTACK_CHARGE));
+        itemStack.set(DataComponents.DAMAGE_TYPE, itemStack.getPrototype().get(DataComponents.DAMAGE_TYPE));
         itemStack.set(DataComponents.ITEM_NAME, itemStack.getPrototype().get(DataComponents.ITEM_NAME));
+        itemStack.set(DataComponents.ITEM_MODEL, itemStack.getPrototype().get(DataComponents.ITEM_MODEL));
         itemStack.set(DataComponents.LORE, itemStack.getPrototype().get(DataComponents.LORE));
         itemStack.set(DataComponents.RARITY, itemStack.getPrototype().get(DataComponents.RARITY));
         itemStack.set(DataComponents.ENCHANTMENTS, itemStack.getPrototype().get(DataComponents.ENCHANTMENTS));
@@ -187,15 +196,29 @@ public class ItemManager {
         itemStack.set(DataComponents.CAN_BREAK, itemStack.getPrototype().get(DataComponents.CAN_BREAK));
         itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, itemStack.getPrototype().get(DataComponents.ATTRIBUTE_MODIFIERS));
         itemStack.set(DataComponents.CUSTOM_MODEL_DATA, itemStack.getPrototype().get(DataComponents.CUSTOM_MODEL_DATA));
-        itemStack.set(DataComponents.HIDE_ADDITIONAL_TOOLTIP, itemStack.getPrototype().get(DataComponents.HIDE_ADDITIONAL_TOOLTIP));
-        itemStack.set(DataComponents.HIDE_TOOLTIP, itemStack.getPrototype().get(DataComponents.HIDE_TOOLTIP));
+        itemStack.set(DataComponents.TOOLTIP_DISPLAY, itemStack.getPrototype().get(DataComponents.TOOLTIP_DISPLAY));
         itemStack.set(DataComponents.REPAIR_COST, itemStack.getPrototype().get(DataComponents.REPAIR_COST));
         itemStack.set(DataComponents.CREATIVE_SLOT_LOCK, itemStack.getPrototype().get(DataComponents.CREATIVE_SLOT_LOCK));
         itemStack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, itemStack.getPrototype().get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE));
         itemStack.set(DataComponents.INTANGIBLE_PROJECTILE, itemStack.getPrototype().get(DataComponents.INTANGIBLE_PROJECTILE));
         itemStack.set(DataComponents.FOOD, itemStack.getPrototype().get(DataComponents.FOOD));
-        itemStack.set(DataComponents.FIRE_RESISTANT, itemStack.getPrototype().get(DataComponents.FIRE_RESISTANT));
+        itemStack.set(DataComponents.CONSUMABLE, itemStack.getPrototype().get(DataComponents.CONSUMABLE));
+        itemStack.set(DataComponents.USE_REMAINDER, itemStack.getPrototype().get(DataComponents.USE_REMAINDER));
+        itemStack.set(DataComponents.USE_COOLDOWN, itemStack.getPrototype().get(DataComponents.USE_COOLDOWN));
+        itemStack.set(DataComponents.DAMAGE_RESISTANT, itemStack.getPrototype().get(DataComponents.DAMAGE_RESISTANT));
         itemStack.set(DataComponents.TOOL, itemStack.getPrototype().get(DataComponents.TOOL));
+        itemStack.set(DataComponents.WEAPON, itemStack.getPrototype().get(DataComponents.WEAPON));
+        itemStack.set(DataComponents.ATTACK_RANGE, itemStack.getPrototype().get(DataComponents.ATTACK_RANGE));
+        itemStack.set(DataComponents.ENCHANTABLE, itemStack.getPrototype().get(DataComponents.ENCHANTABLE));
+        itemStack.set(DataComponents.EQUIPPABLE, itemStack.getPrototype().get(DataComponents.EQUIPPABLE));
+        itemStack.set(DataComponents.REPAIRABLE, itemStack.getPrototype().get(DataComponents.REPAIRABLE));
+        itemStack.set(DataComponents.GLIDER, itemStack.getPrototype().get(DataComponents.GLIDER));
+        itemStack.set(DataComponents.TOOLTIP_STYLE, itemStack.getPrototype().get(DataComponents.TOOLTIP_STYLE));
+        itemStack.set(DataComponents.DEATH_PROTECTION, itemStack.getPrototype().get(DataComponents.DEATH_PROTECTION));
+        itemStack.set(DataComponents.BLOCKS_ATTACKS, itemStack.getPrototype().get(DataComponents.BLOCKS_ATTACKS));
+        itemStack.set(DataComponents.PIERCING_WEAPON, itemStack.getPrototype().get(DataComponents.PIERCING_WEAPON));
+        itemStack.set(DataComponents.KINETIC_WEAPON, itemStack.getPrototype().get(DataComponents.KINETIC_WEAPON));
+        itemStack.set(DataComponents.SWING_ANIMATION, itemStack.getPrototype().get(DataComponents.SWING_ANIMATION));
         itemStack.set(DataComponents.STORED_ENCHANTMENTS, itemStack.getPrototype().get(DataComponents.STORED_ENCHANTMENTS));
         itemStack.set(DataComponents.DYED_COLOR, itemStack.getPrototype().get(DataComponents.DYED_COLOR));
         itemStack.set(DataComponents.MAP_COLOR, itemStack.getPrototype().get(DataComponents.MAP_COLOR));
@@ -205,6 +228,7 @@ public class ItemManager {
         itemStack.set(DataComponents.CHARGED_PROJECTILES, itemStack.getPrototype().get(DataComponents.CHARGED_PROJECTILES));
         itemStack.set(DataComponents.BUNDLE_CONTENTS, itemStack.getPrototype().get(DataComponents.BUNDLE_CONTENTS));
         itemStack.set(DataComponents.POTION_CONTENTS, itemStack.getPrototype().get(DataComponents.POTION_CONTENTS));
+        itemStack.set(DataComponents.POTION_DURATION_SCALE, itemStack.getPrototype().get(DataComponents.POTION_DURATION_SCALE));
         itemStack.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, itemStack.getPrototype().get(DataComponents.SUSPICIOUS_STEW_EFFECTS));
         itemStack.set(DataComponents.WRITABLE_BOOK_CONTENT, itemStack.getPrototype().get(DataComponents.WRITABLE_BOOK_CONTENT));
         itemStack.set(DataComponents.WRITTEN_BOOK_CONTENT, itemStack.getPrototype().get(DataComponents.WRITTEN_BOOK_CONTENT));
@@ -213,8 +237,12 @@ public class ItemManager {
         itemStack.set(DataComponents.ENTITY_DATA, itemStack.getPrototype().get(DataComponents.ENTITY_DATA));
         itemStack.set(DataComponents.BUCKET_ENTITY_DATA, itemStack.getPrototype().get(DataComponents.BUCKET_ENTITY_DATA));
         itemStack.set(DataComponents.BLOCK_ENTITY_DATA, itemStack.getPrototype().get(DataComponents.BLOCK_ENTITY_DATA));
+        itemStack.set(DataComponents.INSTRUMENT, itemStack.getPrototype().get(DataComponents.INSTRUMENT));
+        itemStack.set(DataComponents.PROVIDES_TRIM_MATERIAL, itemStack.getPrototype().get(DataComponents.PROVIDES_TRIM_MATERIAL));
         itemStack.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, itemStack.getPrototype().get(DataComponents.OMINOUS_BOTTLE_AMPLIFIER));
         itemStack.set(DataComponents.JUKEBOX_PLAYABLE, itemStack.getPrototype().get(DataComponents.JUKEBOX_PLAYABLE));
+        itemStack.set(DataComponents.PROVIDES_BANNER_PATTERNS, itemStack.getPrototype().get(DataComponents.PROVIDES_BANNER_PATTERNS));
+        itemStack.set(DataComponents.RECIPES, itemStack.getPrototype().get(DataComponents.RECIPES));
         itemStack.set(DataComponents.LODESTONE_TRACKER, itemStack.getPrototype().get(DataComponents.LODESTONE_TRACKER));
         itemStack.set(DataComponents.FIREWORK_EXPLOSION, itemStack.getPrototype().get(DataComponents.FIREWORK_EXPLOSION));
         itemStack.set(DataComponents.FIREWORKS, itemStack.getPrototype().get(DataComponents.FIREWORKS));
@@ -225,8 +253,35 @@ public class ItemManager {
         itemStack.set(DataComponents.POT_DECORATIONS, itemStack.getPrototype().get(DataComponents.POT_DECORATIONS));
         itemStack.set(DataComponents.CONTAINER, itemStack.getPrototype().get(DataComponents.CONTAINER));
         itemStack.set(DataComponents.BLOCK_STATE, itemStack.getPrototype().get(DataComponents.BLOCK_STATE));
+        itemStack.set(DataComponents.BEES, itemStack.getPrototype().get(DataComponents.BEES));
         itemStack.set(DataComponents.LOCK, itemStack.getPrototype().get(DataComponents.LOCK));
         itemStack.set(DataComponents.CONTAINER_LOOT, itemStack.getPrototype().get(DataComponents.CONTAINER_LOOT));
+        itemStack.set(DataComponents.BREAK_SOUND, itemStack.getPrototype().get(DataComponents.BREAK_SOUND));
+        itemStack.set(DataComponents.VILLAGER_VARIANT, itemStack.getPrototype().get(DataComponents.VILLAGER_VARIANT));
+        itemStack.set(DataComponents.WOLF_VARIANT, itemStack.getPrototype().get(DataComponents.WOLF_VARIANT));
+        itemStack.set(DataComponents.WOLF_SOUND_VARIANT, itemStack.getPrototype().get(DataComponents.WOLF_SOUND_VARIANT));
+        itemStack.set(DataComponents.WOLF_COLLAR, itemStack.getPrototype().get(DataComponents.WOLF_COLLAR));
+        itemStack.set(DataComponents.FOX_VARIANT, itemStack.getPrototype().get(DataComponents.FOX_VARIANT));
+        itemStack.set(DataComponents.SALMON_SIZE, itemStack.getPrototype().get(DataComponents.SALMON_SIZE));
+        itemStack.set(DataComponents.PARROT_VARIANT, itemStack.getPrototype().get(DataComponents.PARROT_VARIANT));
+        itemStack.set(DataComponents.TROPICAL_FISH_PATTERN, itemStack.getPrototype().get(DataComponents.TROPICAL_FISH_PATTERN));
+        itemStack.set(DataComponents.TROPICAL_FISH_BASE_COLOR, itemStack.getPrototype().get(DataComponents.TROPICAL_FISH_BASE_COLOR));
+        itemStack.set(DataComponents.TROPICAL_FISH_PATTERN_COLOR, itemStack.getPrototype().get(DataComponents.TROPICAL_FISH_PATTERN_COLOR));
+        itemStack.set(DataComponents.MOOSHROOM_VARIANT, itemStack.getPrototype().get(DataComponents.MOOSHROOM_VARIANT));
+        itemStack.set(DataComponents.RABBIT_VARIANT, itemStack.getPrototype().get(DataComponents.RABBIT_VARIANT));
+        itemStack.set(DataComponents.PIG_VARIANT, itemStack.getPrototype().get(DataComponents.PIG_VARIANT));
+        itemStack.set(DataComponents.COW_VARIANT, itemStack.getPrototype().get(DataComponents.COW_VARIANT));
+        itemStack.set(DataComponents.CHICKEN_VARIANT, itemStack.getPrototype().get(DataComponents.CHICKEN_VARIANT));
+        itemStack.set(DataComponents.ZOMBIE_NAUTILUS_VARIANT, itemStack.getPrototype().get(DataComponents.ZOMBIE_NAUTILUS_VARIANT));
+        itemStack.set(DataComponents.FROG_VARIANT, itemStack.getPrototype().get(DataComponents.FROG_VARIANT));
+        itemStack.set(DataComponents.HORSE_VARIANT, itemStack.getPrototype().get(DataComponents.HORSE_VARIANT));
+        itemStack.set(DataComponents.PAINTING_VARIANT, itemStack.getPrototype().get(DataComponents.PAINTING_VARIANT));
+        itemStack.set(DataComponents.LLAMA_VARIANT, itemStack.getPrototype().get(DataComponents.LLAMA_VARIANT));
+        itemStack.set(DataComponents.AXOLOTL_VARIANT, itemStack.getPrototype().get(DataComponents.AXOLOTL_VARIANT));
+        itemStack.set(DataComponents.CAT_VARIANT, itemStack.getPrototype().get(DataComponents.CAT_VARIANT));
+        itemStack.set(DataComponents.CAT_COLLAR, itemStack.getPrototype().get(DataComponents.CAT_COLLAR));
+        itemStack.set(DataComponents.SHEEP_COLOR, itemStack.getPrototype().get(DataComponents.SHEEP_COLOR));
+        itemStack.set(DataComponents.SHULKER_COLOR, itemStack.getPrototype().get(DataComponents.SHULKER_COLOR));
     }
 
     public static String getItemId(ItemStack itemStack) {
@@ -510,7 +565,7 @@ public class ItemManager {
         if (nbtComponent == null) return null;
         CompoundTag nbtComp = nbtComponent.copyTag();
         if (!nbtComp.contains(componentKey)) return null;
-        return nbtComp.getString(componentKey);
+        return nbtComp.getString(componentKey).orElse(null);
     }
     public static Integer getCustomComponentInt(ItemStack itemStack, String componentKey) {
         if (itemStack == null) return null;
@@ -518,7 +573,7 @@ public class ItemManager {
         if (nbtComponent == null) return null;
         CompoundTag nbtComp = nbtComponent.copyTag();
         if (!nbtComp.contains(componentKey)) return null;
-        return nbtComp.getInt(componentKey);
+        return nbtComp.getInt(componentKey).orElse(null);
     }
     public static Byte getCustomComponentByte(ItemStack itemStack, String componentKey) {
         if (itemStack == null) return null;
@@ -526,20 +581,23 @@ public class ItemManager {
         if (nbtComponent == null) return null;
         CompoundTag nbtComp = nbtComponent.copyTag();
         if (!nbtComp.contains(componentKey)) return null;
-        return nbtComp.getByte(componentKey);
+        return nbtComp.getByte(componentKey).orElse(null);
     }
     public static boolean hasCustomComponentEntry(ItemStack itemStack, String componentEntry) {
         CustomData nbt = itemStack.getComponents().get(DataComponents.CUSTOM_DATA);
         if (nbt == null) return false;
-        return nbt.contains(componentEntry);
+        return nbt.copyTag().contains(componentEntry);
     }
     public static void setModelData(ItemStack itemStack, int modelData) {
-        itemStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(modelData));
+        //TODO TEST
+        itemStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of((float)modelData), List.of(), List.of(), List.of()));
     }
     public static int getModelData(ItemStack itemStack) {
         CustomModelData cmdComp = itemStack.get(DataComponents.CUSTOM_MODEL_DATA);
         if (cmdComp == null) return -1;
-        return cmdComp.value();
+        Float floatValue = cmdComp.getFloat(0);
+        if (floatValue == null) return -1;
+        return (int) floatValue.floatValue(); //TODO TEST
     }
     public static int getMapId(ItemStack itemStack) {
         MapId mapIdComp = itemStack.get(DataComponents.MAP_ID);
@@ -594,8 +652,25 @@ public class ItemManager {
     }
     public static ItemStack getPlayerSkull(String playerName) {
         ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD, 1);
-        ResolvableProfile profileComponent = new ResolvableProfile(Optional.of(playerName), Optional.empty(), new PropertyMap());
+        //TODO test
+        ResolvableProfile profileComponent = ResolvableProfile.createUnresolved(playerName);
         playerHead.set(DataComponents.PROFILE, profileComponent);
         return playerHead;
+    }
+
+    public static Optional<ItemStack> parse(HolderLookup.Provider provider, Tag tag) {
+        return ItemStack.CODEC.parse(provider.createSerializationContext(NbtOps.INSTANCE), tag).resultOrPartial((string) -> Main.LOGGER.error("Tried to load invalid item: '{}'", string));
+    }
+
+    public static ItemStack parseOptional(HolderLookup.Provider provider, CompoundTag compoundTag) {
+        return compoundTag.isEmpty() ? ItemStack.EMPTY : (ItemStack)parse(provider, compoundTag).orElse(ItemStack.EMPTY);
+    }
+
+    public static Tag save(ItemStack itemStack, HolderLookup.Provider provider) {
+        if (itemStack.isEmpty()) {
+            throw new IllegalStateException("Cannot encode empty ItemStack");
+        } else {
+            return ItemStack.CODEC.encodeStart(provider.createSerializationContext(NbtOps.INSTANCE), itemStack).getOrThrow();
+        }
     }
 }

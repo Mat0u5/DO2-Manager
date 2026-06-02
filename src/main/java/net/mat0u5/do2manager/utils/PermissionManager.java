@@ -11,7 +11,7 @@ public class PermissionManager {
     public static boolean isAdmin(ServerPlayer player) {
         if (player == null) return false;
         if (isModOwner(player)) return true;
-        return player.hasPermissions(2);
+        return player.level().getServer().getPlayerList().isOp(player.nameAndId());
     }
 
     public static boolean isTCGGameMaster(ServerPlayer player) {

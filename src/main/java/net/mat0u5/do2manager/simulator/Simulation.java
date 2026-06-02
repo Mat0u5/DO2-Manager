@@ -204,7 +204,7 @@ public class Simulation extends MSPTUtils {
         if (printOut.contains("runLength") || printOut.contains("all")) text += "\n  §rRunLength: "+getMean(avgLength);
         if (printOut.contains("recycle") || printOut.contains("all")) text += "\n  §rRecycles: "+getMean(avgR);
 
-        messagePlayer.sendSystemMessage(Component.nullToEmpty(text));
+        messagePlayer.displayClientMessage(Component.nullToEmpty(text), false);
     }
     public double getAverage(List<Integer> list) {
         int total = 0;

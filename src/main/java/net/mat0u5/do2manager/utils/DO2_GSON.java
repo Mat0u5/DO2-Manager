@@ -3,12 +3,14 @@ package net.mat0u5.do2manager.utils;
 import com.google.gson.*;
 import net.mat0u5.do2manager.world.ItemConvertor;
 import net.mat0u5.do2manager.world.ItemManager;
+import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -52,8 +54,10 @@ public class DO2_GSON {
     // Deserialize SerializedItemStack to ItemStack
     private static ItemStack deserializeItemStack(SerializedItemStack serializedItemStack) {
         if (serializedItemStack == null) return null;
+        Optional<Holder.Reference<Item>> holderItemOpt = BuiltInRegistries.ITEM.get(Identifier.parse(serializedItemStack.getItemName()));
+        if (holderItemOpt.isEmpty()) return ItemStack.EMPTY;
         ItemStack itemStack = new ItemStack(
-                BuiltInRegistries.ITEM.get(ResourceLocation.parse(serializedItemStack.getItemName())),
+                holderItemOpt.get(),
                 serializedItemStack.getQuantity()
         );
         if (serializedItemStack.getNbtData() != null) {

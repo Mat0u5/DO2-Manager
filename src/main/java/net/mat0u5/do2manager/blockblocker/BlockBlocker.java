@@ -4,6 +4,7 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.mat0u5.do2manager.utils.PermissionManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.InteractionResult;
@@ -19,7 +20,7 @@ public class BlockBlocker {
         config = AutoConfig.getConfigHolder(BlockBlockerConfig.class).get();
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
 
-            if ((config.general.opBypass && player.hasPermissions(2)) || (config.general.creativeBypass && player.getAbilities().instabuild)) {
+            if ((config.general.opBypass && PermissionManager.isAdmin(player)) || (config.general.creativeBypass && player.getAbilities().instabuild)) {
                 return InteractionResult.PASS;
             }
             BlockPos target = hitResult.getBlockPos();
@@ -46,7 +47,7 @@ public class BlockBlocker {
         });
 
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, dir) -> {
-            if ((config.general.opBypass && player.hasPermissions(2)) || (config.general.creativeBypass && player.getAbilities().instabuild)) {
+            if ((config.general.opBypass && PermissionManager.isAdmin(player)) || (config.general.creativeBypass && player.getAbilities().instabuild)) {
                 return true;
             }
             if (world.isClientSide()) {

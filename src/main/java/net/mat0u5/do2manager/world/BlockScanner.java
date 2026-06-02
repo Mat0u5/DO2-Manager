@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.TicketType;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BaseCommandBlock;
 import net.minecraft.world.level.ChunkPos;
@@ -17,8 +18,12 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.CommandBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.ValueInput;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static net.mat0u5.do2manager.Main.server;
@@ -113,8 +118,8 @@ public class BlockScanner {
                 int percent = listPos / (positionsToCheckInt / 100);
                 if (!percentCompleted.contains(percent) ) {
                     percentCompleted.add(percent);
-                    player.sendSystemMessage(Component.nullToEmpty("[Block Database Searcher] Processed " + percent + "% of positions."));
-                    if (scanType.contains("lock")) player.sendSystemMessage(Component.nullToEmpty("-Modified " + lockOrUnlock + " blocks."));
+                    player.displayClientMessage(Component.nullToEmpty("[Block Database Searcher] Processed " + percent + "% of positions."), false);
+                    if (scanType.contains("lock")) player.displayClientMessage(Component.nullToEmpty("-Modified " + lockOrUnlock + " blocks."), false);
                     System.out.println("[Block Database Searcher] Processed " + percent + "% of positions.");
                 }
             }
@@ -134,7 +139,7 @@ public class BlockScanner {
         ChunkPos chunkPos = new ChunkPos(pos);
         if (!chunkManager.hasChunk(chunkPos.x, chunkPos.z)) {
             System.out.println("Loading Chunk");
-            chunkManager.addRegionTicket(TicketType.FORCED, chunkPos, 1, chunkPos);
+            chunkManager.addTicketWithRadius(TicketType.FORCED, chunkPos, 1);
             world.getChunk(chunkPos.x, chunkPos.z);
         }
 
@@ -169,16 +174,17 @@ public class BlockScanner {
         if (scanType.equalsIgnoreCase("unlock")) {
             if (nbt.contains("Lock")) {
                 nbt.remove("Lock");
-                blockEntity.loadWithComponents(nbt,registryLookup);
+                blockEntity.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registryLookup, nbt));//TODO test
                 blockEntity.setChanged();
                 world.sendBlockUpdated(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
                 lockOrUnlock++;
             }
         }
         else {
-            if (!nbt.contains("Lock") || !nbt.getString("Lock").equalsIgnoreCase(blockPassword)) {
+            Optional<String> lockString = nbt.getString("Lock");
+            if (lockString.isEmpty() || !lockString.get().equalsIgnoreCase(blockPassword)) {
                 nbt.putString("Lock", blockPassword);
-                blockEntity.loadWithComponents(nbt,registryLookup);
+                blockEntity.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registryLookup, nbt));//TODO test
                 blockEntity.setChanged();
                 world.sendBlockUpdated(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
                 lockOrUnlock++;
@@ -187,18 +193,18 @@ public class BlockScanner {
     }
 
     protected static void stoppedFunction() {
-        player.sendSystemMessage(Component.nullToEmpty("§aBlock scan complete."));
+        player.displayClientMessage(Component.nullToEmpty("§aBlock scan complete."), false);
         System.out.println("Block scan complete.");
         if (scanType.equalsIgnoreCase("command_block")) {
             addCommandBlockData();
         }
         else if (scanType.contains("lock")) {
-            player.sendSystemMessage(Component.nullToEmpty("-Modified " + lockOrUnlock + " blocks."));
+            player.displayClientMessage(Component.nullToEmpty("-Modified " + lockOrUnlock + " blocks."), false);
         }
     }
     private static void addCommandBlockData() {
-        player.sendSystemMessage(Component.nullToEmpty("§aSaving Data to database."));
+        player.displayClientMessage(Component.nullToEmpty("§aSaving Data to database."), false);
         if (!commandBlocksList.isEmpty()) DatabaseManager.addCommandBlocks(commandBlocksList);
-        player.sendSystemMessage(Component.nullToEmpty("§aData saved."));
+        player.displayClientMessage(Component.nullToEmpty("§aData saved."), false);
     }
 }

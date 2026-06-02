@@ -1,6 +1,5 @@
 package net.mat0u5.do2manager.mixin;
 
-import net.mat0u5.do2manager.events.Events;
 import net.mat0u5.do2manager.events.PlayerEvents;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
@@ -18,7 +17,7 @@ public class PlayerEntityMixin {
 		Inventory inventory = (Inventory) (Object) this;
 		Player player = inventory.player;
 		if (player instanceof ServerPlayer) {
-			ItemStack droppedStack = player.getInventory().getSelected().copy();
+			ItemStack droppedStack = player.getInventory().getSelectedItem().copy();
 			PlayerEvents.onPlayerDropItem((ServerPlayer) player, droppedStack);
 		}
 	}

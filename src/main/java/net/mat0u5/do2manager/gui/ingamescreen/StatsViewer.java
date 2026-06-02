@@ -15,10 +15,13 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -137,7 +140,7 @@ public class StatsViewer {
         if (ItemManager.getModelData(currentPlayer.getMainHandItem()) == 521) return;
         removeCursorFromPlayer(currentPlayer);
         if (currentPlayer.getMainHandItem().isEmpty()) {
-            currentPlayer.getInventory().setItem(currentPlayer.getInventory().selected, cursor);
+            currentPlayer.getInventory().setItem(currentPlayer.getInventory().getSelectedSlot(), cursor);
         }
     }
 
@@ -178,7 +181,7 @@ public class StatsViewer {
                 String newClicked = clicked.replaceFirst("stats_graph_", "");
                 GRAPH = newClicked;
             }
-            player.serverLevel().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.UI_BUTTON_CLICK, SoundSource.PLAYERS, 0.8F, 1.0F);
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.UI_BUTTON_CLICK, SoundSource.PLAYERS, 0.8F, 1.0F);
             updateFilters();
         }catch(Exception e) {
             Main.LOGGER.error(e.getMessage());
@@ -307,11 +310,11 @@ public class StatsViewer {
         if (server == null) return;
         ItemStack emptyCheckbox = new ItemStack(Items.IRON_NUGGET, 1);
         ItemManager.setModelData(emptyCheckbox, 520);
-        Tag emptyCheckboxNbt = emptyCheckbox.save(server.registryAccess());
+        Tag emptyCheckboxNbt = ItemManager.save(emptyCheckbox, server.registryAccess());
 
         ItemStack fullCheckbox = new ItemStack(Items.IRON_NUGGET, 1);
         ItemManager.setModelData(fullCheckbox, 519);
-        Tag fullCheckboxNbt = fullCheckbox.save(server.registryAccess());
+        Tag fullCheckboxNbt = ItemManager.save(fullCheckbox, server.registryAccess());
 
         setDisplayEntityItem("stats_button_filters_run_all", emptyCheckboxNbt);
         setDisplayEntityItem("stats_button_filters_run_casual", emptyCheckboxNbt);
@@ -375,7 +378,7 @@ public class StatsViewer {
         if (!interactableBox.contains(targetPos)) return;
 
         // Find the ItemEntity with the tag "cursor"
-        Display.ItemDisplay itemEntity = currentPlayer.serverLevel().getEntitiesOfClass(
+        Display.ItemDisplay itemEntity = currentPlayer.level().getEntitiesOfClass(
                 Display.ItemDisplay.class,
                 interactableBox,
                 entity -> entity.getTags().contains("cursor")
@@ -401,7 +404,7 @@ public class StatsViewer {
         }
 
 
-        Display.ItemDisplay highlightEntity = currentPlayer.serverLevel().getEntitiesOfClass(
+        Display.ItemDisplay highlightEntity = currentPlayer.level().getEntitiesOfClass(
                 Display.ItemDisplay.class,
                 interactableBox,
                 entity -> entity.getTags().contains("highlight")
@@ -576,15 +579,16 @@ public class StatsViewer {
             Display.TextDisplay textDisplay = (Display.TextDisplay) entities.get(0);
 
             // Get the NBT data
-            CompoundTag nbt = new CompoundTag();
-            textDisplay.saveWithoutId(nbt); // Write the current NBT of the entity to a compound
+            TagValueOutput writeView = TagValueOutput.createWithoutContext(ProblemReporter.DISCARDING);
+            textDisplay.saveWithoutId(writeView); // Write the current NBT of the entity to a compound
+            CompoundTag nbt = writeView.buildResult();
 
             // Modify the "text" field in the NBT
-            nbt.putString("text", ComponentSerialization.FLAT_CODEC.encodeStart(JsonOps.INSTANCE, text).getOrThrow().getAsString());
+            nbt.putString("text", ComponentSerialization.CODEC.encodeStart(JsonOps.INSTANCE, text).getOrThrow().getAsString());
              // Serialize the Text component to JSON and set it
 
             // Write the modified NBT back to the entity
-            textDisplay.load(nbt); // Apply the modified NBT back to the entity
+            textDisplay.load(TagValueInput.create(ProblemReporter.DISCARDING, server.registryAccess(), nbt)); // Apply the modified NBT back to the entity
         } else {
             System.err.println("No TextDisplay entity found with tag: " + tag + " in the specified area.");
         }
@@ -592,7 +596,7 @@ public class StatsViewer {
 
     public static void setDisplayEntityItem(String tag, ItemStack item) {
         if (server == null) return;
-        setDisplayEntityItem(tag, item.save(server.registryAccess()));
+        setDisplayEntityItem(tag, ItemManager.save(item, server.registryAccess()));
     }
 
     public static void setDisplayEntityItem(String tag, Tag itemNbt) {
@@ -616,10 +620,11 @@ public class StatsViewer {
         // Update the text of the first matching TextDisplay entity
         if (!entities.isEmpty()) {
             Display.ItemDisplay itemDisplay = (Display.ItemDisplay) entities.get(0);
-            CompoundTag nbt = new CompoundTag();
-            itemDisplay.saveWithoutId(nbt);
+            TagValueOutput writeView = TagValueOutput.createWithoutContext(ProblemReporter.DISCARDING);
+            itemDisplay.saveWithoutId(writeView); // Write the current NBT of the entity to a compound
+            CompoundTag nbt = writeView.buildResult();
             nbt.put("item", itemNbt);
-            itemDisplay.load(nbt);
+            itemDisplay.load(TagValueInput.create(ProblemReporter.DISCARDING, server.registryAccess(), nbt));
         } else {
             System.err.println("No ItemDisplay entity found with tag: " + tag + " in the specified area.");
         }

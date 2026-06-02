@@ -13,15 +13,18 @@ import net.minecraft.commands.Commands;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.PlayerList;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
@@ -31,6 +34,8 @@ import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.ChestType;
+import net.minecraft.world.level.storage.TagValueInput;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -225,13 +230,18 @@ public class OtherUtils {
             return true;
         } else if (playerCount == 1) {
             ServerPlayer player = server.getPlayerList().getPlayers().get(0);
-            return "TangoCam".equals(player.getGameProfile().getName());
+            return "TangoCam".equals(player.getGameProfile().name());
         }
         return false;
     }
     public static void playGuiClickSound(Player player) {
-        if (player != null && player.level() != null) {
-            player.playNotifySound(SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, 1.0F);
+        if (player != null && player.level() != null && player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.connection
+                    .send(
+                            new ClientboundSoundPacket(
+                                    BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.UI_BUTTON_CLICK.value()), SoundSource.PLAYERS, player.getX(), player.getY(), player.getZ(), 0.5F, 1.0F, player.getRandom().nextLong()
+                            )
+                    );
         }
     }
     public static List<BlockPos> getPositionsFromString(String str) {
@@ -278,15 +288,19 @@ public class OtherUtils {
     public static void unlockContainerForTick(ServerLevel world, MinecraftServer server, BaseContainerBlockEntity container, BlockPos pos) {
         HolderLookup.Provider registryLookup = Main.server.registryAccess();
         CompoundTag nbt = container.saveWithoutMetadata(registryLookup);
-        String originalLock = nbt.getString("Lock");
+        Optional<String> originalLockOpt = nbt.getString("Lock");
+
+        if (originalLockOpt.isEmpty()) return;
+        String originalLock = originalLockOpt.get();
+
         nbt.remove("Lock");
-        container.loadWithComponents(nbt, registryLookup);
+        container.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registryLookup, nbt));
         server.execute(() -> {
             try {
                 // Re-lock the original container
                 CompoundTag newNbt = container.saveWithoutMetadata(registryLookup);
                 newNbt.putString("Lock", originalLock);
-                container.loadWithComponents(newNbt, registryLookup);
+                container.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registryLookup, newNbt));
             } catch (Exception e) {
                 System.out.println("Failed to re-add lock at " + pos.toString());
             }
@@ -299,20 +313,21 @@ public class OtherUtils {
 
             if (otherHalf != null) {
                 CompoundTag otherNbt = otherHalf.saveWithoutMetadata(registryLookup);
-                String otherOriginalLock = otherNbt.getString("Lock");
-                otherNbt.remove("Lock");
-                otherHalf.loadWithComponents(otherNbt, registryLookup);
+                otherNbt.getString("Lock").ifPresent(otherOriginalLock -> {
+                    otherNbt.remove("Lock");
+                    otherHalf.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registryLookup, otherNbt));
 
-                server.execute(() -> {
-                    try {
-                        if (otherHalf != null) {
-                            CompoundTag newOtherNbt = otherHalf.saveWithoutMetadata(registryLookup);
-                            newOtherNbt.putString("Lock", otherOriginalLock);
-                            otherHalf.loadWithComponents(newOtherNbt, registryLookup);
+                    server.execute(() -> {
+                        try {
+                            if (otherHalf != null) {
+                                CompoundTag newOtherNbt = otherHalf.saveWithoutMetadata(registryLookup);
+                                newOtherNbt.putString("Lock", otherOriginalLock);
+                                otherHalf.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registryLookup, newOtherNbt));
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Failed to re-add lock at " + pos.toString());
                         }
-                    } catch (Exception e) {
-                        System.out.println("Failed to re-add lock at " + pos.toString());
-                    }
+                    });
                 });
             }
         }
@@ -347,9 +362,9 @@ public class OtherUtils {
         CompoundTag nbt = container.saveWithoutMetadata(registryLookup);
         if (nbt == null) return null;
         if (!nbt.contains("Lock")) return null;
-        String lockKey = nbt.getString("Lock");
+        Optional<String> lockKey = nbt.getString("Lock");
         if (lockKey.isEmpty()) return null;
-        return lockKey;
+        return lockKey.get();
     }
     public static void removeItemsFromPlayerInventory(Player player, String match) {
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {

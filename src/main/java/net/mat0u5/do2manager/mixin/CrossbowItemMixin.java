@@ -1,9 +1,8 @@
 package net.mat0u5.do2manager.mixin;
 
-import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.events.CrossbowEvents;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
@@ -21,8 +20,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class CrossbowItemMixin {
 
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
-    public void onCrossbowUse(Level world, Player user, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
-        CrossbowEvents.onCrossbowUse(world, user, hand, cir);
+    public void onCrossbowUse(Level level, Player player, InteractionHand interactionHand, CallbackInfoReturnable<InteractionResult> cir) {
+        CrossbowEvents.onCrossbowUse(level, player, interactionHand, cir);
     }
     @Inject(method = "tryLoadProjectiles", at = @At("RETURN"))
     private static void onLoadFinish(LivingEntity user, ItemStack projectile, CallbackInfoReturnable<Boolean> cir) {

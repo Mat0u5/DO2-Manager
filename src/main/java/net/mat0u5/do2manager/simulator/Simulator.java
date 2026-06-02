@@ -242,7 +242,7 @@ public class Simulator {
         final Player self = source.getPlayer();
         simulationPlayer = self;
         startingDeck = getDeckFromHand(self);
-        self.sendSystemMessage(Component.nullToEmpty("§5Simulator initialized. The permanents in the deck in your main hand hand have been saved."));
+        self.displayClientMessage(Component.nullToEmpty("§5Simulator initialized. The permanents in the deck in your main hand hand have been saved."), false);
         return 1;
     }
     public int enOrDis(CommandSourceStack source, String setTo) {
@@ -257,7 +257,7 @@ public class Simulator {
         finishedRun();
         simulationPlayer = self;
         startingDeck = getDeckFromHand(self);
-        self.sendSystemMessage(Component.nullToEmpty("§5Simulation started. ["+simulateRuns+" runs]"));
+        self.displayClientMessage(Component.nullToEmpty("§5Simulation started. ["+simulateRuns+" runs]"), false);
         currentSimulation = new Simulation(startingDeck, simulationPlayer,true,dontSkipCards, List.of("all"));
         currentSimulation.runSimulation(simulateRuns);
         return 1;
@@ -266,7 +266,7 @@ public class Simulator {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
         if (self != null) {
-            self.sendSystemMessage(Component.nullToEmpty("§5The simulation has been stopped."));
+            self.displayClientMessage(Component.nullToEmpty("§5The simulation has been stopped."), false);
         }
         finishedRun();
         return 1;

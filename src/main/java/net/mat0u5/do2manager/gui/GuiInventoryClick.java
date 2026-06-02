@@ -23,7 +23,9 @@ public class GuiInventoryClick {
         OtherUtils.playGuiClickSound(player);
 
         CompoundTag nbt = clickedItem.get(DataComponents.CUSTOM_DATA).copyTag();
-        String tag = nbt.getString("GUI_ITEM");
+        Optional<String> tagOpt = nbt.getString("GUI_ITEM");
+        if (tagOpt.isEmpty()) return;
+        String tag = tagOpt.get();
         GuiPlayerSpecific gui = Main.openGuis.get(player);
         GuiInventory_Database guiDatabase = gui.guiDatabase;
         if (guiName.equalsIgnoreCase("DatabaseGUI")) {
@@ -38,11 +40,15 @@ public class GuiInventoryClick {
                 guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("next_page_custom_list")) {
                 guiDatabase.current_page_custom_list += 1;
-                guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
+                Optional<String> opt1 = nbt.getString("custom_list_inv");
+                Optional<Integer> opt2 = nbt.getInt("run_number");
+                if (opt1.isPresent() && opt2.isPresent()) guiDatabase.customItemListInventory(opt1.get(), opt2.get());
             }else if (tag.equalsIgnoreCase("previous_page_custom_list")) {
                 if (guiDatabase.current_page_custom_list <= 1) return;
                 guiDatabase.current_page_custom_list -= 1;
-                guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
+                Optional<String> opt1 = nbt.getString("custom_list_inv");
+                Optional<Integer> opt2 = nbt.getInt("run_number");
+                if (opt1.isPresent() && opt2.isPresent()) guiDatabase.customItemListInventory(opt1.get(), opt2.get());
             }
             else if (tag.equalsIgnoreCase("filter_success")) {
                 guiDatabase.filter_success++;
@@ -104,18 +110,25 @@ public class GuiInventoryClick {
                 guiDatabase.showRunsAsHeads = !guiDatabase.showRunsAsHeads;
                 guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("run") || tag.equalsIgnoreCase("back_to_run")) {
-                guiDatabase.detailedRunInventory(nbt.getInt("run_number"));
+                Optional<Integer> opt2 = nbt.getInt("run_number");
+                if (opt2.isPresent()) guiDatabase.detailedRunInventory(opt2.get());
             } else if (tag.equalsIgnoreCase("back_to_main")) {
                 guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("card_plays")) {
                 guiDatabase.current_page_custom_list = 1;
-                guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
+                Optional<String> opt1 = nbt.getString("custom_list_inv");
+                Optional<Integer> opt2 = nbt.getInt("run_number");
+                if (opt1.isPresent() && opt2.isPresent()) guiDatabase.customItemListInventory(opt1.get(), opt2.get());
             } else if (tag.equalsIgnoreCase("inventory_save")) {
                 guiDatabase.current_page_custom_list = 1;
-                guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
+                Optional<String> opt1 = nbt.getString("custom_list_inv");
+                Optional<Integer> opt2 = nbt.getInt("run_number");
+                if (opt1.isPresent() && opt2.isPresent()) guiDatabase.customItemListInventory(opt1.get(), opt2.get());
             } else if (tag.equalsIgnoreCase("items_bought")) {
                 guiDatabase.current_page_custom_list = 1;
-                guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
+                Optional<String> opt1 = nbt.getString("custom_list_inv");
+                Optional<Integer> opt2 = nbt.getInt("run_number");
+                if (opt1.isPresent() && opt2.isPresent()) guiDatabase.customItemListInventory(opt1.get(), opt2.get());
             } else if (tag.equalsIgnoreCase("reset_all")) {
                 serverPlayer.closeContainer();
                 gui.invId="";
@@ -133,18 +146,37 @@ public class GuiInventoryClick {
             }
         }
         else if (guiName.equalsIgnoreCase("custom")) {
-            boolean openNewInv = false;
+            boolean openNewInv;
             if (!Main.openGuis.containsKey(player)) openNewInv = true;
             else if (!gui.invOpen) openNewInv = true;
+			else {
+				openNewInv = false;
+			}
 
-            if (nbt.contains("GUI_ChangeToItem")) {
-                String leadsToChest = nbt.getString("GUI_ChangeToItem");
-                leadsToChest = "_"+leadsToChest;
-                if (leadsToChest.contains(";")) {
-                    String[] split = leadsToChest.split(";");
-                    int invSize = 27;
-                    if (split.length==3) invSize=54;
+			if (nbt.contains("GUI_ChangeToItem")) {
+                nbt.getString("GUI_ChangeToItem").ifPresent(leadsToChest -> {
+                    leadsToChest = "_" + leadsToChest;
+                    if (leadsToChest.contains(";")) {
+                        String[] split = leadsToChest.split(";");
+                        int invSize = 27;
+                        if (split.length == 3) invSize = 54;
 
+                        if (!openNewInv) {
+                            int oldInvsize = gui.inventory.getContainerSize();
+                            if (oldInvsize > 27) oldInvsize = 54;
+                            else oldInvsize = 27;
+                            if (oldInvsize == invSize)
+                                gui.guiItems.populateInventory(player, Main.server.overworld(), leadsToChest, false);
+                            else
+                                new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player, invSize, "", leadsToChest, false);
+                        } else
+                            new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player, invSize, "", leadsToChest, false);
+                    }
+                });
+            }
+            if (nbt.contains("GUI_ChangeTo")) {
+                nbt.getString("GUI_ChangeTo").ifPresent(leadsToChest -> {
+                    int invSize = leadsToChest.contains(";")?54:27;
                     if (!openNewInv) {
                         int oldInvsize = gui.inventory.getContainerSize();
                         if (oldInvsize > 27) oldInvsize = 54;
@@ -153,35 +185,25 @@ public class GuiInventoryClick {
                         else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,false);
                     }
                     else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,false);
-                }
-            }
-            if (nbt.contains("GUI_ChangeTo")) {
-                String leadsToChest = nbt.getString("GUI_ChangeTo");
-                int invSize = leadsToChest.contains(";")?54:27;
-                if (!openNewInv) {
-                    int oldInvsize = gui.inventory.getContainerSize();
-                    if (oldInvsize > 27) oldInvsize = 54;
-                    else oldInvsize = 27;
-                    if (oldInvsize == invSize) gui.guiItems.populateInventory(player, Main.server.overworld(), leadsToChest, false);
-                    else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,false);
-                }
-                else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,false);
+                });
             }
             if (nbt.contains("GUI_ChangeTo_OpenContainer")) {
-                String leadsToChest = nbt.getString("GUI_ChangeTo_OpenContainer");
-                int invSize = leadsToChest.contains(";")?54:27;
-                if (!openNewInv) {
-                    int oldInvsize = gui.inventory.getContainerSize();
-                    if (oldInvsize > 27) oldInvsize = 54;
-                    else oldInvsize = 27;
-                    if (oldInvsize == invSize) gui.guiItems.populateInventory(player, Main.server.overworld(), leadsToChest, true);
+                nbt.getString("GUI_ChangeTo_OpenContainer").ifPresent(leadsToChest -> {
+                    int invSize = leadsToChest.contains(";")?54:27;
+                    if (!openNewInv) {
+                        int oldInvsize = gui.inventory.getContainerSize();
+                        if (oldInvsize > 27) oldInvsize = 54;
+                        else oldInvsize = 27;
+                        if (oldInvsize == invSize) gui.guiItems.populateInventory(player, Main.server.overworld(), leadsToChest, true);
+                        else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,true);
+                    }
                     else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,true);
-                }
-                else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,true);
+                });
             }
             if (nbt.contains("GUI_ExecuteCommand")) {
-                String command = nbt.getString("GUI_ExecuteCommand");
-                OtherUtils.executeCommand(player.getServer(),command);
+                nbt.getString("GUI_ExecuteCommand").ifPresent(command -> {
+                    OtherUtils.executeCommand(player.level().getServer(),command);
+                });
             }
         }
     }

@@ -13,6 +13,8 @@ import net.mat0u5.do2manager.world.ItemConvertor;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -56,7 +58,7 @@ public class PlayerEvents {
     static void onPlayerJoin(MinecraftServer server, ServerPlayer player) {
         try {
             QueueEvents.onPlayerJoin(player);
-            if (player.isCreative() && !player.hasPermissions(2)) {
+            if (player.isCreative() && !PermissionManager.isAdmin(player)) {
                 player.setGameMode(GameType.SPECTATOR);
                 System.out.println(player.getScoreboardName()+"'s gamemode was automatically reset to spectator, because they were in creative.");
             }
@@ -76,7 +78,7 @@ public class PlayerEvents {
         }catch (Exception e) {}
     }
     static void onPlayerDeath(ServerPlayer player, DamageSource source) {
-        MinecraftServer server = player.getServer();
+        MinecraftServer server = player.level().getServer();
         if (player.getMainHandItem().getItem() == Items.TOTEM_OF_UNDYING || player.getOffhandItem().getItem() == Items.TOTEM_OF_UNDYING) {
             return;
         }
@@ -107,19 +109,19 @@ public class PlayerEvents {
 
     public static void invPickupOrDropItem(Player player, ItemStack itemStack) {
         try {
-            if (!RunInfoParser.getCurrentRunners(player.getServer()).contains(player)) return;
+            if (!RunInfoParser.getCurrentRunners(player.level().getServer()).contains(player)) return;
             if (ItemManager.isDungeonCompass(itemStack) && Main.currentRun.compass_item == null) {
                 Main.currentRun.compass_item = itemStack;
 
-                List<Player> runners = RunInfoParser.getCurrentRunners(player.getServer());
+                List<Player> runners = RunInfoParser.getCurrentRunners(player.level().getServer());
                 if (!runners.isEmpty()) {
                     boolean isSpeedrun = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("true");
-                    if (runners.size() == 1 && isSpeedrun) RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(player.getServer()).get(0));
+                    if (runners.size() == 1 && isSpeedrun) RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(player.level().getServer()).get(0));
                 }
             }
             if (ItemManager.isDungeonArtifact(itemStack) && Main.currentRun.artifact_item == null) {
                 if (ItemManager.getModelData(itemStack) == 36) {
-                    OtherUtils.executeCommand(player.getServer(),"function dom:world/dungeon_functions/utilities/do2.map/other/mug_maniac_activate");
+                    OtherUtils.executeCommand(player.level().getServer(),"function dom:world/dungeon_functions/utilities/do2.map/other/mug_maniac_activate");
                 }
                 Main.currentRun.artifact_item = itemStack;
             }
@@ -157,8 +159,16 @@ public class PlayerEvents {
         if (PermissionManager.isAdmin(player)
                 || player.getStringUUID().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d") // GGGregian special perms
         ) {
-            OtherUtils.unlockContainerForTick((ServerLevel) world, player.getServer(), container,pos);
-            player.playNotifySound(SoundEvents.AMETHYST_BLOCK_STEP, SoundSource.PLAYERS, 0.7f, 1.0f);
+            if (player instanceof ServerPlayer serverPlayer) {
+                OtherUtils.unlockContainerForTick((ServerLevel) world, serverPlayer.level().getServer(), container,pos);
+
+                serverPlayer.connection
+                        .send(
+                                new ClientboundSoundPacket(
+                                        BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.AMETHYST_BLOCK_STEP), SoundSource.PLAYERS, player.getX(), player.getY(), player.getZ(), 0.7f, 1.0f, player.getRandom().nextLong()
+                                )
+                        );
+            }
             return InteractionResult.PASS;
         }
 

@@ -23,6 +23,7 @@ import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public class ScoreboardUtils {
     public static java.lang.Integer getPlayerScore(MinecraftServer server, ServerPlayer player, String objectiveName) {
@@ -117,21 +118,25 @@ public class ScoreboardUtils {
             }
 
             // Navigate to the "data" compound tag first
-            CompoundTag dataTag = nbtData.getCompound("data");
-            if (dataTag == null || !dataTag.contains("Objectives", 9)) { // 9 is the type ID for NbtList
+            CompoundTag dataTag = nbtData.getCompound("data").orElse(null);
+
+            if (dataTag == null || !dataTag.contains("Objectives")) { // TODO test
                 System.out.println("The 'Objectives' list was not found in the file.");
                 return -1;
             }
 
             // Get the list of objectives from the NBT data
-            ListTag objectivesList = dataTag.getList("Objectives", 10); // 10 is for compound tags
+            ListTag objectivesList = dataTag.getList("Objectives").orElse(null); // TODO test
+            if (objectivesList == null) {
+                return -1;
+            }
             CompoundTag desiredObjectiveData = null;
 
             // Find the desired objective by name
             for (int i = 0; i < objectivesList.size(); i++) {
-                CompoundTag objectiveData = objectivesList.getCompound(i);
-                if (objectiveData.getString("Name").equals(oldObjective)) {
-                    desiredObjectiveData = objectiveData;
+                Optional<CompoundTag> objectiveData = objectivesList.getCompound(i);
+                if (objectiveData.isPresent() && objectiveData.get().getString("Name").equals(oldObjective)) {
+                    desiredObjectiveData = objectiveData.get();
                     break;
                 }
             }
@@ -140,11 +145,14 @@ public class ScoreboardUtils {
                 System.out.println("Objective '" + oldObjective + "' not found in the file.");
                 return -1; // Objective not found in the file
             }
-            String criterion = desiredObjectiveData.getString("CriteriaName");
-            boolean autoUpdate = desiredObjectiveData.getByte("display_auto_update") == (byte) 1;
-            String displayName = desiredObjectiveData.getString("DisplayName");
-            String name = desiredObjectiveData.getString("Name");
-            String renderType = desiredObjectiveData.getString("RenderType");
+            String criterion = desiredObjectiveData.getString("CriteriaName").orElse(null);
+            boolean autoUpdate = desiredObjectiveData.getByte("display_auto_update").orElse((byte)1) == (byte) 1;
+            String displayName = desiredObjectiveData.getString("DisplayName").orElse(null);
+            String name = desiredObjectiveData.getString("Name").orElse(null);
+            String renderType = desiredObjectiveData.getString("RenderType").orElse(null);
+            if (criterion == null || displayName == null || name == null || renderType == null) {
+                return -1;
+            }
 
             Objective newObjective = mainScoreboard.addObjective(
                     newObjectiveName, ObjectiveCriteria.registerCustom(criterion),
@@ -154,14 +162,19 @@ public class ScoreboardUtils {
 
 
             // Get the list of player scores associated with the objective
-            ListTag playerScoresList = dataTag.getList("PlayerScores", 10); // 10 is for compound tags
+            ListTag playerScoresList = dataTag.getList("PlayerScores").orElse(null); // TODO test
+
+            if (playerScoresList == null) {
+                return -1;
+            }
 
             // Copy all player scores for the desired objective
             for (int i = 0; i < playerScoresList.size(); i++) {
-                CompoundTag scoreData = playerScoresList.getCompound(i);
-                if (scoreData.getString("Objective").equals(oldObjective)) {
-                    String playerName = scoreData.getString("Name");
-                    int scoreValue = scoreData.getInt("Score");
+                Optional<CompoundTag> scoreData = playerScoresList.getCompound(i);
+                if (scoreData.isPresent() && scoreData.get().getString("Objective").equals(oldObjective)) {
+                    String playerName = scoreData.get().getString("Name").orElse(null);
+                    int scoreValue = scoreData.get().getInt("Score").orElse(0);
+                    if (playerName == null) continue;
                     ScoreAccess newScore = mainScoreboard.getOrCreatePlayerScore(ScoreHolder.forNameOnly(playerName), newObjective);
                     newScore.set(scoreValue);
                 }

@@ -16,6 +16,7 @@ import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.permissions.PermissionSet;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import java.sql.*;
@@ -30,7 +31,7 @@ public class DatabaseCommand {
 
         DO2Run run = DatabaseManager.getRunByRunId(runId);
         if (run == null) {
-            self.sendSystemMessage(Component.translatable("No run found!"));
+            self.displayClientMessage(Component.translatable("No run found!"), false);
             return -1;
         }
         try {
@@ -40,22 +41,22 @@ public class DatabaseCommand {
             if (query.equalsIgnoreCase("artifact_item")) ItemManager.giveItemStack(self,run.artifact_item);
             if (query.equalsIgnoreCase("compass_item")) ItemManager.giveItemStack(self,run.compass_item);
             if (query.equalsIgnoreCase("deck_item")) ItemManager.giveItemStack(self,run.deck_item);
-            if (query.equalsIgnoreCase("death_message")) self.sendSystemMessage(Component.translatable(run.death_message));
-            if (query.equalsIgnoreCase("death_pos")) self.sendSystemMessage(Component.translatable(run.death_pos));
-            if (query.equalsIgnoreCase("run_type")) self.sendSystemMessage(Component.translatable(run.run_type));
-            if (query.equalsIgnoreCase("runners")) self.sendSystemMessage(Component.translatable(String.join(", ", run.runners)));
-            if (query.equalsIgnoreCase("finishers")) self.sendSystemMessage(Component.translatable(String.join(", ", run.finishers)));
-            if (query.equalsIgnoreCase("difficulty")) self.sendSystemMessage(Component.translatable(String.valueOf(run.difficulty)));
-            if (query.equalsIgnoreCase("run_number")) self.sendSystemMessage(Component.translatable(String.valueOf(run.run_number)));
-            if (query.equalsIgnoreCase("run_length")) self.sendSystemMessage(Component.translatable(String.valueOf(run.run_length)));
-            if (query.equalsIgnoreCase("timestamp_artifact")) self.sendSystemMessage(Component.translatable(String.valueOf(run.timestamp_artifact)));
-            if (query.equalsIgnoreCase("timestamp_lvl2_entry")) self.sendSystemMessage(Component.translatable(String.valueOf(run.timestamp_lvl2_entry)));
-            if (query.equalsIgnoreCase("timestamp_lvl3_entry")) self.sendSystemMessage(Component.translatable(String.valueOf(run.timestamp_lvl3_entry)));
-            if (query.equalsIgnoreCase("timestamp_lvl4_entry")) self.sendSystemMessage(Component.translatable(String.valueOf(run.timestamp_lvl4_entry)));
-            if (query.equalsIgnoreCase("timestamp_lvl4_exit")) self.sendSystemMessage(Component.translatable(String.valueOf(run.timestamp_lvl4_exit)));
-            if (query.equalsIgnoreCase("timestamp_lvl3_exit")) self.sendSystemMessage(Component.translatable(String.valueOf(run.timestamp_lvl3_exit)));
-            if (query.equalsIgnoreCase("timestamp_lvl2_exit")) self.sendSystemMessage(Component.translatable(String.valueOf(run.timestamp_lvl2_exit)));
-            if (query.equalsIgnoreCase("timestamp_lvl1_exit")) self.sendSystemMessage(Component.translatable(String.valueOf(run.timestamp_lvl1_exit)));
+            if (query.equalsIgnoreCase("death_message")) self.displayClientMessage(Component.translatable(run.death_message), false);
+            if (query.equalsIgnoreCase("death_pos")) self.displayClientMessage(Component.translatable(run.death_pos), false);
+            if (query.equalsIgnoreCase("run_type")) self.displayClientMessage(Component.translatable(run.run_type), false);
+            if (query.equalsIgnoreCase("runners")) self.displayClientMessage(Component.translatable(String.join(", ", run.runners)), false);
+            if (query.equalsIgnoreCase("finishers")) self.displayClientMessage(Component.translatable(String.join(", ", run.finishers)), false);
+            if (query.equalsIgnoreCase("difficulty")) self.displayClientMessage(Component.translatable(String.valueOf(run.difficulty)), false);
+            if (query.equalsIgnoreCase("run_number")) self.displayClientMessage(Component.translatable(String.valueOf(run.run_number)), false);
+            if (query.equalsIgnoreCase("run_length")) self.displayClientMessage(Component.translatable(String.valueOf(run.run_length)), false);
+            if (query.equalsIgnoreCase("timestamp_artifact")) self.displayClientMessage(Component.translatable(String.valueOf(run.timestamp_artifact)), false);
+            if (query.equalsIgnoreCase("timestamp_lvl2_entry")) self.displayClientMessage(Component.translatable(String.valueOf(run.timestamp_lvl2_entry)), false);
+            if (query.equalsIgnoreCase("timestamp_lvl3_entry")) self.displayClientMessage(Component.translatable(String.valueOf(run.timestamp_lvl3_entry)), false);
+            if (query.equalsIgnoreCase("timestamp_lvl4_entry")) self.displayClientMessage(Component.translatable(String.valueOf(run.timestamp_lvl4_entry)), false);
+            if (query.equalsIgnoreCase("timestamp_lvl4_exit")) self.displayClientMessage(Component.translatable(String.valueOf(run.timestamp_lvl4_exit)), false);
+            if (query.equalsIgnoreCase("timestamp_lvl3_exit")) self.displayClientMessage(Component.translatable(String.valueOf(run.timestamp_lvl3_exit)), false);
+            if (query.equalsIgnoreCase("timestamp_lvl2_exit")) self.displayClientMessage(Component.translatable(String.valueOf(run.timestamp_lvl2_exit)), false);
+            if (query.equalsIgnoreCase("timestamp_lvl1_exit")) self.displayClientMessage(Component.translatable(String.valueOf(run.timestamp_lvl1_exit)), false);
         }catch(Exception e) {}
 
         return 1;
@@ -115,9 +116,9 @@ public class DatabaseCommand {
                 boolean auto = resultSet.getBoolean("auto");
                 BlockPos pos = new BlockPos(x, y, z);
                 Component positionText = Component.translatable(String.format("§6(%d, %d, %d)", x, y, z))
-                        .withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+                        .withStyle(style -> style.withClickEvent(new ClickEvent.RunCommand(
                                         String.format("/tp @s %d %d %d", x, y, z)))
-                                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                                .withHoverEvent(new HoverEvent.ShowText(
                                         Component.nullToEmpty("Teleport to this position"))));
                 Component finalText = Component.translatable("§a- Pos: ").append(positionText).append(Component.translatable(" §aType: "+type+", Conditional: "+(conditional ? "Yes" : "No")+", Auto: "+(auto ? "Always Active" : "Needs Redstone")+", §bCommand: "+command+"\n"));
 
@@ -142,7 +143,7 @@ public class DatabaseCommand {
                     self.displayClientMessage(Component.nullToEmpty("Command Blocks matching the query ("+results.size()+"):"), false);
                 }
                 for (Component text : results) {
-                    self.sendSystemMessage(text);
+                    self.displayClientMessage(text, false);
                 }
             }
 
@@ -159,13 +160,13 @@ public class DatabaseCommand {
                 self.displayClientMessage(Component.nullToEmpty("Functions matching the query ("+functions.size()+"):"), false);
             }
             for (String text : functions) {
-                self.sendSystemMessage(Component.nullToEmpty("§a -" + text));
+                self.displayClientMessage(Component.nullToEmpty("§a -" + text), false);
             }
         }
         return 1;
     }
     public static boolean isValidCommand(MinecraftServer server, String command) {
-        CommandSourceStack source = server.createCommandSourceStack().withPermission(4);
+        CommandSourceStack source = server.createCommandSourceStack().withPermission(PermissionSet.ALL_PERMISSIONS);
         ParseResults<CommandSourceStack> parseResults = server.getCommands()
                 .getDispatcher().parse(command, source);
         return parseResults.getExceptions().isEmpty();
@@ -173,9 +174,9 @@ public class DatabaseCommand {
     public static int executeCommandBlockUpdateDatabase(CommandSourceStack source, int fromX, int fromY, int fromZ, int toX, int toY, int toZ) {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
-        self.sendSystemMessage(Component.nullToEmpty("Deleting all stored command block data..."));
+        self.displayClientMessage(Component.nullToEmpty("Deleting all stored command block data..."), false);
         DatabaseManager.deleteAllCommandBlocks();
-        self.sendSystemMessage(Component.nullToEmpty("Started Command Block Search..."));
+        self.displayClientMessage(Component.nullToEmpty("Started Command Block Search..."), false);
         BlockScanner.scanArea("command_block",server.overworld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
         return 1;
     }
@@ -183,9 +184,9 @@ public class DatabaseCommand {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
 
-        self.sendSystemMessage(Component.nullToEmpty("Deleting all stored function data..."));
+        self.displayClientMessage(Component.nullToEmpty("Deleting all stored function data..."), false);
         DatabaseManager.deleteAllFunctions();
-        self.sendSystemMessage(Component.nullToEmpty("Started Function Search..."));
+        self.displayClientMessage(Component.nullToEmpty("Started Function Search..."), false);
         FunctionScanner.scanFunctions();
         return 1;
     }

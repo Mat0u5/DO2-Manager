@@ -1,6 +1,5 @@
 package net.mat0u5.do2manager.mixin;
 
-import net.mat0u5.do2manager.events.Events;
 import net.mat0u5.do2manager.events.PlayerEvents;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;

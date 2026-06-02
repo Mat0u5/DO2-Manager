@@ -145,11 +145,11 @@ public class ItemConvertor extends PlayerInventoryScanner {
     public static ItemStack convertOldNbtToItemStack(CompoundTag oldNbt, int oldVersion) {
         DataFixer dataFixer = Main.server.getFixerUpper();
         HolderLookup.Provider registries = Main.server.registryAccess();
-        int currentDataVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+        int currentDataVersion = SharedConstants.getCurrentVersion().dataVersion().version();
         Dynamic<?> dynamic = new Dynamic<>(NbtOps.INSTANCE, oldNbt);
         Dynamic<?> updatedDynamic = dataFixer.update(References.ITEM_STACK, dynamic, oldVersion, currentDataVersion);
         CompoundTag updatedNbt = (CompoundTag) updatedDynamic.getValue();
-        ItemStack item = ItemStack.parseOptional(registries, updatedNbt);
+        ItemStack item = ItemManager.parseOptional(registries, updatedNbt);
         return item;
     }
 }

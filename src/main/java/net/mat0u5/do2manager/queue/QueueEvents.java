@@ -28,7 +28,7 @@ public class QueueEvents {
             Component clickableHere = Component.literal("here")
                     .withStyle(style -> style
                             .withColor(ChatFormatting.GREEN)
-                            .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/queue join"))
+                            .withClickEvent(new ClickEvent.RunCommand("/queue join"))
                             .withUnderlined(true)
                     );
             Component fullMessage = ((MutableComponent) baseMessage)

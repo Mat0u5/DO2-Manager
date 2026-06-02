@@ -5,6 +5,7 @@ import net.mat0u5.do2manager.config.ConfigManager;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.DiscordUtils;
 import net.mat0u5.do2manager.utils.OtherUtils;
+import net.mat0u5.do2manager.utils.PermissionManager;
 import net.mat0u5.do2manager.utils.TextUtils;
 import net.mat0u5.do2manager.world.BlockScanner;
 import net.mat0u5.do2manager.world.ItemConvertor;
@@ -20,6 +21,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.Relative;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.inventory.MenuType;
@@ -27,6 +29,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.GameType;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
 
 public class OtherCommand {
@@ -79,7 +82,7 @@ public class OtherCommand {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
         if (self == null) return -1;
-        self.sendSystemMessage(Component.nullToEmpty("Started Block Lock Search..."));
+        self.displayClientMessage(Component.nullToEmpty("Started Block Lock Search..."), false);
         BlockScanner.scanArea(type, (ServerLevel) self.level(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
         return 1;
     }
@@ -93,9 +96,9 @@ public class OtherCommand {
     public static int reloadDatabase(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
-        self.sendSystemMessage(Component.nullToEmpty("Reloading database..."));
+        self.displayClientMessage(Component.nullToEmpty("Reloading database..."), false);
         Main.reloadAllAbridgedRunsAsync().thenRun(() -> {
-            self.sendSystemMessage(Component.nullToEmpty("Database Reloaded."));
+            self.displayClientMessage(Component.nullToEmpty("Database Reloaded."), false);
         });
         return 1;
     }
@@ -113,7 +116,7 @@ public class OtherCommand {
             }
         }
         if (self != null) {
-            self.sendSystemMessage(message);
+            self.displayClientMessage(message, false);
         }
         else {
             System.out.println(message.getString());
@@ -127,14 +130,14 @@ public class OtherCommand {
         if (isRunner(server, self)) return -1;
 
         self.setGameMode(GameType.SPECTATOR);
-        self.teleportTo(server.overworld(),-529.5, 113, 1980.5, 90, 0);
+        self.teleportTo(server.overworld(), -529.5, 113, 1980.5, EnumSet.noneOf(Relative.class), 90, 0, false);
         return 1;
     }
     public static int viewDeck(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         final ServerPlayer self = source.getPlayer();
         if (self == null) return -1;
-        if (isRunner(server, self) && !self.hasPermissions(2)) return -1;
+        if (isRunner(server, self) && !PermissionManager.isAdmin(self)) return -1;
 
         List<ItemStack> currentCards = RunInfoParser.getDeckItemsFromProcessor(server.overworld());
 
@@ -153,7 +156,7 @@ public class OtherCommand {
         MinecraftServer server = source.getServer();
         final ServerPlayer self = source.getPlayer();
         if (self == null) return -1;
-        if (isRunner(server, self) && !self.hasPermissions(2)) return -1;
+        if (isRunner(server, self) && !PermissionManager.isAdmin(self)) return -1;
         List<Player> runners = RunInfoParser.getCurrentAliveRunners(server);
         if (runners.isEmpty()) return -1;
 

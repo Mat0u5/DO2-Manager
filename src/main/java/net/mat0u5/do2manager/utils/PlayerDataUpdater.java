@@ -1,8 +1,8 @@
 package net.mat0u5.do2manager.utils;
 
 import com.mojang.datafixers.DataFixer;
-import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
+import net.mat0u5.do2manager.world.ItemManager;
 import net.minecraft.SharedConstants;
 import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
@@ -16,7 +16,7 @@ import java.util.Optional;
 public class PlayerDataUpdater {
     private final MinecraftServer server;
     private final DataFixer dataFixer;
-    private final int currentDataVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
+    private final int currentDataVersion = SharedConstants.getCurrentVersion().dataVersion().version();
 
     public PlayerDataUpdater(MinecraftServer server) {
         this.server = server;
@@ -44,9 +44,9 @@ public class PlayerDataUpdater {
                     continue;
                 }
 
-                int oldVersion = playerData.getInt("DataVersion");
-                if (oldVersion < currentDataVersion) {
-                    CompoundTag newPlayerData = updatePlayerData(playerData, oldVersion);
+                Optional<Integer> oldVersion = playerData.getInt("DataVersion");
+                if (oldVersion.isPresent() && oldVersion.get() < currentDataVersion) {
+                    CompoundTag newPlayerData = updatePlayerData(playerData, oldVersion.get());
                     NbtIo.writeCompressed(newPlayerData, playerDataFile.toPath());
                     System.out.println("Updated player data for " + playerDataFile.getName() + " was ("+oldVersion+")");
                 } else {
@@ -100,16 +100,20 @@ public class PlayerDataUpdater {
     private CompoundTag validatePlayerData(CompoundTag playerData) {
         CompoundTag newPlayerData = playerData.copy();
         if (playerData.contains("Inventory")) {
-            ListTag inventory = playerData.getList("Inventory", 10); // 10 is the ID for compounds in NBT
+            Optional<ListTag> inventory = playerData.getList("Inventory"); // 10 is the ID for compounds in NBT
+            if (inventory.isEmpty()) return newPlayerData;
             ListTag newInv = new ListTag();
 
-            for (int i = 0; i < inventory.size(); i++) {
-                CompoundTag item = inventory.getCompound(i);
-                ItemStack itemStack = ItemStack.parseOptional(server.registryAccess(),item);
+            for (int i = 0; i < inventory.get().size(); i++) {
+                Optional<CompoundTag> itemOpt = inventory.get().getCompound(i);
+                if (itemOpt.isEmpty()) continue;
+                CompoundTag item = itemOpt.get();
+                ItemStack itemStack = ItemManager.parseOptional(server.registryAccess(),item);
 
                 // Correct the item stack NBT data
-                CompoundTag updatedNbt = (CompoundTag) itemStack.save(server.registryAccess());
-                updatedNbt.putByte("Slot",item.getByte("Slot"));
+                CompoundTag updatedNbt = (CompoundTag) ItemManager.save(itemStack, server.registryAccess());
+                Optional<Byte> optSlot = item.getByte("Slot");
+                if (optSlot.isPresent()) updatedNbt.putByte("Slot",optSlot.get());
                 if (!item.toString().equalsIgnoreCase(updatedNbt.toString())) {
                     System.out.println("UpdatedNBT_1_"+item.toString());
                     System.out.println("UpdatedNBT_2_"+updatedNbt.toString());
@@ -121,5 +125,4 @@ public class PlayerDataUpdater {
         }
         return newPlayerData; // Return the modified NbtCompound with corrected data
     }
-
 }

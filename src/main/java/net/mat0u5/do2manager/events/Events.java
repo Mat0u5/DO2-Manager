@@ -56,7 +56,7 @@ public class Events {
 
 
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
-            if (!world.isClientSide) {
+            if (!world.isClientSide()) {
                 if (state.getBlock() instanceof CommandBlock) {
                     CommandBlockEvents.onCommandBlockBroken(player, pos, state.getBlock());
                 }

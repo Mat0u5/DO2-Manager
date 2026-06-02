@@ -56,7 +56,7 @@ public class FakeSign {
             sign.setText(signText, false);
             sign.setChanged();
             sign.setAllowedPlayerEditor(player.getUUID());
-            MinecraftServer server = player.getServer();
+            MinecraftServer server = player.level().getServer();
             fakeSigns.add(pos);
             if (server != null) {
                 scheduler.schedule(() -> server.execute(() -> {

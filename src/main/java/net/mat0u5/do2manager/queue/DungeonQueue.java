@@ -153,7 +153,7 @@ public class DungeonQueue {
         OtherUtils.broadcastMessage(getQueueListed());
     }
     public void messageQueueToPlayer(Player player) {
-        player.sendSystemMessage(getQueueListed());
+        player.displayClientMessage(getQueueListed(), false);
     }
     public Component getQueueListed() {
         if (queue.isEmpty()) {

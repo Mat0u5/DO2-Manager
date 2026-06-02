@@ -21,9 +21,9 @@ public class ConsoleCommand {
     public static boolean isRanByPlayer(CommandSourceStack source) {
         if (source.getEntity() != null) {
             final Player self = source.getPlayer();
-            self.sendSystemMessage(Component.translatable("\n§c-------------------------\nAll commands under '/decked-out console-only' §4§l§ncannot be run by players. §r§c" +
+            self.displayClientMessage(Component.translatable("\n§c-------------------------\nAll commands under '/decked-out console-only' §4§l§ncannot be run by players. §r§c" +
                     "\nThey are ONLY meant for command blocks and the console, \nas they have delicate (and messy) syntax and are used for modifying the database.\n" +
-                    "§l§nDO NOT MODIFY§r§c any command blocks that use these commands, unless you know what you're doing!\n-------------------------\n"));
+                    "§l§nDO NOT MODIFY§r§c any command blocks that use these commands, unless you know what you're doing!\n-------------------------\n"), false);
             return true;
         }
         return false;

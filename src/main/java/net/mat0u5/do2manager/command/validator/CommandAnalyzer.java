@@ -304,17 +304,17 @@ public class CommandAnalyzer {
         MutableComponent confirmText = Component.literal("[CONFIRM]")
                 .withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD)
                 .withStyle(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+                        .withClickEvent(new ClickEvent.RunCommand(
                                 "/confirmcmd " + pending.confirmId))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        .withHoverEvent(new HoverEvent.ShowText(
                                 Component.literal("Click to execute the command"))));
 
         MutableComponent cancelText = Component.literal("[CANCEL]")
                 .withStyle(ChatFormatting.RED, ChatFormatting.BOLD)
                 .withStyle(style -> style
-                        .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
+                        .withClickEvent(new ClickEvent.RunCommand(
                                 "/confirmcmd cancel"))
-                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                        .withHoverEvent(new HoverEvent.ShowText(
                                 Component.literal("Click to cancel"))));
 
         MutableComponent message = Component.literal("⚠ DANGEROUS COMMAND WARNING ⚠")

@@ -38,7 +38,7 @@ public class TestingCommand {
         final Player self = source.getPlayer();
 
 
-        self.sendSystemMessage(Component.translatable("§6Command Worked.."));
+        self.displayClientMessage(Component.translatable("§6Command Worked.."), false);
         return 1;
     }
     public static int executeGetInv(CommandSourceStack source, int runNum) {
@@ -56,7 +56,7 @@ public class TestingCommand {
         }
 
 
-        self.sendSystemMessage(Component.translatable("§6Command Worked.."));
+        self.displayClientMessage(Component.translatable("§6Command Worked.."), false);
         return 1;
     }
     public static void testRun(int num) {

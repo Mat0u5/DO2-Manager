@@ -18,7 +18,7 @@ import java.util.Map;
 
 public class CommandBlockEvents {
     public static void onBlockUse(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
-        if (!world.isClientSide) {
+        if (!world.isClientSide()) {
             ItemStack itemStack = player.getItemInHand(hand);
             if (itemStack.getItem() == Blocks.COMMAND_BLOCK.asItem() ||
                 itemStack.getItem() == Blocks.CHAIN_COMMAND_BLOCK.asItem() ||
@@ -29,7 +29,7 @@ public class CommandBlockEvents {
         }
     }
     public static void onCommandBlockPlaced(Player player, BlockPos pos, Block block) {
-        player.getServer().execute(() -> {
+        player.level().getServer().execute(() -> {
             try {
                 if (block instanceof CommandBlock) {
                     CommandBlockEntity blockEntity = (CommandBlockEntity) player.level().getBlockEntity(pos);
