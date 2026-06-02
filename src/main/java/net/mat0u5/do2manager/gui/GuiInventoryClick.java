@@ -17,8 +17,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 
 public class GuiInventoryClick {
-    public static void onClickDatabaseGUI(String guiName, int slotId, int button, ClickType actionType, Player player, CallbackInfo ci, AbstractContainerMenu handler) {
-        ServerPlayer serverPlayer = (ServerPlayer) player;
+    public static void onClickDatabaseGUI(String guiName, int slotId, int button, ClickType actionType, ServerPlayer player, CallbackInfo ci, AbstractContainerMenu handler) {
         ItemStack clickedItem = handler.getSlot(slotId).getItem();
         OtherUtils.playGuiClickSound(player);
 
@@ -130,9 +129,9 @@ public class GuiInventoryClick {
                 Optional<Integer> opt2 = nbt.getInt("run_number");
                 if (opt1.isPresent() && opt2.isPresent()) guiDatabase.customItemListInventory(opt1.get(), opt2.get());
             } else if (tag.equalsIgnoreCase("reset_all")) {
-                serverPlayer.closeContainer();
+                player.closeContainer();
                 gui.invId="";
-                new GuiInventory_Database().openRunInventory(serverPlayer);
+                new GuiInventory_Database().openRunInventory(player);
             } else if (tag.equalsIgnoreCase("player_choice")) {
                 ResolvableProfile profile = clickedItem.get(DataComponents.PROFILE);
                 if (profile == null) return;

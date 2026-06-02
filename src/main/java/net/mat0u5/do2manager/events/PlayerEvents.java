@@ -129,6 +129,7 @@ public class PlayerEvents {
     }
     public static void onSlotClick(int slotId, int button, ClickType actionType, Player player, CallbackInfo ci, AbstractContainerMenu handler) {
         try {
+            if (!(player instanceof ServerPlayer serverPlayer)) return;
             if (!handler.isValidSlotIndex(slotId)) return;
             if (slotId < 0 ) return;
             ItemStack clickedItem = handler.getSlot(slotId).getItem();
@@ -139,7 +140,7 @@ public class PlayerEvents {
             String tag = ItemManager.getCustomComponentString(clickedItem, "GUI");
             if ((tag.equalsIgnoreCase("DatabaseGUI")||tag.equalsIgnoreCase("custom")) && clickEventCooldown <= 0) {
                 clickEventCooldown = 4;
-                GuiInventoryClick.onClickDatabaseGUI(tag,slotId,button,actionType,player,ci,handler);
+                GuiInventoryClick.onClickDatabaseGUI(tag,slotId,button,actionType,serverPlayer,ci,handler);
             }
         }catch(Exception e) {
             e.printStackTrace();
