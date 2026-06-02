@@ -3,10 +3,9 @@ package net.mat0u5.do2manager.tcg;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.world.ItemManager;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -75,8 +74,8 @@ public class TCG_Items {
     public static void reloadLists() {
         for (ItemStack item : allCards) {
             if (item == null) continue;
-            String itemName = item.getName().getString();
-            if (item.get(DataComponentTypes.CUSTOM_NAME) != null) itemName = item.get(DataComponentTypes.CUSTOM_NAME).getString();
+            String itemName = item.getHoverName().getString();
+            if (item.get(DataComponents.CUSTOM_NAME) != null) itemName = item.get(DataComponents.CUSTOM_NAME).getString();
             List<String> errors = new ArrayList<>();
             int added = 0;
             int checkLayer1 = 0;
@@ -193,8 +192,8 @@ public class TCG_Items {
 
     }
     private static ItemStack randomElement(List<ItemStack> list) {
-        if (list == null) return Items.DIRT.getDefaultStack();
-        if (list.isEmpty()) return Items.DIRT.getDefaultStack();
+        if (list == null) return Items.DIRT.getDefaultInstance();
+        if (list.isEmpty()) return Items.DIRT.getDefaultInstance();
         return list.get(rnd.nextInt(list.size()));
     }
     private static List<ItemStack> getMatchingCard(List<String> validNames) {
@@ -203,7 +202,7 @@ public class TCG_Items {
     private static List<ItemStack> getMatchingCard(List<ItemStack> cards, List<String> validNames) {
         List<ItemStack> result = new ArrayList<>();
         for (ItemStack card : cards) {
-            String name = card.getName().getString();
+            String name = card.getHoverName().getString();
             if (validNames.contains(name)) {
                 result.add(card.copy());
             }

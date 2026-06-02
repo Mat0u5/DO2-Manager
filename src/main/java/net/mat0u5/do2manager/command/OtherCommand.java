@@ -10,29 +10,27 @@ import net.mat0u5.do2manager.world.BlockScanner;
 import net.mat0u5.do2manager.world.ItemConvertor;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.GameMode;
-import net.minecraft.world.updater.WorldUpdater;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.GameType;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class OtherCommand {
-    public static int remainingTime(ServerCommandSource source, long timestamp) {
+    public static int remainingTime(CommandSourceStack source, long timestamp) {
         long timestampMillis = 0;
         if (timestamp >= 1000000000L && timestamp < 1000000000000L) {
             //Timestamp is in seconds.
@@ -52,37 +50,37 @@ public class OtherCommand {
         }
         long remainingMillis = timestampMillis - System.currentTimeMillis();
         long remainingSeconds = (int) (remainingMillis / 1000);
-        source.sendMessage(Text.of("There are "+remainingSeconds+" seconds remaining. ("+OtherUtils.convertSecondsToLongReadableTime(remainingSeconds)+")"));
+        source.sendSystemMessage(Component.nullToEmpty("There are "+remainingSeconds+" seconds remaining. ("+OtherUtils.convertSecondsToLongReadableTime(remainingSeconds)+")"));
         return (int) remainingSeconds;
     }
 
-    public static int statsViewer(ServerCommandSource source, boolean newValue) {
+    public static int statsViewer(CommandSourceStack source, boolean newValue) {
         Main.statsViewerDisabled = newValue;
-        source.sendError(Text.of("StatsViewer is now " + (Main.statsViewerDisabled ? "disabled" : "enabled")));
+        source.sendFailure(Component.nullToEmpty("StatsViewer is now " + (Main.statsViewerDisabled ? "disabled" : "enabled")));
         return 1;
     }
-    public static int executeSpeedrun(ServerCommandSource source) {
+    public static int executeSpeedrun(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
 
         Main.config.setProperty("current_run_is_speedrun","true");
-        OtherUtils.broadcastMessage(server, Text.of("§6This run has been marked as a speedrun."));
+        OtherUtils.broadcastMessage(server, Component.nullToEmpty("§6This run has been marked as a speedrun."));
         return 1;
     }
-    public static int executeSpeedrunAdvanced(ServerCommandSource source) {
+    public static int executeSpeedrunAdvanced(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
 
         Main.config.setProperty("current_run_is_speedrun","detailed");
-        OtherUtils.broadcastMessage(server, Text.of("§6This run has been marked as a §o§edetailed§r§6 speedrun."));
+        OtherUtils.broadcastMessage(server, Component.nullToEmpty("§6This run has been marked as a §o§edetailed§r§6 speedrun."));
         return 1;
     }
-    public static int executeLock(ServerCommandSource source, int fromX, int fromY, int fromZ, int toX, int toY, int toZ, String type) {
+    public static int executeLock(CommandSourceStack source, int fromX, int fromY, int fromZ, int toX, int toY, int toZ, String type) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
         if (self == null) return -1;
-        self.sendMessage(Text.of("Started Block Lock Search..."));
-        BlockScanner.scanArea(type, (ServerWorld) self.getWorld(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
+        self.sendSystemMessage(Component.nullToEmpty("Started Block Lock Search..."));
+        BlockScanner.scanArea(type, (ServerLevel) self.level(),new BlockPos(fromX, fromY, fromZ),new BlockPos(toX, toY, toZ), source.getPlayer());
         return 1;
     }
     public static int reload() {
@@ -92,194 +90,194 @@ public class OtherCommand {
         DatabaseManager.fetchAllPlayers();
         return 1;
     }
-    public static int reloadDatabase(ServerCommandSource source) {
+    public static int reloadDatabase(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
-        self.sendMessage(Text.of("Reloading database..."));
+        final Player self = source.getPlayer();
+        self.sendSystemMessage(Component.nullToEmpty("Reloading database..."));
         Main.reloadAllAbridgedRunsAsync().thenRun(() -> {
-            self.sendMessage(Text.of("Database Reloaded."));
+            self.sendSystemMessage(Component.nullToEmpty("Database Reloaded."));
         });
         return 1;
     }
-    public static int playerList(ServerCommandSource source) {
+    public static int playerList(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
 
         int playerCount = 0;
-        MutableText message = Text.translatable("There are "+server.getPlayerManager().getPlayerList().size()+" players online: ");
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+        MutableComponent message = Component.translatable("There are "+server.getPlayerList().getPlayers().size()+" players online: ");
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
             playerCount++;
             message = message.append(player.getDisplayName());
-            if (playerCount != server.getPlayerManager().getPlayerList().size()) {
+            if (playerCount != server.getPlayerList().getPlayers().size()) {
                 message = message.append(", ");
             }
         }
         if (self != null) {
-            self.sendMessage(message);
+            self.sendSystemMessage(message);
         }
         else {
             System.out.println(message.getString());
         }
         return 1;
     }
-    public static int stuck(ServerCommandSource source) {
+    public static int stuck(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
         if (self == null) return -1;
         if (isRunner(server, self)) return -1;
 
-        self.changeGameMode(GameMode.SPECTATOR);
-        self.teleport(server.getOverworld(),-529.5, 113, 1980.5, 90, 0);
+        self.setGameMode(GameType.SPECTATOR);
+        self.teleportTo(server.overworld(),-529.5, 113, 1980.5, 90, 0);
         return 1;
     }
-    public static int viewDeck(ServerCommandSource source) {
+    public static int viewDeck(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
         if (self == null) return -1;
-        if (isRunner(server, self) && !self.hasPermissionLevel(2)) return -1;
+        if (isRunner(server, self) && !self.hasPermissions(2)) return -1;
 
-        List<ItemStack> currentCards = RunInfoParser.getDeckItemsFromProcessor(server.getOverworld());
+        List<ItemStack> currentCards = RunInfoParser.getDeckItemsFromProcessor(server.overworld());
 
-        SimpleInventory inventory = new SimpleInventory(27);
+        SimpleContainer inventory = new SimpleContainer(27);
         for (ItemStack item : currentCards) {
             ItemManager.setCustomComponentString(item,"GUI","view-deck");
-            inventory.addStack(item);
+            inventory.addItem(item);
         }
 
-        self.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
-            return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X3, syncId, inv, inventory, 3);
-        }, Text.of("Cards Remaining In Deck")));
+        self.openMenu(new SimpleMenuProvider((syncId, inv, p) -> {
+            return new ChestMenu(MenuType.GENERIC_9x3, syncId, inv, inventory, 3);
+        }, Component.nullToEmpty("Cards Remaining In Deck")));
         return 1;
     }
-    public static int viewInv(ServerCommandSource source) {
+    public static int viewInv(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
         if (self == null) return -1;
-        if (isRunner(server, self) && !self.hasPermissionLevel(2)) return -1;
-        List<PlayerEntity> runners = RunInfoParser.getCurrentAliveRunners(server);
+        if (isRunner(server, self) && !self.hasPermissions(2)) return -1;
+        List<Player> runners = RunInfoParser.getCurrentAliveRunners(server);
         if (runners.isEmpty()) return -1;
 
         List<ItemStack> currentItems = new ArrayList<>();
-        for (PlayerEntity runner : runners) {
+        for (Player runner : runners) {
             currentItems.addAll(ItemManager.getPlayerInventory(runner));
         }
 
-        SimpleInventory inventory = new SimpleInventory(54);
+        SimpleContainer inventory = new SimpleContainer(54);
 
         for (ItemStack item : currentItems) {
             ItemManager.setCustomComponentString(item,"GUI","player_inv");
-            inventory.addStack(item);
+            inventory.addItem(item);
         }
 
-        self.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
-            return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, syncId, inv, inventory, 6);
-        }, Text.of((runners.size() == 1 ? runners.get(0).getNameForScoreboard(): "Coop")+"'s Items")));
+        self.openMenu(new SimpleMenuProvider((syncId, inv, p) -> {
+            return new ChestMenu(MenuType.GENERIC_9x6, syncId, inv, inventory, 6);
+        }, Component.nullToEmpty((runners.size() == 1 ? runners.get(0).getScoreboardName(): "Coop")+"'s Items")));
         return 1;
     }
-    public static int getInfo(ServerCommandSource source) {
+    public static int getInfo(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
         if (self == null) return -1;
         if (isRunner(server, self)) return -1;
 
-        self.sendMessage(Text.of("This command is not done yet :P"));
+        self.sendSystemMessage(Component.nullToEmpty("This command is not done yet :P"));
         return 1;
     }
-    public static boolean isRunner(MinecraftServer server, ServerPlayerEntity self) {
+    public static boolean isRunner(MinecraftServer server, ServerPlayer self) {
         if (self == null) {
             return true;
         }
-        List<PlayerEntity> aliveRunners = RunInfoParser.getCurrentAliveRunners(server);
+        List<Player> aliveRunners = RunInfoParser.getCurrentAliveRunners(server);
         if (aliveRunners.contains(self)) {
-            self.sendMessage(Text.of("§cRunners cannot use this command :)"));
+            self.sendSystemMessage(Component.nullToEmpty("§cRunners cannot use this command :)"));
             return true;
         }
         return false;
     }
 
-    public static int invScannerIncrement(ServerCommandSource source) {
+    public static int invScannerIncrement(CommandSourceStack source) {
         Integer currentInvUpdate = ItemConvertor.getInvUpdate();
         if (currentInvUpdate == null) currentInvUpdate = 0;
         ItemConvertor.setInvUpdate(currentInvUpdate+1);
-        for (ServerPlayerEntity player : source.getServer().getPlayerManager().getPlayerList()) {
+        for (ServerPlayer player : source.getServer().getPlayerList().getPlayers()) {
             ItemConvertor.onPlayerJoin(player);
         }
-        source.sendMessage(Text.of("Updated index from " + currentInvUpdate + " to " + (currentInvUpdate+1)));
+        source.sendSystemMessage(Component.nullToEmpty("Updated index from " + currentInvUpdate + " to " + (currentInvUpdate+1)));
         return 1;
     }
 
-    public static int invScanner(ServerCommandSource source, Collection<? extends ServerPlayerEntity> targets, String scanType) {
-        for (ServerPlayerEntity player : targets) {
+    public static int invScanner(CommandSourceStack source, Collection<? extends ServerPlayer> targets, String scanType) {
+        for (ServerPlayer player : targets) {
             if (scanType.equalsIgnoreCase("tagExpanded")) {
-                source.sendMessage(Text.of("Tagging "+player.getNameForScoreboard()+"'s Custom Cards"));
+                source.sendSystemMessage(Component.nullToEmpty("Tagging "+player.getScoreboardName()+"'s Custom Cards"));
                 ItemConvertor.convertCustomItems(player,-1);
-                source.sendMessage(Text.of("Tagging complete."));
+                source.sendSystemMessage(Component.nullToEmpty("Tagging complete."));
             }
             if (scanType.equalsIgnoreCase("removePhase")) {
-                source.sendMessage(Text.of("Converting "+player.getNameForScoreboard()+"'s Items from phase to casual"));
+                source.sendSystemMessage(Component.nullToEmpty("Converting "+player.getScoreboardName()+"'s Items from phase to casual"));
                 ItemConvertor.convertPhaseItems(player,-1);
-                source.sendMessage(Text.of("Conversion complete."));
+                source.sendSystemMessage(Component.nullToEmpty("Conversion complete."));
             }
             if (scanType.equalsIgnoreCase("deleteHardcore")) {
-                source.sendMessage(Text.of("Deleting "+player.getNameForScoreboard()+"'s Hardcore Items"));
+                source.sendSystemMessage(Component.nullToEmpty("Deleting "+player.getScoreboardName()+"'s Hardcore Items"));
                 ItemConvertor.deleteHardcoreItems(player,-1);
-                source.sendMessage(Text.of("Deletion complete."));
+                source.sendSystemMessage(Component.nullToEmpty("Deletion complete."));
             }
             if (scanType.startsWith("deleteCRD") && scanType.contains("_")) {
                 String crdStr = scanType.split("_")[1];
                 try {
                     int crd = Integer.parseInt(crdStr);
-                    source.sendMessage(Text.of("Deleting "+player.getNameForScoreboard()+"'s Items with CRD:"+crd));
+                    source.sendSystemMessage(Component.nullToEmpty("Deleting "+player.getScoreboardName()+"'s Items with CRD:"+crd));
                     ItemConvertor.deleteCRDItems(player,crd);
-                    source.sendMessage(Text.of("Deletion complete."));
+                    source.sendSystemMessage(Component.nullToEmpty("Deletion complete."));
                 }catch(Exception ignore) {}
             }
         }
         return 1;
     }
-    public static int saveRunInfo(ServerCommandSource source) {
+    public static int saveRunInfo(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
         Main.saveRunInfoToConfig();
         return 1;
     }
-    public static int makePhase(ServerCommandSource source) {
+    public static int makePhase(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
         if (self == null) return -1;
 
         ItemStack holdingItem = ItemManager.getHoldingItem(self);
         ItemManager.setRoleplayData(holdingItem,(byte) 2);
         ItemManager.clearItemPhaseOrHardcoreLore(holdingItem);
 
-        Text phaseLore = Text.literal("-= Phase Item =-").formatted(Formatting.RED);
+        Component phaseLore = Component.literal("-= Phase Item =-").withStyle(ChatFormatting.RED);
         if (ItemManager.isDungeonCard(holdingItem)) {
-            phaseLore = Text.literal("-= Phase Card =-").formatted(Formatting.RED);
+            phaseLore = Component.literal("-= Phase Card =-").withStyle(ChatFormatting.RED);
         }
-        ItemManager.addLoreToItemStack(holdingItem,List.of(Text.of(phaseLore)));
+        ItemManager.addLoreToItemStack(holdingItem,List.of(Component.translationArg(phaseLore)));
 
         return 1;
     }
-    public static int makeHardcore(ServerCommandSource source) {
+    public static int makeHardcore(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
         if (self == null) return -1;
 
         ItemStack holdingItem = ItemManager.getHoldingItem(self);
         ItemManager.setRoleplayData(holdingItem,(byte) 3);
         ItemManager.clearItemPhaseOrHardcoreLore(holdingItem);
 
-        Text phaseLore = Text.literal("-= Hardcore Item =-").formatted(Formatting.RED);
+        Component phaseLore = Component.literal("-= Hardcore Item =-").withStyle(ChatFormatting.RED);
         if (ItemManager.isDungeonCard(holdingItem)) {
-            phaseLore = Text.literal("-= Hardcore Card =-").formatted(Formatting.RED);
+            phaseLore = Component.literal("-= Hardcore Card =-").withStyle(ChatFormatting.RED);
         }
-        ItemManager.addLoreToItemStack(holdingItem,List.of(Text.of(phaseLore)));
+        ItemManager.addLoreToItemStack(holdingItem,List.of(Component.translationArg(phaseLore)));
 
         return 1;
     }
-    public static int makeCasual(ServerCommandSource source) {
+    public static int makeCasual(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
         if (self == null) return -1;
 
         ItemStack holdingItem = ItemManager.getHoldingItem(self);
@@ -288,28 +286,28 @@ public class OtherCommand {
 
         return 1;
     }
-    public static int customModelData(ServerCommandSource source, boolean setNotGet, int setTo) {
+    public static int customModelData(CommandSourceStack source, boolean setNotGet, int setTo) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
         if (self == null) return -1;
         ItemStack holdingItem = ItemManager.getHoldingItem(self);
         if (setNotGet) {
             ItemManager.setModelData(holdingItem, setTo);
-            self.sendMessage(Text.of("The CustomModelData has been set to: "+setTo));
+            self.sendSystemMessage(Component.nullToEmpty("The CustomModelData has been set to: "+setTo));
         }
         else {
-            self.sendMessage(Text.of("The CustomModelData of the item in your hand is: "+ ItemManager.getModelData(holdingItem)));
+            self.sendSystemMessage(Component.nullToEmpty("The CustomModelData of the item in your hand is: "+ ItemManager.getModelData(holdingItem)));
         }
 
         return 1;
     }
-    public static int pushChange(ServerCommandSource source, String change, String reason, String affected) {
+    public static int pushChange(CommandSourceStack source, String change, String reason, String affected) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
         String name = "null";
         if (self != null) {
-            name = self.getNameForScoreboard();
-            self.sendMessage(Text.of("Discord message has been sent."));
+            name = self.getScoreboardName();
+            self.sendSystemMessage(Component.nullToEmpty("Discord message has been sent."));
         }
         DiscordUtils.sendChangeInfo(name,change,reason,affected);
 

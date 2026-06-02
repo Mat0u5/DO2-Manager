@@ -19,9 +19,9 @@ import net.mat0u5.do2manager.world.CommandBlockData;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
 import net.mat0u5.do2manager.world.ItemManager;
-import net.minecraft.item.ItemStack;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.item.ItemStack;
 import org.sqlite.SQLiteErrorCode;
 
 public class DatabaseManager {

@@ -4,16 +4,16 @@ import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.gui.GuiInventory_Database;
 import net.mat0u5.do2manager.gui.GuiPlayerSpecific;
 import net.mat0u5.do2manager.utils.OtherUtils;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.block.entity.SignText;
-import net.minecraft.network.packet.s2c.play.SignEditorOpenS2CPacket;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundOpenSignEditorPacket;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.SignBlockEntity;
+import net.minecraft.world.level.block.entity.SignText;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.ArrayList;
@@ -27,17 +27,17 @@ import java.util.concurrent.TimeUnit;
 public class FakeSign {
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
     private static List<BlockPos> fakeSigns = new ArrayList<>();
-    public static void openFakeSign(ServerPlayerEntity player)  {
+    public static void openFakeSign(ServerPlayer player)  {
         // Create a new sign block entity at an arbitrary position
-        World world = player.getWorld();
+        Level world = player.level();
 
-        BlockPos pos = findSuitableSignPosition(world, player.getBlockPos());
+        BlockPos pos = findSuitableSignPosition(world, player.blockPosition());
         if (pos == null) {
-            player.sendMessage(Text.of("Could not find a suitable position for the sign."), false);
+            player.displayClientMessage(Component.nullToEmpty("Could not find a suitable position for the sign."), false);
             return;
         }
 
-        world.setBlockState(pos, Blocks.OAK_SIGN.getDefaultState());
+        world.setBlockAndUpdate(pos, Blocks.OAK_SIGN.defaultBlockState());
 
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity instanceof SignBlockEntity) {
@@ -48,20 +48,20 @@ public class FakeSign {
             String playerFilter = String.join(", ",Main.openGuis.get(player).guiDatabase.filter_player);
             List<String> playerFilterText = splitStringToFit(playerFilter);
             if (!playerFilter.isEmpty()){
-                signText = signText.withMessage(0,Text.of(playerFilterText.get(0)));
-                if (playerFilterText.size() >1) signText = signText.withMessage(1,Text.of(playerFilter.replaceFirst(playerFilterText.get(0),"")));
+                signText = signText.setMessage(0,Component.nullToEmpty(playerFilterText.get(0)));
+                if (playerFilterText.size() >1) signText = signText.setMessage(1,Component.nullToEmpty(playerFilter.replaceFirst(playerFilterText.get(0),"")));
             }
-            signText = signText.withMessage(2,Text.of("^^^^^^^^^^^^^^^"));
-            signText = signText.withMessage(3,Text.of("Enter player name"));
+            signText = signText.setMessage(2,Component.nullToEmpty("^^^^^^^^^^^^^^^"));
+            signText = signText.setMessage(3,Component.nullToEmpty("Enter player name"));
             sign.setText(signText, false);
-            sign.markDirty();
-            sign.setEditor(player.getUuid());
+            sign.setChanged();
+            sign.setAllowedPlayerEditor(player.getUUID());
             MinecraftServer server = player.getServer();
             fakeSigns.add(pos);
             if (server != null) {
                 scheduler.schedule(() -> server.execute(() -> {
-                    player.networkHandler.sendPacket(new SignEditorOpenS2CPacket(pos,false));
-                    player.networkHandler.sendPacket(sign.toUpdatePacket());
+                    player.connection.send(new ClientboundOpenSignEditorPacket(pos,false));
+                    player.connection.send(sign.getUpdatePacket());
                 }), 40, TimeUnit.MILLISECONDS);
             }
         }
@@ -112,12 +112,12 @@ public class FakeSign {
                 return (double)  1/15;
         }
     }
-    private static BlockPos findSuitableSignPosition(World world, BlockPos playerPos) {
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
+    private static BlockPos findSuitableSignPosition(Level world, BlockPos playerPos) {
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
         mutable.set(playerPos.getX(), playerPos.getY(), playerPos.getZ());
-        if (world.getBlockState(mutable).isAir()) return mutable.toImmutable();
+        if (world.getBlockState(mutable).isAir()) return mutable.immutable();
         mutable.set(playerPos.getX(), playerPos.getY()+1, playerPos.getZ());
-        if (world.getBlockState(mutable).isAir()) return mutable.toImmutable();
+        if (world.getBlockState(mutable).isAir()) return mutable.immutable();
 
         // Check blocks around the player in a radius
         for (int x = -2; x <= 2; x++) {
@@ -125,7 +125,7 @@ public class FakeSign {
                 for (int z = -2; z <= 2; z++) {
                     mutable.set(playerPos.getX() + x, playerPos.getY() + y, playerPos.getZ() + z);
                     if (world.getBlockState(mutable).isAir()) {
-                        return mutable.toImmutable();
+                        return mutable.immutable();
                     }
                 }
             }
@@ -134,16 +134,16 @@ public class FakeSign {
         return null; // No suitable position found
     }
     public static void onSignUpdate(SignText signText, CallbackInfoReturnable<Void> ci, SignBlockEntity sign) {
-        MinecraftServer server = sign.getWorld().getServer();
-        UUID editorUuid = sign.getEditor();
+        MinecraftServer server = sign.getLevel().getServer();
+        UUID editorUuid = sign.getPlayerWhoMayEdit();
         if (editorUuid == null || server == null) return;
-        ServerPlayerEntity player = server.getPlayerManager().getPlayer(editorUuid);
+        ServerPlayer player = server.getPlayerList().getPlayer(editorUuid);
         if (player == null) return;
-        BlockPos pos = sign.getPos();
+        BlockPos pos = sign.getBlockPos();
 
         if (!fakeSigns.contains(pos)) return;
 
-        sign.getWorld().setBlockState(sign.getPos(),Blocks.AIR.getDefaultState());
+        sign.getLevel().setBlockAndUpdate(sign.getBlockPos(),Blocks.AIR.defaultBlockState());
         fakeSigns.remove(pos);
 
         GuiPlayerSpecific playerGui = Main.openGuis.get(player);

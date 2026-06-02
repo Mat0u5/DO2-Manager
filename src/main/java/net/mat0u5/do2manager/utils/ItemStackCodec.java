@@ -2,10 +2,10 @@ package net.mat0u5.do2manager.utils;
 
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
-import net.minecraft.item.ItemStack;
 import com.google.gson.JsonElement;
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.item.ItemStack;
 
 
 public class ItemStackCodec {

@@ -3,54 +3,51 @@ package net.mat0u5.do2manager.gui;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.ItemManager;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BarrelBlockEntity;
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.block.entity.ShulkerBoxBlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.ShulkerBoxBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 
 public class GuiInventory_ChestFramework extends GuiPlayerSpecific {
 
-    public int openChestInventory(ServerPlayerEntity player, int INVENTORY_SIZE, String invName, String leadsToChest, boolean actuallyInteract) {
-        player.closeHandledScreen();
-        inventory = new SimpleInventory(INVENTORY_SIZE);
+    public int openChestInventory(ServerPlayer player, int INVENTORY_SIZE, String invName, String leadsToChest, boolean actuallyInteract) {
+        player.closeContainer();
+        inventory = new SimpleContainer(INVENTORY_SIZE);
         invId = "custom";
-        ScreenHandlerType screenHandler;
-        if (INVENTORY_SIZE / 9==6) screenHandler = ScreenHandlerType.GENERIC_9X6;
-        else if (INVENTORY_SIZE / 9==3) screenHandler = ScreenHandlerType.GENERIC_9X3;
-        else if (INVENTORY_SIZE / 9==1) screenHandler = ScreenHandlerType.GENERIC_9X1;
-        else if (INVENTORY_SIZE / 9==2) screenHandler = ScreenHandlerType.GENERIC_9X2;
-        else if (INVENTORY_SIZE / 9==4) screenHandler = ScreenHandlerType.GENERIC_9X4;
-        else if (INVENTORY_SIZE / 9==5) screenHandler = ScreenHandlerType.GENERIC_9X5;
+        MenuType screenHandler;
+        if (INVENTORY_SIZE / 9==6) screenHandler = MenuType.GENERIC_9x6;
+        else if (INVENTORY_SIZE / 9==3) screenHandler = MenuType.GENERIC_9x3;
+        else if (INVENTORY_SIZE / 9==1) screenHandler = MenuType.GENERIC_9x1;
+        else if (INVENTORY_SIZE / 9==2) screenHandler = MenuType.GENERIC_9x2;
+        else if (INVENTORY_SIZE / 9==4) screenHandler = MenuType.GENERIC_9x4;
+        else if (INVENTORY_SIZE / 9==5) screenHandler = MenuType.GENERIC_9x5;
         else {
-            screenHandler = ScreenHandlerType.GENERIC_9X6;
+            screenHandler = MenuType.GENERIC_9x6;
         }
-        populateInventory(player, Main.server.getOverworld(),leadsToChest,actuallyInteract);
+        populateInventory(player, Main.server.overworld(),leadsToChest,actuallyInteract);
 
-        player.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
-            return new GenericContainerScreenHandler(screenHandler, syncId, inv, inventory, Math.min(54,INVENTORY_SIZE) / 9);
-        }, Text.of(invName)));
+        player.openMenu(new SimpleMenuProvider((syncId, inv, p) -> {
+            return new ChestMenu(screenHandler, syncId, inv, inventory, Math.min(54,INVENTORY_SIZE) / 9);
+        }, Component.nullToEmpty(invName)));
         invOpen = true;
         guiItems=this;
         Main.openGuis.put(player,this);
         return 1;
     }
 
-    public void populateInventory(PlayerEntity player, World world, String leadsToChest, boolean actuallyInteract) {
+    public void populateInventory(Player player, Level world, String leadsToChest, boolean actuallyInteract) {
         int[] inception = {-1,-1};
         if (leadsToChest.startsWith("_")) {
             leadsToChest = leadsToChest.replaceFirst("_","");
@@ -62,7 +59,7 @@ public class GuiInventory_ChestFramework extends GuiPlayerSpecific {
         getInventoryFromChest(world, posList,actuallyInteract,inception);
     }
 
-    public void getInventoryFromChest(World world, List<BlockPos> posList, boolean actuallyInteract, int[] inception) {
+    public void getInventoryFromChest(Level world, List<BlockPos> posList, boolean actuallyInteract, int[] inception) {
         try {
             int listPos = 0;
             for (BlockPos pos : posList) {
@@ -70,14 +67,14 @@ public class GuiInventory_ChestFramework extends GuiPlayerSpecific {
                 if (state.getBlock() == Blocks.CHEST) {
                     ChestBlockEntity chestEntity = (ChestBlockEntity) world.getBlockEntity(pos);
                     if (chestEntity != null) {
-                        for (int i = 0; i < chestEntity.size(); i++) {
+                        for (int i = 0; i < chestEntity.getContainerSize(); i++) {
                             if (inception[0] == -1) {
                                 if (listPos*27+i >= 54) return;
-                                if (!actuallyInteract) inventory.setStack(listPos*27+i, chestEntity.getStack(i).copy());
-                                else inventory.setStack(listPos*27+i, chestEntity.getStack(i));
+                                if (!actuallyInteract) inventory.setItem(listPos*27+i, chestEntity.getItem(i).copy());
+                                else inventory.setItem(listPos*27+i, chestEntity.getItem(i));
                             }
                             else if (i == inception[0] || i == inception[1]) {
-                                setFromItemStack(chestEntity.getStack(i).copy(),listPos);
+                                setFromItemStack(chestEntity.getItem(i).copy(),listPos);
                                 listPos++;
                             }
                         }
@@ -86,14 +83,14 @@ public class GuiInventory_ChestFramework extends GuiPlayerSpecific {
                 else if (state.getBlock() == Blocks.BARREL) {
                     BarrelBlockEntity barrelEntity = (BarrelBlockEntity) world.getBlockEntity(pos);
                     if (barrelEntity != null) {
-                        for (int i = 0; i < barrelEntity.size(); i++) {
+                        for (int i = 0; i < barrelEntity.getContainerSize(); i++) {
                             if (inception[0] == -1) {
                                 if (listPos*27+i >= 54) return;
-                                if (!actuallyInteract) inventory.setStack(listPos*27+i, barrelEntity.getStack(i).copy());
-                                else inventory.setStack(listPos*27+i, barrelEntity.getStack(i));
+                                if (!actuallyInteract) inventory.setItem(listPos*27+i, barrelEntity.getItem(i).copy());
+                                else inventory.setItem(listPos*27+i, barrelEntity.getItem(i));
                             }
                             else if (i == inception[0] || i == inception[1]) {
-                                setFromItemStack(barrelEntity.getStack(i).copy(),listPos);
+                                setFromItemStack(barrelEntity.getItem(i).copy(),listPos);
                                 listPos++;
                             }
                         }
@@ -102,14 +99,14 @@ public class GuiInventory_ChestFramework extends GuiPlayerSpecific {
                 else if (state.getBlock().asItem().toString().contains("shulker_box")) {
                     ShulkerBoxBlockEntity shulkerEntity = (ShulkerBoxBlockEntity) world.getBlockEntity(pos);
                     if (shulkerEntity != null) {
-                        for (int i = 0; i < shulkerEntity.size(); i++) {
+                        for (int i = 0; i < shulkerEntity.getContainerSize(); i++) {
                             if (inception[0] == -1) {
                                 if (listPos*27+i >= 54) return;
-                                if (!actuallyInteract) inventory.setStack(listPos*27+i, shulkerEntity.getStack(i).copy());
-                                else inventory.setStack(listPos*27+i, shulkerEntity.getStack(i));
+                                if (!actuallyInteract) inventory.setItem(listPos*27+i, shulkerEntity.getItem(i).copy());
+                                else inventory.setItem(listPos*27+i, shulkerEntity.getItem(i));
                             }
                             else if (i == inception[0] || i == inception[1]) {
-                                setFromItemStack(shulkerEntity.getStack(i).copy(),listPos);
+                                setFromItemStack(shulkerEntity.getItem(i).copy(),listPos);
                                 listPos++;
                             }
                         }
@@ -125,7 +122,7 @@ public class GuiInventory_ChestFramework extends GuiPlayerSpecific {
         List<ItemStack> items = ItemManager.getContainerItemContents(shulkerBox);
         for (int i = 0; i < items.size(); i++) {
             ItemStack itemStack = items.get(i);
-            inventory.setStack(listPos*27+i, itemStack.copy());
+            inventory.setItem(listPos*27+i, itemStack.copy());
         }
     }
 }

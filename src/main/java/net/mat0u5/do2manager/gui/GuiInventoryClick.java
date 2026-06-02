@@ -3,26 +3,26 @@ package net.mat0u5.do2manager.gui;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.FakeSign;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ProfileComponent;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ResolvableProfile;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
 import java.util.Optional;
 
 public class GuiInventoryClick {
-    public static void onClickDatabaseGUI(String guiName, int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci, ScreenHandler handler) {
-        ServerPlayerEntity serverPlayer = (ServerPlayerEntity) player;
-        ItemStack clickedItem = handler.getSlot(slotId).getStack();
+    public static void onClickDatabaseGUI(String guiName, int slotId, int button, ClickType actionType, Player player, CallbackInfo ci, AbstractContainerMenu handler) {
+        ServerPlayer serverPlayer = (ServerPlayer) player;
+        ItemStack clickedItem = handler.getSlot(slotId).getItem();
         OtherUtils.playGuiClickSound(player);
 
-        NbtCompound nbt = clickedItem.get(DataComponentTypes.CUSTOM_DATA).copyNbt();
+        CompoundTag nbt = clickedItem.get(DataComponents.CUSTOM_DATA).copyTag();
         String tag = nbt.getString("GUI_ITEM");
         GuiPlayerSpecific gui = Main.openGuis.get(player);
         GuiInventory_Database guiDatabase = gui.guiDatabase;
@@ -66,7 +66,7 @@ public class GuiInventoryClick {
                 guiDatabase.updateSearch();
                 guiDatabase.populateRunInventory();
             } else if (tag.equalsIgnoreCase("filter_player")) {
-                if (button == 0) FakeSign.openFakeSign((ServerPlayerEntity) player);
+                if (button == 0) FakeSign.openFakeSign((ServerPlayer) player);
                 else if (button == 1) {
                     guiDatabase.filter_player = new ArrayList<>();
                     guiDatabase.filter_player_uuid = new ArrayList<>();
@@ -117,11 +117,11 @@ public class GuiInventoryClick {
                 guiDatabase.current_page_custom_list = 1;
                 guiDatabase.customItemListInventory(nbt.getString("custom_list_inv"), nbt.getInt("run_number"));
             } else if (tag.equalsIgnoreCase("reset_all")) {
-                serverPlayer.closeHandledScreen();
+                serverPlayer.closeContainer();
                 gui.invId="";
                 new GuiInventory_Database().openRunInventory(serverPlayer);
             } else if (tag.equalsIgnoreCase("player_choice")) {
-                ProfileComponent profile = clickedItem.get(DataComponentTypes.PROFILE);
+                ResolvableProfile profile = clickedItem.get(DataComponents.PROFILE);
                 if (profile == null) return;
                 Optional<String> optName = profile.name();
                 if (optName.isEmpty()) return;
@@ -146,38 +146,38 @@ public class GuiInventoryClick {
                     if (split.length==3) invSize=54;
 
                     if (!openNewInv) {
-                        int oldInvsize = gui.inventory.size();
+                        int oldInvsize = gui.inventory.getContainerSize();
                         if (oldInvsize > 27) oldInvsize = 54;
                         else oldInvsize = 27;
-                        if (oldInvsize == invSize) gui.guiItems.populateInventory(player, Main.server.getOverworld(), leadsToChest, false);
-                        else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,false);
+                        if (oldInvsize == invSize) gui.guiItems.populateInventory(player, Main.server.overworld(), leadsToChest, false);
+                        else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,false);
                     }
-                    else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,false);
+                    else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,false);
                 }
             }
             if (nbt.contains("GUI_ChangeTo")) {
                 String leadsToChest = nbt.getString("GUI_ChangeTo");
                 int invSize = leadsToChest.contains(";")?54:27;
                 if (!openNewInv) {
-                    int oldInvsize = gui.inventory.size();
+                    int oldInvsize = gui.inventory.getContainerSize();
                     if (oldInvsize > 27) oldInvsize = 54;
                     else oldInvsize = 27;
-                    if (oldInvsize == invSize) gui.guiItems.populateInventory(player, Main.server.getOverworld(), leadsToChest, false);
-                    else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,false);
+                    if (oldInvsize == invSize) gui.guiItems.populateInventory(player, Main.server.overworld(), leadsToChest, false);
+                    else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,false);
                 }
-                else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,false);
+                else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,false);
             }
             if (nbt.contains("GUI_ChangeTo_OpenContainer")) {
                 String leadsToChest = nbt.getString("GUI_ChangeTo_OpenContainer");
                 int invSize = leadsToChest.contains(";")?54:27;
                 if (!openNewInv) {
-                    int oldInvsize = gui.inventory.size();
+                    int oldInvsize = gui.inventory.getContainerSize();
                     if (oldInvsize > 27) oldInvsize = 54;
                     else oldInvsize = 27;
-                    if (oldInvsize == invSize) gui.guiItems.populateInventory(player, Main.server.getOverworld(), leadsToChest, true);
-                    else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,true);
+                    if (oldInvsize == invSize) gui.guiItems.populateInventory(player, Main.server.overworld(), leadsToChest, true);
+                    else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,true);
                 }
-                else new GuiInventory_ChestFramework().openChestInventory((ServerPlayerEntity) player,invSize,"",leadsToChest,true);
+                else new GuiInventory_ChestFramework().openChestInventory((ServerPlayer) player,invSize,"",leadsToChest,true);
             }
             if (nbt.contains("GUI_ExecuteCommand")) {
                 String command = nbt.getString("GUI_ExecuteCommand");

@@ -15,36 +15,31 @@ import net.mat0u5.do2manager.tcg.TCG_Commands;
 import net.mat0u5.do2manager.utils.PermissionManager;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.mat0u5.do2manager.world.FunctionPreview;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.CommandSource;
-import net.minecraft.command.argument.BlockPosArgumentType;
-import net.minecraft.command.argument.CommandFunctionArgumentType;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.ItemStackArgumentType;
-import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.commands.arguments.coordinates.BlockPosArgument;
+import net.minecraft.commands.arguments.item.FunctionArgument;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.FunctionCommand;
-import net.minecraft.server.command.GiveCommand;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.function.CommandFunctionManager;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.server.ServerFunctionManager;
+import net.minecraft.world.scores.Scoreboard;
 import java.util.List;
 
 import static net.mat0u5.do2manager.Main.dungeonQueue;
 import static net.mat0u5.do2manager.utils.PermissionManager.*;
-import static net.minecraft.command.argument.EntityArgumentType.getPlayer;
-import static net.minecraft.command.argument.EntityArgumentType.player;
-import static net.minecraft.server.command.CommandManager.argument;
-import static net.minecraft.server.command.CommandManager.literal;
+import static net.minecraft.commands.arguments.EntityArgument.getPlayer;
+import static net.minecraft.commands.arguments.EntityArgument.player;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
 
 
 public class Command {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher,
-                                CommandRegistryAccess commandRegistryAccess,
-                                CommandManager.RegistrationEnvironment registrationEnvironment) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher,
+                                CommandBuildContext commandRegistryAccess,
+                                Commands.CommandSelection registrationEnvironment) {
         dispatcher.register(
             literal("decked-out")
                 .then(literal("console-only")
@@ -75,11 +70,11 @@ public class Command {
                             .then(literal("var_modify_premade")
                                 .then(literal("items")
                                     .then(argument("functionName", StringArgumentType.string())
-                                        .then(argument("targets", EntityArgumentType.entities())
+                                        .then(argument("targets", EntityArgument.entities())
                                             .executes(context -> ConsoleCommand.database_runTracking_Items(
                                                 context.getSource(),
                                                 StringArgumentType.getString(context, "functionName"),
-                                                EntityArgumentType.getEntities(context, "targets"))
+                                                EntityArgument.getEntities(context, "targets"))
                                             )
                                         )
                                     )
@@ -188,11 +183,11 @@ public class Command {
                         .executes(context -> DatabaseCommand.executeCommandBlockUpdateDatabase(
                                 context.getSource(), -672, 165, 1727,-337, -64, 2291)
                         )
-                        .then(argument("fromPos", BlockPosArgumentType.blockPos()) // Suggests the block you're looking at
-                            .then(argument("toPos", BlockPosArgumentType.blockPos()) // Suggests the block you're looking at
+                        .then(argument("fromPos", BlockPosArgument.blockPos()) // Suggests the block you're looking at
+                            .then(argument("toPos", BlockPosArgument.blockPos()) // Suggests the block you're looking at
                                 .executes(context -> {
-                                    BlockPos fromPos = BlockPosArgumentType.getBlockPos(context, "fromPos");
-                                    BlockPos toPos = BlockPosArgumentType.getBlockPos(context, "toPos");
+                                    BlockPos fromPos = BlockPosArgument.getBlockPos(context, "fromPos");
+                                    BlockPos toPos = BlockPosArgument.getBlockPos(context, "toPos");
                                     return DatabaseCommand.executeCommandBlockUpdateDatabase(
                                         context.getSource(),
                                         fromPos.getX(),
@@ -425,30 +420,30 @@ public class Command {
                 )
                 .then(literal("invScanner")
                         .requires(source -> (isAdmin(source.getPlayer()) || (source.getEntity() == null)))
-                        .then(argument("targets", EntityArgumentType.players())
+                        .then(argument("targets", EntityArgument.players())
                             .then(literal("tagExpanded")
                                 .executes(context -> OtherCommand.invScanner(
                                     context.getSource(),
-                                    EntityArgumentType.getPlayers(context, "targets"),"tagExpanded")
+                                    EntityArgument.getPlayers(context, "targets"),"tagExpanded")
                                 )
                             )
                             .then(literal("removePhase")
                                 .executes(context -> OtherCommand.invScanner(
                                     context.getSource(),
-                                    EntityArgumentType.getPlayers(context, "targets"),"removePhase")
+                                    EntityArgument.getPlayers(context, "targets"),"removePhase")
                                 )
                             )
                             .then(literal("deleteHardcore")
                                 .executes(context -> OtherCommand.invScanner(
                                     context.getSource(),
-                                    EntityArgumentType.getPlayers(context, "targets"),"deleteHardcore")
+                                    EntityArgument.getPlayers(context, "targets"),"deleteHardcore")
                                 )
                             )
                             .then(literal("deleteCustomRoleplayData")
                                 .then(argument("crd", IntegerArgumentType.integer(1))
                                     .executes(context -> OtherCommand.invScanner(
                                         context.getSource(),
-                                        EntityArgumentType.getPlayers(context, "targets"),"deleteCRD_"+IntegerArgumentType.getInteger(context, "crd"))
+                                        EntityArgument.getPlayers(context, "targets"),"deleteCRD_"+IntegerArgumentType.getInteger(context, "crd"))
                                     )
                                 )
                             )
@@ -483,12 +478,12 @@ public class Command {
             literal("blocklock")
                 .requires(source -> (isAdmin(source.getPlayer())))
                 .then(argument("lock_or_unlock", StringArgumentType.string())
-                    .suggests((context, builder) -> CommandSource.suggestMatching(List.of("lock", "unlock"), builder))
-                    .then(argument("fromPos", BlockPosArgumentType.blockPos()) // Suggests the block you're looking at
-                        .then(argument("toPos", BlockPosArgumentType.blockPos()) // Suggests the block you're looking at
+                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(List.of("lock", "unlock"), builder))
+                    .then(argument("fromPos", BlockPosArgument.blockPos()) // Suggests the block you're looking at
+                        .then(argument("toPos", BlockPosArgument.blockPos()) // Suggests the block you're looking at
                             .executes(context -> {
-                                BlockPos fromPos = BlockPosArgumentType.getBlockPos(context, "fromPos");
-                                BlockPos toPos = BlockPosArgumentType.getBlockPos(context, "toPos");
+                                BlockPos fromPos = BlockPosArgument.getBlockPos(context, "fromPos");
+                                BlockPos toPos = BlockPosArgument.getBlockPos(context, "toPos");
                                 return OtherCommand.executeLock(
                                     context.getSource(),
                                     fromPos.getX(),
@@ -502,7 +497,7 @@ public class Command {
                             })
                         )
                         .executes(context -> {
-                            BlockPos fromPos = BlockPosArgumentType.getBlockPos(context, "fromPos");
+                            BlockPos fromPos = BlockPosArgument.getBlockPos(context, "fromPos");
                             return OtherCommand.executeLock(
                                 context.getSource(),
                                 fromPos.getX(),
@@ -641,10 +636,10 @@ public class Command {
                 )
                 .then(literal("finishRun")
                     .requires(source -> ((isModOwner(source.getPlayer()) || (source.getEntity() == null))))
-                    .then(argument("targets", EntityArgumentType.players())
+                    .then(argument("targets", EntityArgument.players())
                         .executes(context -> QueueCommand.runFinish(
                                 context.getSource(),
-                                EntityArgumentType.getPlayers(context, "targets"))
+                                EntityArgument.getPlayers(context, "targets"))
                         )
                     )
                 )
@@ -672,17 +667,17 @@ public class Command {
             literal("tcg")
                 .requires(source -> ((isTCGGameMaster(source.getPlayer()) || (source.getEntity() == null))))
                 .then(literal("giveBundle")
-                    .then(argument("target", EntityArgumentType.player())
+                    .then(argument("target", EntityArgument.player())
                         .then(literal("hermit")
                             .executes(context -> TCG_Commands.generateDeck(
                                     context.getSource(), "hermit",1,
-                                    EntityArgumentType.getPlayer(context, "target")
+                                    EntityArgument.getPlayer(context, "target")
                                 )
                             )
                             .then(argument("amount", IntegerArgumentType.integer(1,27))
                                 .executes(context -> TCG_Commands.generateDeck(
                                         context.getSource(), "hermit",IntegerArgumentType.getInteger(context,"amount"),
-                                        EntityArgumentType.getPlayer(context, "target")
+                                        EntityArgument.getPlayer(context, "target")
                                     )
                                 )
                             )
@@ -690,13 +685,13 @@ public class Command {
                         .then(literal("booster")
                             .executes(context -> TCG_Commands.generateDeck(
                                     context.getSource(), "booster",1,
-                                    EntityArgumentType.getPlayer(context, "target")
+                                    EntityArgument.getPlayer(context, "target")
                                 )
                             )
                             .then(argument("amount", IntegerArgumentType.integer(1,27))
                                 .executes(context -> TCG_Commands.generateDeck(
                                         context.getSource(), "booster",IntegerArgumentType.getInteger(context,"amount"),
-                                        EntityArgumentType.getPlayer(context, "target")
+                                        EntityArgument.getPlayer(context, "target")
                                     )
                                 )
                             )
@@ -704,13 +699,13 @@ public class Command {
                         .then(literal("starter")
                             .executes(context -> TCG_Commands.generateDeck(
                                     context.getSource(), "starter",1,
-                                    EntityArgumentType.getPlayer(context, "target")
+                                    EntityArgument.getPlayer(context, "target")
                                 )
                             )
                             .then(argument("amount", IntegerArgumentType.integer(1,27))
                                 .executes(context -> TCG_Commands.generateDeck(
                                         context.getSource(), "starter",IntegerArgumentType.getInteger(context,"amount"),
-                                        EntityArgumentType.getPlayer(context, "target")
+                                        EntityArgument.getPlayer(context, "target")
                                     )
                                 )
                             )
@@ -718,13 +713,13 @@ public class Command {
                         .then(literal("alterEgo")
                             .executes(context -> TCG_Commands.generateDeck(
                                     context.getSource(), "alterEgo",1,
-                                    EntityArgumentType.getPlayer(context, "target")
+                                    EntityArgument.getPlayer(context, "target")
                                 )
                             )
                             .then(argument("amount", IntegerArgumentType.integer(1,27))
                                 .executes(context -> TCG_Commands.generateDeck(
                                         context.getSource(), "alterEgo",IntegerArgumentType.getInteger(context,"amount"),
-                                        EntityArgumentType.getPlayer(context, "target")
+                                        EntityArgument.getPlayer(context, "target")
                                     )
                                 )
                             )
@@ -732,13 +727,13 @@ public class Command {
                         .then(literal("effect")
                             .executes(context -> TCG_Commands.generateDeck(
                                     context.getSource(), "effect",1,
-                                    EntityArgumentType.getPlayer(context, "target")
+                                    EntityArgument.getPlayer(context, "target")
                                 )
                             )
                             .then(argument("amount", IntegerArgumentType.integer(1,27))
                                 .executes(context -> TCG_Commands.generateDeck(
                                         context.getSource(), "effect",IntegerArgumentType.getInteger(context,"amount"),
-                                        EntityArgumentType.getPlayer(context, "target")
+                                        EntityArgument.getPlayer(context, "target")
                                     )
                                 )
                             )
@@ -746,13 +741,13 @@ public class Command {
                         .then(literal("item")
                             .executes(context -> TCG_Commands.generateDeck(
                                     context.getSource(), "item",1,
-                                    EntityArgumentType.getPlayer(context, "target")
+                                    EntityArgument.getPlayer(context, "target")
                                 )
                             )
                             .then(argument("amount", IntegerArgumentType.integer(1,27))
                                 .executes(context -> TCG_Commands.generateDeck(
                                         context.getSource(), "item",IntegerArgumentType.getInteger(context,"amount"),
-                                        EntityArgumentType.getPlayer(context, "target")
+                                        EntityArgument.getPlayer(context, "target")
                                     )
                                 )
                             )
@@ -847,7 +842,7 @@ public class Command {
                         .suggests((context, builder) -> {
                             // Suggest existing objectives for the old_objective argument
                             Scoreboard scoreboard = context.getSource().getServer().getScoreboard();
-                            return CommandSource.suggestMatching(scoreboard.getObjectiveNames(), builder);
+                            return SharedSuggestionProvider.suggest(scoreboard.getObjectiveNames(), builder);
                         })
                         .then(argument("new_objective", StringArgumentType.word())
                             .executes(context -> {
@@ -865,10 +860,10 @@ public class Command {
         dispatcher.register(
             literal("previewFunction")
                 .requires(source -> (isAdmin(source.getPlayer()) || (source.getEntity() == null)))
-                .then(argument("name", CommandFunctionArgumentType.commandFunction())
+                .then(argument("name", FunctionArgument.functions())
                     .suggests(FUNCTION_COMMAND_SUGGESTION)
                     .executes(context -> FunctionPreview.previewFunction(
-                        context.getSource(),CommandFunctionArgumentType.getFunctions(context, "name")
+                        context.getSource(),FunctionArgument.getFunctions(context, "name")
                     ))
                 )
                 .then(literal("stop")
@@ -882,18 +877,18 @@ public class Command {
         dispatcher.register(
             literal("gib")
             .requires(source -> (isAdmin(source.getPlayer()) || (source.getEntity() == null)))
-            .then(argument("targets", EntityArgumentType.players())
+            .then(argument("targets", EntityArgument.players())
                 .then(argument("item", StringArgumentType.string())
-                    .suggests((context, builder) -> CommandSource.suggestMatching(CustomGiveCommand.getAllItems(), builder))
+                    .suggests((context, builder) -> SharedSuggestionProvider.suggest(CustomGiveCommand.getAllItems(), builder))
                     .executes(context -> CustomGiveCommand.execute(
                             context.getSource(), StringArgumentType.getString(context, "item"),
-                            EntityArgumentType.getPlayers(context, "targets"), 1
+                            EntityArgument.getPlayers(context, "targets"), 1
                         )
                     )
                     .then(argument("count", IntegerArgumentType.integer(1))
                         .executes(context -> CustomGiveCommand.execute(
                                 context.getSource(), StringArgumentType.getString(context, "item"),
-                                EntityArgumentType.getPlayers(context, "targets"), IntegerArgumentType.getInteger(context, "count")
+                                EntityArgument.getPlayers(context, "targets"), IntegerArgumentType.getInteger(context, "count")
                             )
                         )
                     )
@@ -912,9 +907,9 @@ public class Command {
                 )
         );
     }
-    public static final SuggestionProvider<ServerCommandSource> FUNCTION_COMMAND_SUGGESTION = (context, builder) -> {
-        CommandFunctionManager commandFunctionManager = ((ServerCommandSource)context.getSource()).getServer().getCommandFunctionManager();
-        CommandSource.suggestIdentifiers(commandFunctionManager.getFunctionTags(), builder, "#");
-        return CommandSource.suggestIdentifiers(commandFunctionManager.getAllFunctions(), builder);
+    public static final SuggestionProvider<CommandSourceStack> FUNCTION_COMMAND_SUGGESTION = (context, builder) -> {
+        ServerFunctionManager commandFunctionManager = ((CommandSourceStack)context.getSource()).getServer().getFunctions();
+        SharedSuggestionProvider.suggestResource(commandFunctionManager.getTagNames(), builder, "#");
+        return SharedSuggestionProvider.suggestResource(commandFunctionManager.getFunctionNames(), builder);
     };
 }

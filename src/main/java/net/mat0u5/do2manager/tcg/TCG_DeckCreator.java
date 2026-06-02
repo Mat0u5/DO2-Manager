@@ -1,13 +1,12 @@
 package net.mat0u5.do2manager.tcg;
 
 import net.mat0u5.do2manager.world.ItemManager;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.BundleContentsComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.BundleContents;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -15,22 +14,22 @@ import java.util.Random;
 public class TCG_DeckCreator {
     static Random rnd = new Random();
     public static ItemStack getBasePack(String addToName) {
-        ItemStack itemStack = Items.BUNDLE.getDefaultStack();
+        ItemStack itemStack = Items.BUNDLE.getDefaultInstance();
         ItemManager.setModelData(itemStack,1);
-        Text customName = Text.literal("Hermitcraft ").styled(style -> style.withColor(Formatting.DARK_GRAY).withBold(true).withItalic(false))
-                .append(Text.literal("TC").styled(style -> style.withColor(Formatting.DARK_AQUA).withBold(true).withItalic(false)))
-                .append(Text.literal("G").styled(style -> style.withColor(0x80C71F).withBold(true).withItalic(false)))
-                .append(addToName).styled(style -> style.withBold(true).withItalic(false));
-        itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.of(customName));
+        Component customName = Component.literal("Hermitcraft ").withStyle(style -> style.withColor(ChatFormatting.DARK_GRAY).withBold(true).withItalic(false))
+                .append(Component.literal("TC").withStyle(style -> style.withColor(ChatFormatting.DARK_AQUA).withBold(true).withItalic(false)))
+                .append(Component.literal("G").withStyle(style -> style.withColor(0x80C71F).withBold(true).withItalic(false)))
+                .append(addToName).withStyle(style -> style.withBold(true).withItalic(false));
+        itemStack.set(DataComponents.CUSTOM_NAME, Component.translationArg(customName));
         return itemStack;
     }
     public static ItemStack getHermitPack() {
         ItemStack itemStack = getBasePack(" §6");
-        Text customName = Text.literal("Hermitcraft ").styled(style -> style.withColor(Formatting.DARK_GRAY).withBold(true).withItalic(false))
-                .append(Text.literal("TC").styled(style -> style.withColor(Formatting.DARK_AQUA).withBold(true).withItalic(false)))
-                .append(Text.literal("G ").styled(style -> style.withColor(0x80C71F).withBold(true).withItalic(false)))
-                .append(Text.literal("Hermit Pack").styled(style -> style.withColor(0xFED83D).withBold(true).withItalic(false)));
-        itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.of(customName));
+        Component customName = Component.literal("Hermitcraft ").withStyle(style -> style.withColor(ChatFormatting.DARK_GRAY).withBold(true).withItalic(false))
+                .append(Component.literal("TC").withStyle(style -> style.withColor(ChatFormatting.DARK_AQUA).withBold(true).withItalic(false)))
+                .append(Component.literal("G ").withStyle(style -> style.withColor(0x80C71F).withBold(true).withItalic(false)))
+                .append(Component.literal("Hermit Pack").withStyle(style -> style.withColor(0xFED83D).withBold(true).withItalic(false)));
+        itemStack.set(DataComponents.CUSTOM_NAME, Component.translationArg(customName));
 
         List<ItemStack> itemsList = new ArrayList<>();
         itemsList.add(TCG_Items.getRandomCommonHermit());
@@ -41,8 +40,8 @@ public class TCG_DeckCreator {
         if (isUltraRare) itemsList.add(TCG_Items.getRandomUltraRareHermit());
         else itemsList.add(TCG_Items.getRandomRareHermit());
 
-        BundleContentsComponent bundleContentsComponent = new BundleContentsComponent(itemsList);
-        itemStack.set(DataComponentTypes.BUNDLE_CONTENTS, bundleContentsComponent);
+        BundleContents bundleContentsComponent = new BundleContents(itemsList);
+        itemStack.set(DataComponents.BUNDLE_CONTENTS, bundleContentsComponent);
         return itemStack;
     }
     public static ItemStack getBoosterPack() {
@@ -81,8 +80,8 @@ public class TCG_DeckCreator {
         if (rareRollOne == 5 || rareRollTwo == 5) itemsList.add(TCG_Items.getRandomRareItem());
         else itemsList.add(TCG_Items.getRandomCommonItem());
 
-        BundleContentsComponent bundleContentsComponent = new BundleContentsComponent(itemsList);
-        itemStack.set(DataComponentTypes.BUNDLE_CONTENTS, bundleContentsComponent);
+        BundleContents bundleContentsComponent = new BundleContents(itemsList);
+        itemStack.set(DataComponents.BUNDLE_CONTENTS, bundleContentsComponent);
 
         return itemStack;
     }
@@ -99,18 +98,18 @@ public class TCG_DeckCreator {
         itemsList.add(TCG_Items.getRandomCommonEffect());
         itemsList.add(TCG_Items.getRandomCommonEffect());
 
-        BundleContentsComponent bundleContentsComponent = new BundleContentsComponent(itemsList);
-        itemStack.set(DataComponentTypes.BUNDLE_CONTENTS, bundleContentsComponent);
+        BundleContents bundleContentsComponent = new BundleContents(itemsList);
+        itemStack.set(DataComponents.BUNDLE_CONTENTS, bundleContentsComponent);
 
         return itemStack;
     }
     public static ItemStack getEffectPack() {
         ItemStack itemStack = getBasePack("");
-        Text customName = Text.literal("Hermitcraft ").styled(style -> style.withColor(Formatting.DARK_GRAY).withBold(true).withItalic(false))
-                .append(Text.literal("TC").styled(style -> style.withColor(Formatting.DARK_AQUA).withBold(true).withItalic(false)))
-                .append(Text.literal("G ").styled(style -> style.withColor(0x80C71F).withBold(true).withItalic(false)))
-                .append(Text.literal("§lEffect Pack").styled(style -> style.withColor(0xF38BAA).withBold(true).withItalic(false)));
-        itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.of(customName));
+        Component customName = Component.literal("Hermitcraft ").withStyle(style -> style.withColor(ChatFormatting.DARK_GRAY).withBold(true).withItalic(false))
+                .append(Component.literal("TC").withStyle(style -> style.withColor(ChatFormatting.DARK_AQUA).withBold(true).withItalic(false)))
+                .append(Component.literal("G ").withStyle(style -> style.withColor(0x80C71F).withBold(true).withItalic(false)))
+                .append(Component.literal("§lEffect Pack").withStyle(style -> style.withColor(0xF38BAA).withBold(true).withItalic(false)));
+        itemStack.set(DataComponents.CUSTOM_NAME, Component.translationArg(customName));
 
         List<ItemStack> itemsList = new ArrayList<>();
         itemsList.add(TCG_Items.getRandomCommonEffect());
@@ -120,8 +119,8 @@ public class TCG_DeckCreator {
         itemsList.add(TCG_Items.getRandomRareEffect());
         itemsList.add(TCG_Items.getRandomRareEffect());
         itemsList.add(TCG_Items.getRandomUltraRareEffect());
-        BundleContentsComponent bundleContentsComponent = new BundleContentsComponent(itemsList);
-        itemStack.set(DataComponentTypes.BUNDLE_CONTENTS, bundleContentsComponent);
+        BundleContents bundleContentsComponent = new BundleContents(itemsList);
+        itemStack.set(DataComponents.BUNDLE_CONTENTS, bundleContentsComponent);
 
         return itemStack;
     }
@@ -134,18 +133,18 @@ public class TCG_DeckCreator {
         itemsList.add(TCG_Items.getRandomCommonItem());
         itemsList.add(TCG_Items.getRandomCommonItem());
         itemsList.add(TCG_Items.getRandomRareItem());
-        BundleContentsComponent bundleContentsComponent = new BundleContentsComponent(itemsList);
-        itemStack.set(DataComponentTypes.BUNDLE_CONTENTS, bundleContentsComponent);
+        BundleContents bundleContentsComponent = new BundleContents(itemsList);
+        itemStack.set(DataComponents.BUNDLE_CONTENTS, bundleContentsComponent);
 
         return itemStack;
     }
     public static ItemStack getStarterDeck() {
         ItemStack itemStack = getBasePack(" §6");
-        Text customName = Text.literal("Hermitcraft ").styled(style -> style.withColor(Formatting.DARK_GRAY).withBold(true).withItalic(false))
-                .append(Text.literal("TC").styled(style -> style.withColor(Formatting.DARK_AQUA).withBold(true).withItalic(false)))
-                .append(Text.literal("G ").styled(style -> style.withColor(0x80C71F).withBold(true).withItalic(false)))
-                .append(Text.literal("§lStarter Deck").styled(style -> style.withColor(0xB02E26).withBold(true).withItalic(false)));
-        itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.of(customName));
+        Component customName = Component.literal("Hermitcraft ").withStyle(style -> style.withColor(ChatFormatting.DARK_GRAY).withBold(true).withItalic(false))
+                .append(Component.literal("TC").withStyle(style -> style.withColor(ChatFormatting.DARK_AQUA).withBold(true).withItalic(false)))
+                .append(Component.literal("G ").withStyle(style -> style.withColor(0x80C71F).withBold(true).withItalic(false)))
+                .append(Component.literal("§lStarter Deck").withStyle(style -> style.withColor(0xB02E26).withBold(true).withItalic(false)));
+        itemStack.set(DataComponents.CUSTOM_NAME, Component.translationArg(customName));
 
         List<ItemStack> itemsList = new ArrayList<>();
         String type1 = TCG_Items.getRandomType(List.of("prankster","speedrunner","terraform"));
@@ -195,8 +194,8 @@ public class TCG_DeckCreator {
 
 
 
-        BundleContentsComponent bundleContentsComponent = new BundleContentsComponent(itemsList);
-        itemStack.set(DataComponentTypes.BUNDLE_CONTENTS, bundleContentsComponent);
+        BundleContents bundleContentsComponent = new BundleContents(itemsList);
+        itemStack.set(DataComponents.BUNDLE_CONTENTS, bundleContentsComponent);
 
         return itemStack;
     }

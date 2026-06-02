@@ -8,45 +8,29 @@ import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.DoubleBlockProperties;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.ChestBlockEntity;
-import net.minecraft.block.entity.LockableContainerBlockEntity;
-import net.minecraft.block.entity.SignBlockEntity;
-import net.minecraft.block.enums.ChestType;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.screen.ingame.SignEditScreen;
-import net.minecraft.command.argument.EntityAnchorArgumentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ProfileComponent;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.PlayerManager;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.CommandOutput;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.WorldSavePath;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameMode;
-import net.minecraft.world.World;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.PlayerList;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.ChestType;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -193,29 +177,29 @@ public class OtherUtils {
         }
     }
     public static void executeCommand(MinecraftServer server, String command) {
-        CommandManager manager = server.getCommandManager();
-        ServerCommandSource commandSource = server.getCommandSource().withSilent();
-        manager.executeWithPrefix(commandSource,command);
+        Commands manager = server.getCommands();
+        CommandSourceStack commandSource = server.createCommandSourceStack().withSuppressedOutput();
+        manager.performPrefixedCommand(commandSource,command);
     }
     public static void executeCommand(String command) {
         if (server == null) return;
-        CommandManager manager = server.getCommandManager();
-        ServerCommandSource commandSource = server.getCommandSource().withSilent();
-        manager.executeWithPrefix(commandSource,command);
+        Commands manager = server.getCommands();
+        CommandSourceStack commandSource = server.createCommandSourceStack().withSuppressedOutput();
+        manager.performPrefixedCommand(commandSource,command);
     }
-    public static void broadcastMessage(MinecraftServer server, Text message) {
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            player.sendMessage(message, false);
+    public static void broadcastMessage(MinecraftServer server, Component message) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            player.displayClientMessage(message, false);
         }
     }
-    public static void broadcastMessage(Text message) {
-        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
-            player.sendMessage(message, false);
+    public static void broadcastMessage(Component message) {
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            player.displayClientMessage(message, false);
         }
     }
     public static boolean isPlayerOnline(MinecraftServer server, String username) {
-        PlayerManager playerManager = server.getPlayerManager();
-        ServerPlayerEntity player = playerManager.getPlayer(username);
+        PlayerList playerManager = server.getPlayerList();
+        ServerPlayer player = playerManager.getPlayerByName(username);
         return player != null;
     }
     public static boolean isPlayerOnline(String username) {
@@ -236,18 +220,18 @@ public class OtherUtils {
         executeCommand(server,"stop");
     }
     public static boolean isServerEmptyOrOnlyTangoCam(MinecraftServer server) {
-        int playerCount = server.getPlayerManager().getPlayerList().size();
+        int playerCount = server.getPlayerList().getPlayers().size();
         if (playerCount == 0) {
             return true;
         } else if (playerCount == 1) {
-            ServerPlayerEntity player = server.getPlayerManager().getPlayerList().get(0);
+            ServerPlayer player = server.getPlayerList().getPlayers().get(0);
             return "TangoCam".equals(player.getGameProfile().getName());
         }
         return false;
     }
-    public static void playGuiClickSound(PlayerEntity player) {
-        if (player != null && player.getWorld() != null) {
-            player.playSoundToPlayer(SoundEvents.UI_BUTTON_CLICK.value(), SoundCategory.PLAYERS, 0.5F, 1.0F);
+    public static void playGuiClickSound(Player player) {
+        if (player != null && player.level() != null) {
+            player.playNotifySound(SoundEvents.UI_BUTTON_CLICK.value(), SoundSource.PLAYERS, 0.5F, 1.0F);
         }
     }
     public static List<BlockPos> getPositionsFromString(String str) {
@@ -273,15 +257,15 @@ public class OtherUtils {
         }
         return posList;
     }
-    public static boolean isHoldingAdminKey(PlayerEntity player) {
+    public static boolean isHoldingAdminKey(Player player) {
         try {
             // Get the item stacks for main hand and offhand
-            ItemStack mainHandItem = player.getMainHandStack();
-            ItemStack offHandItem = player.getOffHandStack();
+            ItemStack mainHandItem = player.getMainHandItem();
+            ItemStack offHandItem = player.getOffhandItem();
 
             // Get the item names
-            String mainHandItemName = mainHandItem.isEmpty() ? "Empty" : mainHandItem.getName().getString();
-            String offHandItemName = offHandItem.isEmpty() ? "Empty" : offHandItem.getName().getString();
+            String mainHandItemName = mainHandItem.isEmpty() ? "Empty" : mainHandItem.getHoverName().getString();
+            String offHandItemName = offHandItem.isEmpty() ? "Empty" : offHandItem.getHoverName().getString();
 
             // Create and return the result text
             return Main.config.getProperty("block_password").equalsIgnoreCase(mainHandItemName) || Main.config.getProperty("block_password").equalsIgnoreCase(offHandItemName);
@@ -291,18 +275,18 @@ public class OtherUtils {
             return false;
         }
     }
-    public static void unlockContainerForTick(ServerWorld world, MinecraftServer server, LockableContainerBlockEntity container, BlockPos pos) {
-        RegistryWrapper.WrapperLookup registryLookup = Main.server.getRegistryManager();
-        NbtCompound nbt = container.createNbt(registryLookup);
+    public static void unlockContainerForTick(ServerLevel world, MinecraftServer server, BaseContainerBlockEntity container, BlockPos pos) {
+        HolderLookup.Provider registryLookup = Main.server.registryAccess();
+        CompoundTag nbt = container.saveWithoutMetadata(registryLookup);
         String originalLock = nbt.getString("Lock");
         nbt.remove("Lock");
-        container.read(nbt, registryLookup);
+        container.loadWithComponents(nbt, registryLookup);
         server.execute(() -> {
             try {
                 // Re-lock the original container
-                NbtCompound newNbt = container.createNbt(registryLookup);
+                CompoundTag newNbt = container.saveWithoutMetadata(registryLookup);
                 newNbt.putString("Lock", originalLock);
-                container.read(newNbt, registryLookup);
+                container.loadWithComponents(newNbt, registryLookup);
             } catch (Exception e) {
                 System.out.println("Failed to re-add lock at " + pos.toString());
             }
@@ -314,17 +298,17 @@ public class OtherUtils {
             ChestBlockEntity otherHalf = getOtherHalf(world, chest, pos);
 
             if (otherHalf != null) {
-                NbtCompound otherNbt = otherHalf.createNbt(registryLookup);
+                CompoundTag otherNbt = otherHalf.saveWithoutMetadata(registryLookup);
                 String otherOriginalLock = otherNbt.getString("Lock");
                 otherNbt.remove("Lock");
-                otherHalf.read(otherNbt, registryLookup);
+                otherHalf.loadWithComponents(otherNbt, registryLookup);
 
                 server.execute(() -> {
                     try {
                         if (otherHalf != null) {
-                            NbtCompound newOtherNbt = otherHalf.createNbt(registryLookup);
+                            CompoundTag newOtherNbt = otherHalf.saveWithoutMetadata(registryLookup);
                             newOtherNbt.putString("Lock", otherOriginalLock);
-                            otherHalf.read(newOtherNbt, registryLookup);
+                            otherHalf.loadWithComponents(newOtherNbt, registryLookup);
                         }
                     } catch (Exception e) {
                         System.out.println("Failed to re-add lock at " + pos.toString());
@@ -334,45 +318,45 @@ public class OtherUtils {
         }
     }
 
-    private static ChestBlockEntity getOtherHalf(ServerWorld world, ChestBlockEntity chest, BlockPos pos) {
-        BlockState state = chest.getCachedState();
-        Direction facing = state.get(Properties.HORIZONTAL_FACING);
-        ChestType type = state.get(Properties.CHEST_TYPE);
+    private static ChestBlockEntity getOtherHalf(ServerLevel world, ChestBlockEntity chest, BlockPos pos) {
+        BlockState state = chest.getBlockState();
+        Direction facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+        ChestType type = state.getValue(BlockStateProperties.CHEST_TYPE);
 
         BlockPos otherHalfPos = null;
 
         if (type == ChestType.LEFT) {
-            otherHalfPos = pos.offset(facing.rotateYClockwise());
+            otherHalfPos = pos.relative(facing.getClockWise());
         } else if (type == ChestType.RIGHT) {
-            otherHalfPos = pos.offset(facing.rotateYCounterclockwise());
+            otherHalfPos = pos.relative(facing.getCounterClockWise());
         }
 
         if (otherHalfPos != null) {
             BlockEntity adjacentBlockEntity = world.getBlockEntity(otherHalfPos);
             if (adjacentBlockEntity instanceof ChestBlockEntity) {
                 ChestBlockEntity adjacentChest = (ChestBlockEntity) adjacentBlockEntity;
-                if (adjacentChest.getCachedState().getBlock() == Blocks.CHEST) {
+                if (adjacentChest.getBlockState().getBlock() == Blocks.CHEST) {
                     return adjacentChest;
                 }
             }
         }
         return null;
     }
-    public static String getLock(LockableContainerBlockEntity container) {
-        RegistryWrapper.WrapperLookup registryLookup = server.getRegistryManager();
-        NbtCompound nbt = container.createNbt(registryLookup);
+    public static String getLock(BaseContainerBlockEntity container) {
+        HolderLookup.Provider registryLookup = server.registryAccess();
+        CompoundTag nbt = container.saveWithoutMetadata(registryLookup);
         if (nbt == null) return null;
         if (!nbt.contains("Lock")) return null;
         String lockKey = nbt.getString("Lock");
         if (lockKey.isEmpty()) return null;
         return lockKey;
     }
-    public static void removeItemsFromPlayerInventory(PlayerEntity player, String match) {
-        for (int i = 0; i < player.getInventory().size(); i++) {
-            ItemStack stack = player.getInventory().getStack(i);
-            Text customName = stack.getName();
+    public static void removeItemsFromPlayerInventory(Player player, String match) {
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            Component customName = stack.getHoverName();
             if (customName.getString().toLowerCase().equalsIgnoreCase(match.toLowerCase())) {
-                player.getInventory().setStack(i, ItemStack.EMPTY);
+                player.getInventory().setItem(i, ItemStack.EMPTY);
             }
         }
     }

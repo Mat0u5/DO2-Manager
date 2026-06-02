@@ -4,15 +4,12 @@ import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.PermissionManager;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.PlayerInventoryScanner;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.world.GameMode;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.ItemStack;
 import javax.xml.crypto.Data;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,22 +18,22 @@ import java.util.List;
 import static net.mat0u5.do2manager.tcg.TCG_Items.*;
 
 public class TCG_Commands {
-    public static int generateDeck(ServerCommandSource source, String type, int amount, ServerPlayerEntity target) {
+    public static int generateDeck(CommandSourceStack source, String type, int amount, ServerPlayer target) {
         if (target == null) return -1;
         for (int i = 0; i < amount; i++) {
-            if (type.equalsIgnoreCase("hermit")) target.giveItemStack(TCG_DeckCreator.getHermitPack());
-            if (type.equalsIgnoreCase("booster")) target.giveItemStack(TCG_DeckCreator.getBoosterPack());
-            if (type.equalsIgnoreCase("starter")) target.giveItemStack(TCG_DeckCreator.getStarterDeck());
-            if (type.equalsIgnoreCase("alterEgo")) target.giveItemStack(TCG_DeckCreator.getAlterEgoPack());
-            if (type.equalsIgnoreCase("effect")) target.giveItemStack(TCG_DeckCreator.getEffectPack());
-            if (type.equalsIgnoreCase("item")) target.giveItemStack(TCG_DeckCreator.getItemPack());
+            if (type.equalsIgnoreCase("hermit")) target.addItem(TCG_DeckCreator.getHermitPack());
+            if (type.equalsIgnoreCase("booster")) target.addItem(TCG_DeckCreator.getBoosterPack());
+            if (type.equalsIgnoreCase("starter")) target.addItem(TCG_DeckCreator.getStarterDeck());
+            if (type.equalsIgnoreCase("alterEgo")) target.addItem(TCG_DeckCreator.getAlterEgoPack());
+            if (type.equalsIgnoreCase("effect")) target.addItem(TCG_DeckCreator.getEffectPack());
+            if (type.equalsIgnoreCase("item")) target.addItem(TCG_DeckCreator.getItemPack());
         }
 
         return 1;
     }
-    public static int databaseUpdate(ServerCommandSource source) {
+    public static int databaseUpdate(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
 
         List<ItemStack> itemsInv = PlayerInventoryScanner.getALLItemsFromInv(self.getInventory(),false);
 
@@ -45,13 +42,13 @@ public class TCG_Commands {
             DatabaseManager.addTCGItem(item);
         }
 
-        source.sendMessage(Text.of("Saved " + itemsInv.size() + " items to the database!"));
+        source.sendSystemMessage(Component.nullToEmpty("Saved " + itemsInv.size() + " items to the database!"));
 
         return 1;
     }
-    public static int test(ServerCommandSource source) {
+    public static int test(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
 
         List<ItemStack> itemsInv = PlayerInventoryScanner.getALLItemsFromInv(self.getInventory(),false);
 
@@ -59,8 +56,8 @@ public class TCG_Commands {
             if (ItemManager.hasCustomComponentEntry(item, NBT_TCG)) {
 
                 String type = ItemManager.getCustomComponentString(item, NBT_TYPE);
-                if (type == null && item.get(DataComponentTypes.CUSTOM_NAME) != null) {
-                    String itemName = item.get(DataComponentTypes.CUSTOM_NAME).getString();
+                if (type == null && item.get(DataComponents.CUSTOM_NAME) != null) {
+                    String itemName = item.get(DataComponents.CUSTOM_NAME).getString();
                     int test = 0;
                     if (ItemManager.hasCustomComponentEntry(item, NBT_HERMITS) || ItemManager.hasCustomComponentEntry(item, NBT_ALTEREGO)) {
                         if (itemName.contains("Miner Type")) test += ItemManager.setCustomComponentString(item, "type", "miner");
@@ -92,16 +89,16 @@ public class TCG_Commands {
             }
         }
 
-        source.sendMessage(Text.of("updated"));
+        source.sendSystemMessage(Component.nullToEmpty("updated"));
 
         return 1;
     }
-    public static int reload(ServerCommandSource source) {
+    public static int reload(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final ServerPlayerEntity self = source.getPlayer();
+        final ServerPlayer self = source.getPlayer();
 
         TCG_Items.reload();
-        source.sendMessage(Text.of("Reloaded TCG Items from the database!"));
+        source.sendSystemMessage(Component.nullToEmpty("Reloaded TCG Items from the database!"));
 
         return 1;
     }

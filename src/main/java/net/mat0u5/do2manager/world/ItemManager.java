@@ -1,26 +1,33 @@
 package net.mat0u5.do2manager.world;
 
 import com.mojang.authlib.properties.PropertyMap;
-import net.minecraft.block.entity.*;
-import net.minecraft.component.ComponentType;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.*;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.vehicle.ChestBoatEntity;
-import net.minecraft.entity.vehicle.HopperMinecartEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.BundleItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.world.World;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.vehicle.ChestBoat;
+import net.minecraft.world.entity.vehicle.MinecartHopper;
+import net.minecraft.world.item.BundleItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.BundleContents;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.CustomModelData;
+import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BarrelBlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.DispenserBlockEntity;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.saveddata.maps.MapId;
+import net.minecraft.world.phys.AABB;
 import java.util.*;
 
 public class ItemManager {
@@ -156,76 +163,76 @@ public class ItemManager {
         put(5,"coin");
     }};
 
-    public static void giveItemStack(PlayerEntity player, ItemStack itemStack) {
-        if (!player.giveItemStack(itemStack)) {
-            player.dropItem(itemStack, false);
+    public static void giveItemStack(Player player, ItemStack itemStack) {
+        if (!player.addItem(itemStack)) {
+            player.drop(itemStack, false);
         }
     }
-    public static void giveItemStack(PlayerEntity player, List<ItemStack> itemStacks) {
+    public static void giveItemStack(Player player, List<ItemStack> itemStacks) {
         for (ItemStack itemStack : itemStacks) {
             giveItemStack(player,itemStack);
         }
     }
-    public static void removeAllComponents(ItemStack itemStack) {itemStack.set(DataComponentTypes.CUSTOM_DATA, itemStack.getDefaultComponents().get(DataComponentTypes.CUSTOM_DATA));
-        itemStack.set(DataComponentTypes.MAX_STACK_SIZE, itemStack.getDefaultComponents().get(DataComponentTypes.MAX_STACK_SIZE));
-        itemStack.set(DataComponentTypes.MAX_DAMAGE, itemStack.getDefaultComponents().get(DataComponentTypes.MAX_DAMAGE));
-        itemStack.set(DataComponentTypes.DAMAGE, itemStack.getDefaultComponents().get(DataComponentTypes.DAMAGE));
-        itemStack.set(DataComponentTypes.UNBREAKABLE, itemStack.getDefaultComponents().get(DataComponentTypes.UNBREAKABLE));
-        itemStack.set(DataComponentTypes.CUSTOM_NAME, itemStack.getDefaultComponents().get(DataComponentTypes.CUSTOM_NAME));
-        itemStack.set(DataComponentTypes.ITEM_NAME, itemStack.getDefaultComponents().get(DataComponentTypes.ITEM_NAME));
-        itemStack.set(DataComponentTypes.LORE, itemStack.getDefaultComponents().get(DataComponentTypes.LORE));
-        itemStack.set(DataComponentTypes.RARITY, itemStack.getDefaultComponents().get(DataComponentTypes.RARITY));
-        itemStack.set(DataComponentTypes.ENCHANTMENTS, itemStack.getDefaultComponents().get(DataComponentTypes.ENCHANTMENTS));
-        itemStack.set(DataComponentTypes.CAN_PLACE_ON, itemStack.getDefaultComponents().get(DataComponentTypes.CAN_PLACE_ON));
-        itemStack.set(DataComponentTypes.CAN_BREAK, itemStack.getDefaultComponents().get(DataComponentTypes.CAN_BREAK));
-        itemStack.set(DataComponentTypes.ATTRIBUTE_MODIFIERS, itemStack.getDefaultComponents().get(DataComponentTypes.ATTRIBUTE_MODIFIERS));
-        itemStack.set(DataComponentTypes.CUSTOM_MODEL_DATA, itemStack.getDefaultComponents().get(DataComponentTypes.CUSTOM_MODEL_DATA));
-        itemStack.set(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP, itemStack.getDefaultComponents().get(DataComponentTypes.HIDE_ADDITIONAL_TOOLTIP));
-        itemStack.set(DataComponentTypes.HIDE_TOOLTIP, itemStack.getDefaultComponents().get(DataComponentTypes.HIDE_TOOLTIP));
-        itemStack.set(DataComponentTypes.REPAIR_COST, itemStack.getDefaultComponents().get(DataComponentTypes.REPAIR_COST));
-        itemStack.set(DataComponentTypes.CREATIVE_SLOT_LOCK, itemStack.getDefaultComponents().get(DataComponentTypes.CREATIVE_SLOT_LOCK));
-        itemStack.set(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE, itemStack.getDefaultComponents().get(DataComponentTypes.ENCHANTMENT_GLINT_OVERRIDE));
-        itemStack.set(DataComponentTypes.INTANGIBLE_PROJECTILE, itemStack.getDefaultComponents().get(DataComponentTypes.INTANGIBLE_PROJECTILE));
-        itemStack.set(DataComponentTypes.FOOD, itemStack.getDefaultComponents().get(DataComponentTypes.FOOD));
-        itemStack.set(DataComponentTypes.FIRE_RESISTANT, itemStack.getDefaultComponents().get(DataComponentTypes.FIRE_RESISTANT));
-        itemStack.set(DataComponentTypes.TOOL, itemStack.getDefaultComponents().get(DataComponentTypes.TOOL));
-        itemStack.set(DataComponentTypes.STORED_ENCHANTMENTS, itemStack.getDefaultComponents().get(DataComponentTypes.STORED_ENCHANTMENTS));
-        itemStack.set(DataComponentTypes.DYED_COLOR, itemStack.getDefaultComponents().get(DataComponentTypes.DYED_COLOR));
-        itemStack.set(DataComponentTypes.MAP_COLOR, itemStack.getDefaultComponents().get(DataComponentTypes.MAP_COLOR));
-        itemStack.set(DataComponentTypes.MAP_ID, itemStack.getDefaultComponents().get(DataComponentTypes.MAP_ID));
-        itemStack.set(DataComponentTypes.MAP_DECORATIONS, itemStack.getDefaultComponents().get(DataComponentTypes.MAP_DECORATIONS));
-        itemStack.set(DataComponentTypes.MAP_POST_PROCESSING, itemStack.getDefaultComponents().get(DataComponentTypes.MAP_POST_PROCESSING));
-        itemStack.set(DataComponentTypes.CHARGED_PROJECTILES, itemStack.getDefaultComponents().get(DataComponentTypes.CHARGED_PROJECTILES));
-        itemStack.set(DataComponentTypes.BUNDLE_CONTENTS, itemStack.getDefaultComponents().get(DataComponentTypes.BUNDLE_CONTENTS));
-        itemStack.set(DataComponentTypes.POTION_CONTENTS, itemStack.getDefaultComponents().get(DataComponentTypes.POTION_CONTENTS));
-        itemStack.set(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS, itemStack.getDefaultComponents().get(DataComponentTypes.SUSPICIOUS_STEW_EFFECTS));
-        itemStack.set(DataComponentTypes.WRITABLE_BOOK_CONTENT, itemStack.getDefaultComponents().get(DataComponentTypes.WRITABLE_BOOK_CONTENT));
-        itemStack.set(DataComponentTypes.WRITTEN_BOOK_CONTENT, itemStack.getDefaultComponents().get(DataComponentTypes.WRITTEN_BOOK_CONTENT));
-        itemStack.set(DataComponentTypes.TRIM, itemStack.getDefaultComponents().get(DataComponentTypes.TRIM));
-        itemStack.set(DataComponentTypes.DEBUG_STICK_STATE, itemStack.getDefaultComponents().get(DataComponentTypes.DEBUG_STICK_STATE));
-        itemStack.set(DataComponentTypes.ENTITY_DATA, itemStack.getDefaultComponents().get(DataComponentTypes.ENTITY_DATA));
-        itemStack.set(DataComponentTypes.BUCKET_ENTITY_DATA, itemStack.getDefaultComponents().get(DataComponentTypes.BUCKET_ENTITY_DATA));
-        itemStack.set(DataComponentTypes.BLOCK_ENTITY_DATA, itemStack.getDefaultComponents().get(DataComponentTypes.BLOCK_ENTITY_DATA));
-        itemStack.set(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER, itemStack.getDefaultComponents().get(DataComponentTypes.OMINOUS_BOTTLE_AMPLIFIER));
-        itemStack.set(DataComponentTypes.JUKEBOX_PLAYABLE, itemStack.getDefaultComponents().get(DataComponentTypes.JUKEBOX_PLAYABLE));
-        itemStack.set(DataComponentTypes.LODESTONE_TRACKER, itemStack.getDefaultComponents().get(DataComponentTypes.LODESTONE_TRACKER));
-        itemStack.set(DataComponentTypes.FIREWORK_EXPLOSION, itemStack.getDefaultComponents().get(DataComponentTypes.FIREWORK_EXPLOSION));
-        itemStack.set(DataComponentTypes.FIREWORKS, itemStack.getDefaultComponents().get(DataComponentTypes.FIREWORKS));
-        itemStack.set(DataComponentTypes.PROFILE, itemStack.getDefaultComponents().get(DataComponentTypes.PROFILE));
-        itemStack.set(DataComponentTypes.NOTE_BLOCK_SOUND, itemStack.getDefaultComponents().get(DataComponentTypes.NOTE_BLOCK_SOUND));
-        itemStack.set(DataComponentTypes.BANNER_PATTERNS, itemStack.getDefaultComponents().get(DataComponentTypes.BANNER_PATTERNS));
-        itemStack.set(DataComponentTypes.BASE_COLOR, itemStack.getDefaultComponents().get(DataComponentTypes.BASE_COLOR));
-        itemStack.set(DataComponentTypes.POT_DECORATIONS, itemStack.getDefaultComponents().get(DataComponentTypes.POT_DECORATIONS));
-        itemStack.set(DataComponentTypes.CONTAINER, itemStack.getDefaultComponents().get(DataComponentTypes.CONTAINER));
-        itemStack.set(DataComponentTypes.BLOCK_STATE, itemStack.getDefaultComponents().get(DataComponentTypes.BLOCK_STATE));
-        itemStack.set(DataComponentTypes.LOCK, itemStack.getDefaultComponents().get(DataComponentTypes.LOCK));
-        itemStack.set(DataComponentTypes.CONTAINER_LOOT, itemStack.getDefaultComponents().get(DataComponentTypes.CONTAINER_LOOT));
+    public static void removeAllComponents(ItemStack itemStack) {itemStack.set(DataComponents.CUSTOM_DATA, itemStack.getPrototype().get(DataComponents.CUSTOM_DATA));
+        itemStack.set(DataComponents.MAX_STACK_SIZE, itemStack.getPrototype().get(DataComponents.MAX_STACK_SIZE));
+        itemStack.set(DataComponents.MAX_DAMAGE, itemStack.getPrototype().get(DataComponents.MAX_DAMAGE));
+        itemStack.set(DataComponents.DAMAGE, itemStack.getPrototype().get(DataComponents.DAMAGE));
+        itemStack.set(DataComponents.UNBREAKABLE, itemStack.getPrototype().get(DataComponents.UNBREAKABLE));
+        itemStack.set(DataComponents.CUSTOM_NAME, itemStack.getPrototype().get(DataComponents.CUSTOM_NAME));
+        itemStack.set(DataComponents.ITEM_NAME, itemStack.getPrototype().get(DataComponents.ITEM_NAME));
+        itemStack.set(DataComponents.LORE, itemStack.getPrototype().get(DataComponents.LORE));
+        itemStack.set(DataComponents.RARITY, itemStack.getPrototype().get(DataComponents.RARITY));
+        itemStack.set(DataComponents.ENCHANTMENTS, itemStack.getPrototype().get(DataComponents.ENCHANTMENTS));
+        itemStack.set(DataComponents.CAN_PLACE_ON, itemStack.getPrototype().get(DataComponents.CAN_PLACE_ON));
+        itemStack.set(DataComponents.CAN_BREAK, itemStack.getPrototype().get(DataComponents.CAN_BREAK));
+        itemStack.set(DataComponents.ATTRIBUTE_MODIFIERS, itemStack.getPrototype().get(DataComponents.ATTRIBUTE_MODIFIERS));
+        itemStack.set(DataComponents.CUSTOM_MODEL_DATA, itemStack.getPrototype().get(DataComponents.CUSTOM_MODEL_DATA));
+        itemStack.set(DataComponents.HIDE_ADDITIONAL_TOOLTIP, itemStack.getPrototype().get(DataComponents.HIDE_ADDITIONAL_TOOLTIP));
+        itemStack.set(DataComponents.HIDE_TOOLTIP, itemStack.getPrototype().get(DataComponents.HIDE_TOOLTIP));
+        itemStack.set(DataComponents.REPAIR_COST, itemStack.getPrototype().get(DataComponents.REPAIR_COST));
+        itemStack.set(DataComponents.CREATIVE_SLOT_LOCK, itemStack.getPrototype().get(DataComponents.CREATIVE_SLOT_LOCK));
+        itemStack.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, itemStack.getPrototype().get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE));
+        itemStack.set(DataComponents.INTANGIBLE_PROJECTILE, itemStack.getPrototype().get(DataComponents.INTANGIBLE_PROJECTILE));
+        itemStack.set(DataComponents.FOOD, itemStack.getPrototype().get(DataComponents.FOOD));
+        itemStack.set(DataComponents.FIRE_RESISTANT, itemStack.getPrototype().get(DataComponents.FIRE_RESISTANT));
+        itemStack.set(DataComponents.TOOL, itemStack.getPrototype().get(DataComponents.TOOL));
+        itemStack.set(DataComponents.STORED_ENCHANTMENTS, itemStack.getPrototype().get(DataComponents.STORED_ENCHANTMENTS));
+        itemStack.set(DataComponents.DYED_COLOR, itemStack.getPrototype().get(DataComponents.DYED_COLOR));
+        itemStack.set(DataComponents.MAP_COLOR, itemStack.getPrototype().get(DataComponents.MAP_COLOR));
+        itemStack.set(DataComponents.MAP_ID, itemStack.getPrototype().get(DataComponents.MAP_ID));
+        itemStack.set(DataComponents.MAP_DECORATIONS, itemStack.getPrototype().get(DataComponents.MAP_DECORATIONS));
+        itemStack.set(DataComponents.MAP_POST_PROCESSING, itemStack.getPrototype().get(DataComponents.MAP_POST_PROCESSING));
+        itemStack.set(DataComponents.CHARGED_PROJECTILES, itemStack.getPrototype().get(DataComponents.CHARGED_PROJECTILES));
+        itemStack.set(DataComponents.BUNDLE_CONTENTS, itemStack.getPrototype().get(DataComponents.BUNDLE_CONTENTS));
+        itemStack.set(DataComponents.POTION_CONTENTS, itemStack.getPrototype().get(DataComponents.POTION_CONTENTS));
+        itemStack.set(DataComponents.SUSPICIOUS_STEW_EFFECTS, itemStack.getPrototype().get(DataComponents.SUSPICIOUS_STEW_EFFECTS));
+        itemStack.set(DataComponents.WRITABLE_BOOK_CONTENT, itemStack.getPrototype().get(DataComponents.WRITABLE_BOOK_CONTENT));
+        itemStack.set(DataComponents.WRITTEN_BOOK_CONTENT, itemStack.getPrototype().get(DataComponents.WRITTEN_BOOK_CONTENT));
+        itemStack.set(DataComponents.TRIM, itemStack.getPrototype().get(DataComponents.TRIM));
+        itemStack.set(DataComponents.DEBUG_STICK_STATE, itemStack.getPrototype().get(DataComponents.DEBUG_STICK_STATE));
+        itemStack.set(DataComponents.ENTITY_DATA, itemStack.getPrototype().get(DataComponents.ENTITY_DATA));
+        itemStack.set(DataComponents.BUCKET_ENTITY_DATA, itemStack.getPrototype().get(DataComponents.BUCKET_ENTITY_DATA));
+        itemStack.set(DataComponents.BLOCK_ENTITY_DATA, itemStack.getPrototype().get(DataComponents.BLOCK_ENTITY_DATA));
+        itemStack.set(DataComponents.OMINOUS_BOTTLE_AMPLIFIER, itemStack.getPrototype().get(DataComponents.OMINOUS_BOTTLE_AMPLIFIER));
+        itemStack.set(DataComponents.JUKEBOX_PLAYABLE, itemStack.getPrototype().get(DataComponents.JUKEBOX_PLAYABLE));
+        itemStack.set(DataComponents.LODESTONE_TRACKER, itemStack.getPrototype().get(DataComponents.LODESTONE_TRACKER));
+        itemStack.set(DataComponents.FIREWORK_EXPLOSION, itemStack.getPrototype().get(DataComponents.FIREWORK_EXPLOSION));
+        itemStack.set(DataComponents.FIREWORKS, itemStack.getPrototype().get(DataComponents.FIREWORKS));
+        itemStack.set(DataComponents.PROFILE, itemStack.getPrototype().get(DataComponents.PROFILE));
+        itemStack.set(DataComponents.NOTE_BLOCK_SOUND, itemStack.getPrototype().get(DataComponents.NOTE_BLOCK_SOUND));
+        itemStack.set(DataComponents.BANNER_PATTERNS, itemStack.getPrototype().get(DataComponents.BANNER_PATTERNS));
+        itemStack.set(DataComponents.BASE_COLOR, itemStack.getPrototype().get(DataComponents.BASE_COLOR));
+        itemStack.set(DataComponents.POT_DECORATIONS, itemStack.getPrototype().get(DataComponents.POT_DECORATIONS));
+        itemStack.set(DataComponents.CONTAINER, itemStack.getPrototype().get(DataComponents.CONTAINER));
+        itemStack.set(DataComponents.BLOCK_STATE, itemStack.getPrototype().get(DataComponents.BLOCK_STATE));
+        itemStack.set(DataComponents.LOCK, itemStack.getPrototype().get(DataComponents.LOCK));
+        itemStack.set(DataComponents.CONTAINER_LOOT, itemStack.getPrototype().get(DataComponents.CONTAINER_LOOT));
     }
 
     public static String getItemId(ItemStack itemStack) {
-        return Registries.ITEM.getId(itemStack.getItem()).toString();
+        return BuiltInRegistries.ITEM.getKey(itemStack.getItem()).toString();
     }
-    public static List<ItemStack> getHopperItems(ServerWorld world, BlockPos hopperPos) {
+    public static List<ItemStack> getHopperItems(ServerLevel world, BlockPos hopperPos) {
         BlockEntity blockEntity = world.getBlockEntity(hopperPos);
 
         if (blockEntity instanceof HopperBlockEntity) {
@@ -239,15 +246,15 @@ public class ItemManager {
     }
     private static List<ItemStack> getHopperContents(HopperBlockEntity hopper) {
         List<ItemStack> contents = new ArrayList<>();
-        for (int i = 0; i < hopper.size(); i++) {
-            ItemStack stack = hopper.getStack(i);
+        for (int i = 0; i < hopper.getContainerSize(); i++) {
+            ItemStack stack = hopper.getItem(i);
             if (!stack.isEmpty()) {
                 contents.add(stack.copy());
             }
         }
         return contents;
     }
-    public static List<ItemStack> getBarrelItems(ServerWorld world, BlockPos hopperPos) {
+    public static List<ItemStack> getBarrelItems(ServerLevel world, BlockPos hopperPos) {
         BlockEntity blockEntity = world.getBlockEntity(hopperPos);
 
         if (blockEntity instanceof BarrelBlockEntity) {
@@ -261,37 +268,37 @@ public class ItemManager {
     }
     private static List<ItemStack> getBarrelContents(BarrelBlockEntity barrel) {
         List<ItemStack> contents = new ArrayList<>();
-        for (int i = 0; i < barrel.size(); i++) {
-            ItemStack stack = barrel.getStack(i);
+        for (int i = 0; i < barrel.getContainerSize(); i++) {
+            ItemStack stack = barrel.getItem(i);
             if (!stack.isEmpty()) {
                 contents.add(stack.copy());
             }
         }
         return contents;
     }
-    public static List<ItemStack> getContentsOfEntitiesAtPosition(World world, BlockPos pos, int range) {
+    public static List<ItemStack> getContentsOfEntitiesAtPosition(Level world, BlockPos pos, int range) {
         List<ItemStack> allContents = new ArrayList<>();
 
-        List<Entity> entities = world.getEntitiesByClass(
+        List<Entity> entities = world.getEntitiesOfClass(
                 Entity.class,
-                new Box(pos.add(-range, -range, -range).toCenterPos(),
-                pos.add(range, range, range).toCenterPos()),
-                entity -> entity instanceof HopperMinecartEntity || entity instanceof ChestBoatEntity
+                new AABB(pos.offset(-range, -range, -range).getCenter(),
+                pos.offset(range, range, range).getCenter()),
+                entity -> entity instanceof MinecartHopper || entity instanceof ChestBoat
         );
 
         for (Entity entity : entities) {
-            if (entity instanceof HopperMinecartEntity) {
-                HopperMinecartEntity hopperMinecart = (HopperMinecartEntity) entity;
-                for (int i = 0; i < hopperMinecart.size(); i++) {
-                    ItemStack stack = hopperMinecart.getStack(i);
+            if (entity instanceof MinecartHopper) {
+                MinecartHopper hopperMinecart = (MinecartHopper) entity;
+                for (int i = 0; i < hopperMinecart.getContainerSize(); i++) {
+                    ItemStack stack = hopperMinecart.getItem(i);
                     if (!stack.isEmpty()) {
                         allContents.add(stack.copy());
                     }
                 }
-            } else if (entity instanceof ChestBoatEntity) {
-                ChestBoatEntity chestBoat = (ChestBoatEntity) entity;
-                for (int i = 0; i < chestBoat.size(); i++) {
-                    ItemStack stack = chestBoat.getStack(i);
+            } else if (entity instanceof ChestBoat) {
+                ChestBoat chestBoat = (ChestBoat) entity;
+                for (int i = 0; i < chestBoat.getContainerSize(); i++) {
+                    ItemStack stack = chestBoat.getItem(i);
                     if (!stack.isEmpty()) {
                         allContents.add(stack.copy());
                     }
@@ -302,18 +309,18 @@ public class ItemManager {
         return allContents;
     }
 
-    public static List<ItemStack> getPlayerInventory(PlayerEntity player) {
+    public static List<ItemStack> getPlayerInventory(Player player) {
         List<ItemStack> list = new ArrayList<>();
-        Inventory inventory = player.getInventory();
-        for (int i = 0; i < inventory.size(); i++) {
-            ItemStack itemStack = inventory.getStack(i);
+        Container inventory = player.getInventory();
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack itemStack = inventory.getItem(i);
             if (!itemStack.isEmpty()) {
                 list.add(itemStack.copy());
             }
         }
         return list;
     }
-    public static boolean insertItemIntoBarrel(World world, BlockPos pos, ItemStack stack) {
+    public static boolean insertItemIntoBarrel(Level world, BlockPos pos, ItemStack stack) {
         if (!(world.getBlockEntity(pos) instanceof BarrelBlockEntity)) {
             return false;
         }
@@ -323,36 +330,36 @@ public class ItemManager {
             return false;
         }
 
-        Inventory inventory = barrel;
-        for (int i = 0; i < inventory.size(); i++) {
-            ItemStack slotStack = inventory.getStack(i);
+        Container inventory = barrel;
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack slotStack = inventory.getItem(i);
             if (slotStack.isEmpty()) {
-                inventory.setStack(i, stack.copy());
+                inventory.setItem(i, stack.copy());
                 stack.setCount(0);
-                barrel.markDirty();
+                barrel.setChanged();
                 return true;
-            } else if (ItemStack.areItemsAndComponentsEqual(slotStack, stack)) {
-                int transferAmount = Math.min(stack.getMaxCount() - slotStack.getCount(), stack.getCount());
-                slotStack.increment(transferAmount);
-                stack.decrement(transferAmount);
+            } else if (ItemStack.isSameItemSameComponents(slotStack, stack)) {
+                int transferAmount = Math.min(stack.getMaxStackSize() - slotStack.getCount(), stack.getCount());
+                slotStack.grow(transferAmount);
+                stack.shrink(transferAmount);
                 if (stack.isEmpty()) {
-                    barrel.markDirty();
+                    barrel.setChanged();
                     return true;
                 }
             }
         }
 
-        barrel.markDirty();
+        barrel.setChanged();
         return false;
     }
-    public static List<ItemStack> getDropperItems(ServerWorld world, BlockPos pos) {
+    public static List<ItemStack> getDropperItems(ServerLevel world, BlockPos pos) {
         BlockEntity blockEntity = world.getBlockEntity(pos);
         List<ItemStack> items = new ArrayList<>();
 
         if (blockEntity instanceof DispenserBlockEntity) {
             DispenserBlockEntity dropper = (DispenserBlockEntity) blockEntity;
-            for (int i = 0; i < dropper.size(); i++) {
-                ItemStack stack = dropper.getStack(i);
+            for (int i = 0; i < dropper.getContainerSize(); i++) {
+                ItemStack stack = dropper.getItem(i);
                 if (!stack.isEmpty()) {
                     items.add(stack.copy());
                 }
@@ -363,29 +370,29 @@ public class ItemManager {
     }
 
     public static void clearItemPhaseOrHardcoreLore(ItemStack itemStack) {
-        List<Text> currentLore = getLore(itemStack);
+        List<Component> currentLore = getLore(itemStack);
         if (currentLore == null || currentLore.isEmpty()) return;
-        List<Text> newLore = new ArrayList<>();
-        for (Text loreLine : currentLore) {
+        List<Component> newLore = new ArrayList<>();
+        for (Component loreLine : currentLore) {
             if (!loreLine.getString().contains("-= Phase") && !loreLine.getString().contains("-= Hardcore")) {
                 newLore.add(loreLine);
             }
         }
-        LoreComponent lore = new LoreComponent(newLore);
-        itemStack.set(DataComponentTypes.LORE,lore);
+        ItemLore lore = new ItemLore(newLore);
+        itemStack.set(DataComponents.LORE,lore);
     }
     public static void clearItemLore(ItemStack itemStack) {
-        itemStack.remove(DataComponentTypes.LORE);
+        itemStack.remove(DataComponents.LORE);
     }
-    public static void addLoreToItemStack(ItemStack itemStack, List<Text> lines) {
-        List<Text> loreLines = getLore(itemStack);
+    public static void addLoreToItemStack(ItemStack itemStack, List<Component> lines) {
+        List<Component> loreLines = getLore(itemStack);
         if (lines != null && !lines.isEmpty()) loreLines.addAll(lines);
-        LoreComponent lore = new LoreComponent(loreLines);
-        itemStack.set(DataComponentTypes.LORE, lore);
+        ItemLore lore = new ItemLore(loreLines);
+        itemStack.set(DataComponents.LORE, lore);
     }
-    public static List<Text> getLore(ItemStack itemStack) {
-        LoreComponent lore = itemStack.get(DataComponentTypes.LORE);
-        List<Text> lines = lore.lines();
+    public static List<Component> getLore(ItemStack itemStack) {
+        ItemLore lore = itemStack.get(DataComponents.LORE);
+        List<Component> lines = lore.lines();
         if (lines == null) return new ArrayList<>();
         if (lines.isEmpty()) return new ArrayList<>();
         return lines;
@@ -398,24 +405,24 @@ public class ItemManager {
     }
 
     public static List<ItemStack> getContainerItemContents(ItemStack container) {
-        ContainerComponent contents = container.get(DataComponentTypes.CONTAINER);
+        ItemContainerContents contents = container.get(DataComponents.CONTAINER);
         if (contents == null) return new ArrayList<>();
         List<ItemStack> list = new ArrayList<>();
-        contents.iterateNonEmpty().forEach(list::add);
+        contents.nonEmptyItems().forEach(list::add);
         return list;
     }
     public static List<ItemStack> getBundleItemContents(ItemStack bundle) {
-        BundleContentsComponent contents = bundle.get(DataComponentTypes.BUNDLE_CONTENTS);
+        BundleContents contents = bundle.get(DataComponents.BUNDLE_CONTENTS);
         if (contents == null) return new ArrayList<>();
         List<ItemStack> list = new ArrayList<>();
-        contents.iterate().forEach(list::add);
+        contents.items().forEach(list::add);
         return list;
     }
-    public static int getHopperItemsCount(ServerWorld world, BlockPos pos) {
+    public static int getHopperItemsCount(ServerLevel world, BlockPos pos) {
         List<ItemStack> items = getHopperItems(world,pos);
         return countItems(items);
     }
-    public static int getDropperItemsCount(ServerWorld world, BlockPos pos) {
+    public static int getDropperItemsCount(ServerLevel world, BlockPos pos) {
         List<ItemStack> items = getDropperItems(world,pos);
         return countItems(items);
     }
@@ -445,10 +452,10 @@ public class ItemManager {
 
             // Try to merge with existing stacks in the combined list
             for (ItemStack combinedStack : combinedStacks) {
-                if (ItemStack.areItemsAndComponentsEqual(inputStack, combinedStack)) {
-                    int combinedAmount = Math.min(combinedStack.getMaxCount() - combinedStack.getCount(), inputStack.getCount());
-                    combinedStack.increment(combinedAmount);
-                    inputStack.decrement(combinedAmount);
+                if (ItemStack.isSameItemSameComponents(inputStack, combinedStack)) {
+                    int combinedAmount = Math.min(combinedStack.getMaxStackSize() - combinedStack.getCount(), inputStack.getCount());
+                    combinedStack.grow(combinedAmount);
+                    inputStack.shrink(combinedAmount);
 
                     if (inputStack.isEmpty()) {
                         merged = true;
@@ -465,77 +472,77 @@ public class ItemManager {
 
         return combinedStacks;
     }
-    public static ItemStack getHoldingItem(PlayerEntity player) {
-        ItemStack mainHandItem = player.getMainHandStack();
+    public static ItemStack getHoldingItem(Player player) {
+        ItemStack mainHandItem = player.getMainHandItem();
         if (mainHandItem != null) {
             if (!mainHandItem.isEmpty()) return mainHandItem;
         }
-        ItemStack offHandItem = player.getOffHandStack();
+        ItemStack offHandItem = player.getOffhandItem();
         return offHandItem;
     }
 
 
     public static void setCustomComponentInt(ItemStack itemStack, String componentKey, int value) {
         if (itemStack == null) return;
-        NbtComponent currentNbt = itemStack.get(DataComponentTypes.CUSTOM_DATA);
-        NbtCompound nbtComp = currentNbt == null ? new NbtCompound() : currentNbt.copyNbt();
+        CustomData currentNbt = itemStack.get(DataComponents.CUSTOM_DATA);
+        CompoundTag nbtComp = currentNbt == null ? new CompoundTag() : currentNbt.copyTag();
         nbtComp.putInt(componentKey,value);
-        itemStack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbtComp));
+        itemStack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbtComp));
     }
     public static void setCustomComponentByte(ItemStack itemStack, String componentKey, byte value) {
         if (itemStack == null) return;
-        NbtComponent currentNbt = itemStack.get(DataComponentTypes.CUSTOM_DATA);
-        NbtCompound nbtComp = currentNbt == null ? new NbtCompound() : currentNbt.copyNbt();
+        CustomData currentNbt = itemStack.get(DataComponents.CUSTOM_DATA);
+        CompoundTag nbtComp = currentNbt == null ? new CompoundTag() : currentNbt.copyTag();
         nbtComp.putByte(componentKey,value);
-        itemStack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbtComp));
+        itemStack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbtComp));
     }
     public static int setCustomComponentString(ItemStack itemStack, String componentKey, String value) {
         if (itemStack == null) return 0;
-        NbtComponent currentNbt = itemStack.get(DataComponentTypes.CUSTOM_DATA);
-        NbtCompound nbtComp = currentNbt == null ? new NbtCompound() : currentNbt.copyNbt();
+        CustomData currentNbt = itemStack.get(DataComponents.CUSTOM_DATA);
+        CompoundTag nbtComp = currentNbt == null ? new CompoundTag() : currentNbt.copyTag();
         nbtComp.putString(componentKey,value);
-        itemStack.set(DataComponentTypes.CUSTOM_DATA, NbtComponent.of(nbtComp));
+        itemStack.set(DataComponents.CUSTOM_DATA, CustomData.of(nbtComp));
         return 1;
     }
     public static String getCustomComponentString(ItemStack itemStack, String componentKey) {
         if (itemStack == null) return null;
-        NbtComponent nbtComponent = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+        CustomData nbtComponent = itemStack.get(DataComponents.CUSTOM_DATA);
         if (nbtComponent == null) return null;
-        NbtCompound nbtComp = nbtComponent.copyNbt();
+        CompoundTag nbtComp = nbtComponent.copyTag();
         if (!nbtComp.contains(componentKey)) return null;
         return nbtComp.getString(componentKey);
     }
     public static Integer getCustomComponentInt(ItemStack itemStack, String componentKey) {
         if (itemStack == null) return null;
-        NbtComponent nbtComponent = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+        CustomData nbtComponent = itemStack.get(DataComponents.CUSTOM_DATA);
         if (nbtComponent == null) return null;
-        NbtCompound nbtComp = nbtComponent.copyNbt();
+        CompoundTag nbtComp = nbtComponent.copyTag();
         if (!nbtComp.contains(componentKey)) return null;
         return nbtComp.getInt(componentKey);
     }
     public static Byte getCustomComponentByte(ItemStack itemStack, String componentKey) {
         if (itemStack == null) return null;
-        NbtComponent nbtComponent = itemStack.get(DataComponentTypes.CUSTOM_DATA);
+        CustomData nbtComponent = itemStack.get(DataComponents.CUSTOM_DATA);
         if (nbtComponent == null) return null;
-        NbtCompound nbtComp = nbtComponent.copyNbt();
+        CompoundTag nbtComp = nbtComponent.copyTag();
         if (!nbtComp.contains(componentKey)) return null;
         return nbtComp.getByte(componentKey);
     }
     public static boolean hasCustomComponentEntry(ItemStack itemStack, String componentEntry) {
-        NbtComponent nbt = itemStack.getComponents().get(DataComponentTypes.CUSTOM_DATA);
+        CustomData nbt = itemStack.getComponents().get(DataComponents.CUSTOM_DATA);
         if (nbt == null) return false;
         return nbt.contains(componentEntry);
     }
     public static void setModelData(ItemStack itemStack, int modelData) {
-        itemStack.set(DataComponentTypes.CUSTOM_MODEL_DATA, new CustomModelDataComponent(modelData));
+        itemStack.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(modelData));
     }
     public static int getModelData(ItemStack itemStack) {
-        CustomModelDataComponent cmdComp = itemStack.get(DataComponentTypes.CUSTOM_MODEL_DATA);
+        CustomModelData cmdComp = itemStack.get(DataComponents.CUSTOM_MODEL_DATA);
         if (cmdComp == null) return -1;
         return cmdComp.value();
     }
     public static int getMapId(ItemStack itemStack) {
-        MapIdComponent mapIdComp = itemStack.get(DataComponentTypes.MAP_ID);
+        MapId mapIdComp = itemStack.get(DataComponents.MAP_ID);
         if (mapIdComp == null) return -1;
         return mapIdComp.id();
     }
@@ -545,7 +552,7 @@ public class ItemManager {
 
     public static boolean isDungeonCompass(ItemStack itemStack) {
         if (!getItemId(itemStack).equalsIgnoreCase("minecraft:compass")) return false;
-        if (!itemStack.contains(DataComponentTypes.LODESTONE_TRACKER)) return false;
+        if (!itemStack.has(DataComponents.LODESTONE_TRACKER)) return false;
         return true;
     }
     public static boolean isDungeonArtifact(ItemStack itemStack) {
@@ -587,8 +594,8 @@ public class ItemManager {
     }
     public static ItemStack getPlayerSkull(String playerName) {
         ItemStack playerHead = new ItemStack(Items.PLAYER_HEAD, 1);
-        ProfileComponent profileComponent = new ProfileComponent(Optional.of(playerName), Optional.empty(), new PropertyMap());
-        playerHead.set(DataComponentTypes.PROFILE, profileComponent);
+        ResolvableProfile profileComponent = new ResolvableProfile(Optional.of(playerName), Optional.empty(), new PropertyMap());
+        playerHead.set(DataComponents.PROFILE, profileComponent);
         return playerHead;
     }
 }

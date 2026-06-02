@@ -5,14 +5,13 @@ import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
 import net.mat0u5.do2manager.world.ItemManager;
-import net.minecraft.inventory.SimpleInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.GenericContainerScreenHandler;
-import net.minecraft.screen.ScreenHandlerType;
-import net.minecraft.screen.SimpleNamedScreenHandlerFactory;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.SimpleContainer;
+import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.inventory.ChestMenu;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.ItemStack;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.*;
@@ -32,7 +31,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
     private AtomicReference<PreparedStatement> currentStatement = new AtomicReference<>();
 
 
-    public int openRunInventory(ServerPlayerEntity player) {
+    public int openRunInventory(ServerPlayer player) {
         if (Main.openGuis.containsKey(player)) {
             GuiPlayerSpecific openGui = Main.openGuis.get(player);
             if (openGui.invId.equalsIgnoreCase("runs")) {
@@ -40,7 +39,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
                 return 1;
             }
         }
-        inventory = new SimpleInventory(INVENTORY_SIZE);
+        inventory = new SimpleContainer(INVENTORY_SIZE);
         invId = "runs";
         // Populate the inventory with run data
         if (!Main.reloadedRuns) {
@@ -53,7 +52,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         return 1;
     }
 
-    public void openRunInventoryAfterLoad(ServerPlayerEntity player) {
+    public void openRunInventoryAfterLoad(ServerPlayer player) {
         runsSearchAbridged = List.copyOf(allAbridgedRuns);
         populateRunInventory();
 
@@ -64,10 +63,10 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         Main.openGuis.put(player, this);
     }
 
-    public void openRunInventoryNoUpdate(ServerPlayerEntity player) {
-        player.openHandledScreen(new SimpleNamedScreenHandlerFactory((syncId, inv, p) -> {
-            return new GenericContainerScreenHandler(ScreenHandlerType.GENERIC_9X6, syncId, inv, inventory, INVENTORY_SIZE / 9);
-        }, Text.of("Run History")));
+    public void openRunInventoryNoUpdate(ServerPlayer player) {
+        player.openMenu(new SimpleMenuProvider((syncId, inv, p) -> {
+            return new ChestMenu(MenuType.GENERIC_9x6, syncId, inv, inventory, INVENTORY_SIZE / 9);
+        }, Component.nullToEmpty("Run History")));
         invOpen = true;
     }
 
@@ -104,16 +103,16 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
     }
 
     public void setIsNotMatching(int slot, ItemStack itemStack) {
-        if (!inventory.getStack(slot).getItem().equals(itemStack.getItem())) {
-            inventory.setStack(slot, itemStack);
+        if (!inventory.getItem(slot).getItem().equals(itemStack.getItem())) {
+            inventory.setItem(slot, itemStack);
         }
     }
 
     public void setOrReplaceNbt(int slot, ItemStack itemStack) {
-        if (!ItemManager.getItemId(inventory.getStack(slot)).equalsIgnoreCase(ItemManager.getItemId(itemStack))) {
-            inventory.setStack(slot, itemStack);
+        if (!ItemManager.getItemId(inventory.getItem(slot)).equalsIgnoreCase(ItemManager.getItemId(itemStack))) {
+            inventory.setItem(slot, itemStack);
         } else {
-            inventory.getStack(slot).applyComponentsFrom(itemStack.getComponents());
+            inventory.getItem(slot).applyComponents(itemStack.getComponents());
         }
     }
 
@@ -128,10 +127,10 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
                     int pos = x + y * 9;
                     if (!(x > 0 && x < 8 && y > 0 && y < 4)) continue;
                     if (runsSearch.size() <= runIndex) {
-                        inventory.setStack(pos, GuiItems_Database.fillerLight());
+                        inventory.setItem(pos, GuiItems_Database.fillerLight());
                         continue;
                     }
-                    inventory.setStack(pos, GuiItems_Database.run(runsSearch.get(runIndex), showRunsAsHeads, filter_player_uuid));
+                    inventory.setItem(pos, GuiItems_Database.run(runsSearch.get(runIndex), showRunsAsHeads, filter_player_uuid));
                     runIndex++;
                 }
             }
@@ -260,7 +259,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
         if (run == null) return;
 
         fillWithFillerItems((run.getSuccess() ? GuiItems_Database.fillerGreen() : GuiItems_Database.fillerRed()), new ArrayList<>());
-        inventory.setStack(49, GuiItems_Database.backToMain());
+        inventory.setItem(49, GuiItems_Database.backToMain());
         setOrReplaceNbt(4, GuiItems_Database.runHeads(run));
         setOrReplaceNbt(12, GuiItems_Database.runClock(run));
         setOrReplaceNbt(13, GuiItems_Database.getCrowns(run));
@@ -279,7 +278,7 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
 
 
         fillWithFillerItems(GuiItems_Database.filler(), new ArrayList<>());
-        inventory.setStack(49, GuiItems_Database.backToRunNum(run.run_number));
+        inventory.setItem(49, GuiItems_Database.backToRunNum(run.run_number));
         List<ItemStack> items = new ArrayList<>();
         if (fillType.equalsIgnoreCase("card_plays")) items = List.copyOf(run.card_plays);
         if (fillType.equalsIgnoreCase("inventory_save")) items = List.copyOf(run.inventory_save);
@@ -299,10 +298,10 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
                 int pos = x + y * 9;
                 if (!(x > 0 && x < 8 && y > 0 && y < 4)) continue;
                 if (items.size() <= runIndex) {
-                    inventory.setStack(pos, GuiItems_Database.fillerLight());
+                    inventory.setItem(pos, GuiItems_Database.fillerLight());
                     continue;
                 }
-                inventory.setStack(pos, items.get(runIndex).copy());
+                inventory.setItem(pos, items.get(runIndex).copy());
                 runIndex++;
             }
         }
@@ -332,12 +331,12 @@ public class GuiInventory_Database extends GuiPlayerSpecific {
                 int pos = x + y * 9;
                 if (!(x > 0 && x < 8 && y > 0 && y < 5)) continue;
                 if (sortedListKeys.size() <= runIndex) {
-                    inventory.setStack(pos, GuiItems_Database.fillerLight());
+                    inventory.setItem(pos, GuiItems_Database.fillerLight());
                     continue;
                 }
                 String playerName = sortedListKeys.get(runIndex);
                 int playerRuns = options.get(playerName);
-                inventory.setStack(pos, GuiItems_Database.playerHeadChoice(playerName, playerRuns));
+                inventory.setItem(pos, GuiItems_Database.playerHeadChoice(playerName, playerRuns));
                 runIndex++;
             }
         }

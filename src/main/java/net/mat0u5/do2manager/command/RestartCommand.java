@@ -2,24 +2,23 @@ package net.mat0u5.do2manager.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.world.entity.player.Player;
 
 public class RestartCommand {
     private static boolean restartQueued = false;
 
 
-    public static int queueRestart(ServerCommandSource source, boolean enable) {
+    public static int queueRestart(CommandSourceStack source, boolean enable) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
 
         restartQueued = enable;
         String message = (restartQueued)?"Server restart has been queued.":"A queued server restart has been cancelled.";
         if (self == null ) System.out.println(message);
-        else self.sendMessage(Text.translatable(message), false);
+        else self.displayClientMessage(Component.translatable(message), false);
         return 1;
     }
 

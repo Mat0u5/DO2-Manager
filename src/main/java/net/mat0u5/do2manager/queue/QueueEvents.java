@@ -2,13 +2,11 @@ package net.mat0u5.do2manager.queue;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.OtherUtils;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.text.Texts;
-import net.minecraft.util.Formatting;
-
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
 import java.util.HashMap;
 
 public class QueueEvents {
@@ -16,33 +14,33 @@ public class QueueEvents {
     private static final int MAX_LOGOUT_TIME_BEFORE_QUEUE_LEAVE = 150;// 2.5 mins
     private static int checkDisconnectTimes = 20;
 
-    public static void onPlayerJoin(ServerPlayerEntity player) {
-        String playerName = player.getNameForScoreboard();
+    public static void onPlayerJoin(ServerPlayer player) {
+        String playerName = player.getScoreboardName();
         if (disconnectTimes.containsKey(playerName)) {
             disconnectTimes.remove(playerName);
         }
         if (Main.dungeonQueue.containsPlayer(player)) {
-            player.sendMessage(Text.of("§7You're currently still in the queue!"));
+            player.sendSystemMessage(Component.nullToEmpty("§7You're currently still in the queue!"));
             Main.dungeonQueue.messageQueueToPlayer(player);
         }
         else {
-            Text baseMessage = Text.literal("§7Click ");
-            Text clickableHere = Text.literal("here")
-                    .styled(style -> style
-                            .withColor(Formatting.GREEN)
+            Component baseMessage = Component.literal("§7Click ");
+            Component clickableHere = Component.literal("here")
+                    .withStyle(style -> style
+                            .withColor(ChatFormatting.GREEN)
                             .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/queue join"))
-                            .withUnderline(true)
+                            .withUnderlined(true)
                     );
-            Text fullMessage = ((MutableText) baseMessage)
+            Component fullMessage = ((MutableComponent) baseMessage)
                     .append(clickableHere)
-                    .append(Text.literal("§7 §7(or use the §b/queue§7 command)§7 to join the dungeon queue!")
-                            .formatted(Formatting.YELLOW)
+                    .append(Component.literal("§7 §7(or use the §b/queue§7 command)§7 to join the dungeon queue!")
+                            .withStyle(ChatFormatting.YELLOW)
                     );
-            player.sendMessage(fullMessage, false);
+            player.displayClientMessage(fullMessage, false);
         }
     }
-    public static void onPlayerLeave(ServerPlayerEntity player) {
-        String playerName = player.getNameForScoreboard();
+    public static void onPlayerLeave(ServerPlayer player) {
+        String playerName = player.getScoreboardName();
         if (Main.dungeonQueue.getNextPlayer().equalsIgnoreCase(playerName)) {
             Main.dungeonQueue.removeFromDisconnect(playerName);
         }

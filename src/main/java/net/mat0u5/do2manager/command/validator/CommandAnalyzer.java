@@ -2,23 +2,22 @@ package net.mat0u5.do2manager.command.validator;
 
 import com.mojang.brigadier.context.CommandContext;
 import net.mat0u5.do2manager.Main;
-import net.minecraft.command.EntitySelector;
-import net.minecraft.command.argument.ScoreHolderArgumentType;
-import net.minecraft.command.argument.ScoreboardObjectiveArgumentType;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.scoreboard.ScoreHolder;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.ClickEvent;
-import net.minecraft.text.HoverEvent;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-
+import net.minecraft.ChatFormatting;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.ObjectiveArgument;
+import net.minecraft.commands.arguments.ScoreHolderArgument;
+import net.minecraft.commands.arguments.selector.EntitySelector;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.HoverEvent;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.scores.Objective;
+import net.minecraft.world.scores.ScoreHolder;
 import java.util.Collection;
 import java.util.List;
 
@@ -31,9 +30,9 @@ public class CommandAnalyzer {
     private static final int MAX_SCOREBOARD_MODIFICATIONS = 50;
     private static final int MAX_BLOCKS = 10_000;
 
-    public static boolean shouldConfirm(String command, CommandContext<ServerCommandSource> context) {
+    public static boolean shouldConfirm(String command, CommandContext<CommandSourceStack> context) {
         String commandName = getCommandName(command);
-        ServerCommandSource source = context.getSource();
+        CommandSourceStack source = context.getSource();
 
         switch (commandName.toLowerCase()) {
             case "fill":
@@ -61,19 +60,19 @@ public class CommandAnalyzer {
         return parts.length > 0 ? parts[0] : "";
     }
 
-    private static Collection<? extends Entity> getEntities(String argumentName, CommandContext<ServerCommandSource> context) {
+    private static Collection<? extends Entity> getEntities(String argumentName, CommandContext<CommandSourceStack> context) {
         return getEntities(List.of(argumentName), context);
     }
-    private static Collection<? extends Entity> getEntities(List<String> arguments, CommandContext<ServerCommandSource> context) {
+    private static Collection<? extends Entity> getEntities(List<String> arguments, CommandContext<CommandSourceStack> context) {
         try {
             for (String argumentName : arguments) {
                 try {
-                    Collection<? extends Entity> entities = (context.getArgument(argumentName, EntitySelector.class)).getEntities(context.getSource());
+                    Collection<? extends Entity> entities = (context.getArgument(argumentName, EntitySelector.class)).findEntities(context.getSource());
                     if (!entities.isEmpty()) return entities;
                 }catch(IllegalArgumentException e) {}
 
                 try {
-                    Collection<? extends Entity> players = (context.getArgument(argumentName, EntitySelector.class)).getPlayers(context.getSource());
+                    Collection<? extends Entity> players = (context.getArgument(argumentName, EntitySelector.class)).findPlayers(context.getSource());
                     if (!players.isEmpty()) return players;
                 }catch(IllegalArgumentException e) {}
             }
@@ -83,10 +82,10 @@ public class CommandAnalyzer {
         return List.of();
     }
 
-    private static Collection<ScoreHolder> getScoreHolders(String argumentName, CommandContext<ServerCommandSource> context) {
+    private static Collection<ScoreHolder> getScoreHolders(String argumentName, CommandContext<CommandSourceStack> context) {
         try {
             try {
-                return ScoreHolderArgumentType.getScoreboardScoreHolders(context, argumentName);
+                return ScoreHolderArgument.getNamesWithDefaultWildcard(context, argumentName);
             }catch(IllegalArgumentException e) {}
         }catch(Exception e) {
             Main.LOGGER.error("[CommandAnalyzer] error4:" + e.getMessage());
@@ -94,7 +93,7 @@ public class CommandAnalyzer {
         return List.of();
     }
 
-    private static boolean entityConstraints(List<String> arguments, CommandContext<ServerCommandSource> context) {
+    private static boolean entityConstraints(List<String> arguments, CommandContext<CommandSourceStack> context) {
         try {
             Collection<? extends Entity> entities = getEntities(arguments, context);
 
@@ -103,7 +102,7 @@ public class CommandAnalyzer {
             int entityCount = entities.size();
 
             for (Entity entity : entities) {
-                if (entity instanceof ServerPlayerEntity) {
+                if (entity instanceof ServerPlayer) {
                     playerEntityCount++;
                 }
                 if (entity instanceof LivingEntity) {
@@ -121,11 +120,11 @@ public class CommandAnalyzer {
         }
     }
 
-    private static boolean shouldConfirmFill(String command, ServerCommandSource source) {
+    private static boolean shouldConfirmFill(String command, CommandSourceStack source) {
         String[] parts = command.split("\\s+");
         if (parts.length >= 7) {
             try {
-                Vec3d playerPos = source.getPosition();
+                Vec3 playerPos = source.getPosition();
 
                 BlockPos from = parseBlockCoordinates(parts[1], parts[2], parts[3], playerPos);
                 BlockPos to = parseBlockCoordinates(parts[4], parts[5], parts[6], playerPos);
@@ -140,11 +139,11 @@ public class CommandAnalyzer {
         return false;
     }
 
-    private static boolean shouldConfirmClone(String command, ServerCommandSource source) {
+    private static boolean shouldConfirmClone(String command, CommandSourceStack source) {
         String[] parts = command.split("\\s+");
         if (parts.length >= 7) {
             try {
-                Vec3d playerPos = source.getPosition();
+                Vec3 playerPos = source.getPosition();
 
                 BlockPos from = parseBlockCoordinates(parts[1], parts[2], parts[3], playerPos);
                 BlockPos to = parseBlockCoordinates(parts[4], parts[5], parts[6], playerPos);
@@ -159,7 +158,7 @@ public class CommandAnalyzer {
         return false;
     }
 
-    private static BlockPos parseBlockCoordinates(String xStr, String yStr, String zStr, Vec3d playerPos) {
+    private static BlockPos parseBlockCoordinates(String xStr, String yStr, String zStr, Vec3 playerPos) {
         int x = parseBlockCoordinate(xStr, (int)playerPos.x);
         int y = parseBlockCoordinate(yStr, (int)playerPos.y);
         int z = parseBlockCoordinate(zStr, (int)playerPos.z);
@@ -184,10 +183,10 @@ public class CommandAnalyzer {
         }
     }
 
-    private static boolean shouldConfirmScoreboard(String command, String argumentName, CommandContext<ServerCommandSource> context) {
+    private static boolean shouldConfirmScoreboard(String command, String argumentName, CommandContext<CommandSourceStack> context) {
         if (command.toLowerCase().contains("scoreboard players reset ")) {
             try {
-                ScoreboardObjective test = ScoreboardObjectiveArgumentType.getObjective(context, "objective");
+                Objective test = ObjectiveArgument.getObjective(context, "objective");
             } catch(Exception e) {
                 return true;
             }
@@ -202,7 +201,7 @@ public class CommandAnalyzer {
         return width * height * depth;
     }
 
-    public static String generateWarning(String command, CommandContext<ServerCommandSource> context) {
+    public static String generateWarning(String command, CommandContext<CommandSourceStack> context) {
         String commandName = getCommandName(command);
 
         switch (commandName.toLowerCase()) {
@@ -227,7 +226,7 @@ public class CommandAnalyzer {
         }
     }
 
-    private static String generateKillWarning(String argumentName, CommandContext<ServerCommandSource> context) {
+    private static String generateKillWarning(String argumentName, CommandContext<CommandSourceStack> context) {
         try {
             int actualCount = getEntities(argumentName, context).size();
 
@@ -238,11 +237,11 @@ public class CommandAnalyzer {
         }
     }
 
-    private static String generateFillWarning(String command, CommandContext<ServerCommandSource> context) {
+    private static String generateFillWarning(String command, CommandContext<CommandSourceStack> context) {
         try {
             String[] parts = command.split("\\s+");
             if (parts.length >= 7) {
-                Vec3d playerPos = context.getSource().getPosition();
+                Vec3 playerPos = context.getSource().getPosition();
                 BlockPos from = parseBlockCoordinates(parts[1], parts[2], parts[3], playerPos);
                 BlockPos to = parseBlockCoordinates(parts[4], parts[5], parts[6], playerPos);
                 int volume = calculateBlockVolume(from, to);
@@ -254,11 +253,11 @@ public class CommandAnalyzer {
         return "This will modify blocks (area could not be determined)!";
     }
 
-    private static String generateCloneWarning(String command, CommandContext<ServerCommandSource> context) {
+    private static String generateCloneWarning(String command, CommandContext<CommandSourceStack> context) {
         try {
             String[] parts = command.split("\\s+");
             if (parts.length >= 7) {
-                Vec3d playerPos = context.getSource().getPosition();
+                Vec3 playerPos = context.getSource().getPosition();
                 BlockPos from = parseBlockCoordinates(parts[1], parts[2], parts[3], playerPos);
                 BlockPos to = parseBlockCoordinates(parts[4], parts[5], parts[6], playerPos);
                 int volume = calculateBlockVolume(from, to);
@@ -270,7 +269,7 @@ public class CommandAnalyzer {
         return "This will clone blocks (area could not be determined)!";
     }
 
-    private static String generateEntityWarning(List<String> arguments, CommandContext<ServerCommandSource> context) {
+    private static String generateEntityWarning(List<String> arguments, CommandContext<CommandSourceStack> context) {
         try {
             int actualCount = getEntities(arguments, context).size();
             return String.format("This will affect %d entities!", actualCount);
@@ -280,11 +279,11 @@ public class CommandAnalyzer {
         return "This will affect ? entities (count could not be determined)!";
     }
 
-    private static String generateScoreboardWarning(String command, String argumentName, CommandContext<ServerCommandSource> context) {
+    private static String generateScoreboardWarning(String command, String argumentName, CommandContext<CommandSourceStack> context) {
         try {
             if (command.toLowerCase().contains("scoreboard players reset ")) {
                 try {
-                    ScoreboardObjective test = ScoreboardObjectiveArgumentType.getObjective(context, "objective");
+                    Objective test = ObjectiveArgument.getObjective(context, "objective");
                 } catch(Exception e) {
                     return String.format("No objective specified, this will affect all scores!");
                 }
@@ -297,37 +296,37 @@ public class CommandAnalyzer {
         return "This will affect ? score holders (count could not be determined)!";
     }
 
-    public static void sendConfirmationMessage(ServerPlayerEntity player, String command, CommandContext<ServerCommandSource> context) {
+    public static void sendConfirmationMessage(ServerPlayer player, String command, CommandContext<CommandSourceStack> context) {
         String warning = generateWarning(command, context);
-        CommandValidator.addPendingCommand(player.getUuid(), command, warning);
-        CommandValidator.PendingCommand pending = CommandValidator.getPendingCommand(player.getUuid());
+        CommandValidator.addPendingCommand(player.getUUID(), command, warning);
+        CommandValidator.PendingCommand pending = CommandValidator.getPendingCommand(player.getUUID());
 
-        MutableText confirmText = Text.literal("[CONFIRM]")
-                .formatted(Formatting.GREEN, Formatting.BOLD)
-                .styled(style -> style
+        MutableComponent confirmText = Component.literal("[CONFIRM]")
+                .withStyle(ChatFormatting.GREEN, ChatFormatting.BOLD)
+                .withStyle(style -> style
                         .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
                                 "/confirmcmd " + pending.confirmId))
                         .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                Text.literal("Click to execute the command"))));
+                                Component.literal("Click to execute the command"))));
 
-        MutableText cancelText = Text.literal("[CANCEL]")
-                .formatted(Formatting.RED, Formatting.BOLD)
-                .styled(style -> style
+        MutableComponent cancelText = Component.literal("[CANCEL]")
+                .withStyle(ChatFormatting.RED, ChatFormatting.BOLD)
+                .withStyle(style -> style
                         .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND,
                                 "/confirmcmd cancel"))
                         .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                Text.literal("Click to cancel"))));
+                                Component.literal("Click to cancel"))));
 
-        MutableText message = Text.literal("⚠ DANGEROUS COMMAND WARNING ⚠")
-                .formatted(Formatting.YELLOW, Formatting.BOLD)
-                .append(Text.literal("\n" + warning).formatted(Formatting.WHITE))
-                .append(Text.literal("\nCommand: ").formatted(Formatting.GRAY))
-                .append(Text.literal(command).formatted(Formatting.YELLOW))
-                .append(Text.literal("\n\n"))
+        MutableComponent message = Component.literal("⚠ DANGEROUS COMMAND WARNING ⚠")
+                .withStyle(ChatFormatting.YELLOW, ChatFormatting.BOLD)
+                .append(Component.literal("\n" + warning).withStyle(ChatFormatting.WHITE))
+                .append(Component.literal("\nCommand: ").withStyle(ChatFormatting.GRAY))
+                .append(Component.literal(command).withStyle(ChatFormatting.YELLOW))
+                .append(Component.literal("\n\n"))
                 .append(confirmText)
-                .append(Text.literal("  "))
+                .append(Component.literal("  "))
                 .append(cancelText);
 
-        player.sendMessage(message, false);
+        player.displayClientMessage(message, false);
     }
 }

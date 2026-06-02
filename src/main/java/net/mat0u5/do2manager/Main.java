@@ -13,8 +13,8 @@ import net.mat0u5.do2manager.tcg.TCG_Items;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.utils.ModRegistries;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.player.Player;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +34,7 @@ public class Main implements ModInitializer {
 	public static DO2Run currentRun = new DO2Run();
 	public static DO2Run speedrun = new DO2Run();
 	public static List<DO2RunAbridged> allAbridgedRuns = new ArrayList<>();
-	public static HashMap<PlayerEntity, GuiPlayerSpecific> openGuis = new HashMap<>();
+	public static HashMap<Player, GuiPlayerSpecific> openGuis = new HashMap<>();
 	public static HashMap<String, String> allPlayers = new HashMap<>();
 	public static MinecraftServer server;
 	public static boolean reloadedRuns = false;

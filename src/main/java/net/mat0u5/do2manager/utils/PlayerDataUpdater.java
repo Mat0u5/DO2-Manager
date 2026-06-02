@@ -4,12 +4,11 @@ import com.mojang.datafixers.DataFixer;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.Dynamic;
 import net.minecraft.SharedConstants;
-import net.minecraft.datafixer.TypeReferences;
-import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.*;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.WorldSavePath;
-
+import net.minecraft.util.datafix.fixes.References;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.LevelResource;
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
@@ -17,15 +16,15 @@ import java.util.Optional;
 public class PlayerDataUpdater {
     private final MinecraftServer server;
     private final DataFixer dataFixer;
-    private final int currentDataVersion = SharedConstants.getGameVersion().getSaveVersion().getId();
+    private final int currentDataVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
 
     public PlayerDataUpdater(MinecraftServer server) {
         this.server = server;
-        this.dataFixer = server.getDataFixer();
+        this.dataFixer = server.getFixerUpper();
     }
 
     public void updateAllPlayerData() {
-        File playerDataFolder = server.getSavePath(WorldSavePath.PLAYERDATA).toFile();
+        File playerDataFolder = server.getWorldPath(LevelResource.PLAYER_DATA_DIR).toFile();
         if (!playerDataFolder.exists() || !playerDataFolder.isDirectory()) {
             System.out.println("Player data folder not found.");
             return;
@@ -39,7 +38,7 @@ public class PlayerDataUpdater {
 
         for (File playerDataFile : playerDataFiles) {
             try {
-                NbtCompound playerData = NbtIo.readCompressed(playerDataFile.toPath(), NbtSizeTracker.ofUnlimitedBytes());
+                CompoundTag playerData = NbtIo.readCompressed(playerDataFile.toPath(), NbtAccounter.unlimitedHeap());
                 if (playerData == null) {
                     System.out.println("Failed to read player data for " + playerDataFile.getName());
                     continue;
@@ -47,7 +46,7 @@ public class PlayerDataUpdater {
 
                 int oldVersion = playerData.getInt("DataVersion");
                 if (oldVersion < currentDataVersion) {
-                    NbtCompound newPlayerData = updatePlayerData(playerData, oldVersion);
+                    CompoundTag newPlayerData = updatePlayerData(playerData, oldVersion);
                     NbtIo.writeCompressed(newPlayerData, playerDataFile.toPath());
                     System.out.println("Updated player data for " + playerDataFile.getName() + " was ("+oldVersion+")");
                 } else {
@@ -59,7 +58,7 @@ public class PlayerDataUpdater {
         }
     }
     public void validateAllPlayerData() {
-        File playerDataFolder = server.getSavePath(WorldSavePath.PLAYERDATA).toFile();
+        File playerDataFolder = server.getWorldPath(LevelResource.PLAYER_DATA_DIR).toFile();
         if (!playerDataFolder.exists() || !playerDataFolder.isDirectory()) {
             System.out.println("Player data folder not found.");
             return;
@@ -73,13 +72,13 @@ public class PlayerDataUpdater {
 
         for (File playerDataFile : playerDataFiles) {
             try {
-                NbtCompound playerData = NbtIo.readCompressed(playerDataFile.toPath(), NbtSizeTracker.ofUnlimitedBytes());
+                CompoundTag playerData = NbtIo.readCompressed(playerDataFile.toPath(), NbtAccounter.unlimitedHeap());
                 if (playerData == null) {
                     System.out.println("Failed to read player data for " + playerDataFile.getName());
                     continue;
                 }
 
-                NbtCompound newPlayerData = validatePlayerData(playerData);
+                CompoundTag newPlayerData = validatePlayerData(playerData);
                 if (newPlayerData.toString().equalsIgnoreCase(playerData.toString())) {
                     System.out.println("Player data for " + playerDataFile.getName()+" does not need updating");
                 }
@@ -93,23 +92,23 @@ public class PlayerDataUpdater {
         }
     }
 
-    private NbtCompound updatePlayerData(NbtCompound playerData, int oldVersion) {
+    private CompoundTag updatePlayerData(CompoundTag playerData, int oldVersion) {
         Dynamic<?> dynamic = new Dynamic<>(NbtOps.INSTANCE, playerData);
-        Dynamic<?> updatedDynamic = dataFixer.update(TypeReferences.PLAYER, dynamic, oldVersion, currentDataVersion);
-        return (NbtCompound) updatedDynamic.getValue();
+        Dynamic<?> updatedDynamic = dataFixer.update(References.PLAYER, dynamic, oldVersion, currentDataVersion);
+        return (CompoundTag) updatedDynamic.getValue();
     }
-    private NbtCompound validatePlayerData(NbtCompound playerData) {
-        NbtCompound newPlayerData = playerData.copy();
+    private CompoundTag validatePlayerData(CompoundTag playerData) {
+        CompoundTag newPlayerData = playerData.copy();
         if (playerData.contains("Inventory")) {
-            NbtList inventory = playerData.getList("Inventory", 10); // 10 is the ID for compounds in NBT
-            NbtList newInv = new NbtList();
+            ListTag inventory = playerData.getList("Inventory", 10); // 10 is the ID for compounds in NBT
+            ListTag newInv = new ListTag();
 
             for (int i = 0; i < inventory.size(); i++) {
-                NbtCompound item = inventory.getCompound(i);
-                ItemStack itemStack = ItemStack.fromNbtOrEmpty(server.getRegistryManager(),item);
+                CompoundTag item = inventory.getCompound(i);
+                ItemStack itemStack = ItemStack.parseOptional(server.registryAccess(),item);
 
                 // Correct the item stack NBT data
-                NbtCompound updatedNbt = (NbtCompound) itemStack.encode(server.getRegistryManager());
+                CompoundTag updatedNbt = (CompoundTag) itemStack.save(server.registryAccess());
                 updatedNbt.putByte("Slot",item.getByte("Slot"));
                 if (!item.toString().equalsIgnoreCase(updatedNbt.toString())) {
                     System.out.println("UpdatedNBT_1_"+item.toString());

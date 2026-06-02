@@ -5,50 +5,49 @@ import net.mat0u5.do2manager.utils.EntityUtils;
 import net.mat0u5.do2manager.utils.ScoreboardUtils;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Simulator {
     public static Simulation currentSimulation = null;
-    public static PlayerEntity simulationPlayer = null;
+    public static Player simulationPlayer = null;
     public static Deck startingDeck = null;
     public int lastTotalEmbers = 0;
 
-    public Deck getDeckFromHand(PlayerEntity player) {
-        ItemStack mainHand = player.getMainHandStack();
+    public Deck getDeckFromHand(Player player) {
+        ItemStack mainHand = player.getMainHandItem();
         List<ItemStack> shulkerBoxItems = ItemManager.getContainerItemContents(mainHand);
         Deck deck = getDeckFromItems(shulkerBoxItems);
         return deck;
     }
-    public List<ItemStack> getDeckItemsFromProcessor(World world) {
+    public List<ItemStack> getDeckItemsFromProcessor(Level world) {
         List<ItemStack> entityItems = ItemManager.getContentsOfEntitiesAtPosition(world,new BlockPos(-565, 40, 1913),2);
-        List<ItemStack> hopper1 = ItemManager.getHopperItems((ServerWorld) world,new BlockPos(-565, 39, 1914));
-        List<ItemStack> hopper2 = ItemManager.getHopperItems((ServerWorld) world,new BlockPos(-565, 39, 1913));
-        List<ItemStack> dropper1 = ItemManager.getDropperItems((ServerWorld) world,new BlockPos(-564, 39, 1913));
-        List<ItemStack> dropper2 = ItemManager.getDropperItems((ServerWorld) world,new BlockPos(-564, 40, 1913));
+        List<ItemStack> hopper1 = ItemManager.getHopperItems((ServerLevel) world,new BlockPos(-565, 39, 1914));
+        List<ItemStack> hopper2 = ItemManager.getHopperItems((ServerLevel) world,new BlockPos(-565, 39, 1913));
+        List<ItemStack> dropper1 = ItemManager.getDropperItems((ServerLevel) world,new BlockPos(-564, 39, 1913));
+        List<ItemStack> dropper2 = ItemManager.getDropperItems((ServerLevel) world,new BlockPos(-564, 40, 1913));
         entityItems.addAll(hopper1);
         entityItems.addAll(hopper2);
         entityItems.addAll(dropper1);
         entityItems.addAll(dropper2);
         return entityItems;
     }
-    public Deck getDeckFromProcessor(World world) {
+    public Deck getDeckFromProcessor(Level world) {
         List<ItemStack> deckItems = getDeckItemsFromProcessor(world);
         Deck deck = getDeckFromItems(deckItems);
         return deck;
     }
-    public void getPermanentsFromStoredDeck(World world) {
-        List<ItemStack> hopper = ItemManager.getHopperItems((ServerWorld) world,new BlockPos(-551,122,1971));
+    public void getPermanentsFromStoredDeck(Level world) {
+        List<ItemStack> hopper = ItemManager.getHopperItems((ServerLevel) world,new BlockPos(-551,122,1971));
         List<ItemStack> deckItems = new ArrayList<>();
         for (ItemStack shulkerPotential : hopper) {
             List<ItemStack> potentialDeckItems = ItemManager.getContainerItemContents(shulkerPotential);
@@ -64,37 +63,37 @@ public class Simulator {
         Deck deck = new Deck();
         for (ItemStack cardItem : items) {
             if (cardItem == null) continue;
-            String cardName = cardItem.getName().getString().replaceAll("✧", "").replaceAll("✲", "").replaceAll("≡", "").trim().toLowerCase().replaceAll(" ","_");
+            String cardName = cardItem.getHoverName().getString().replaceAll("✧", "").replaceAll("✲", "").replaceAll("≡", "").trim().toLowerCase().replaceAll(" ","_");
             Card addCard = Cards.getCardFromName(cardName);
             if (addCard == null) {
-                System.out.println("Card Not Found: " + cardItem.getName().getString());
+                System.out.println("Card Not Found: " + cardItem.getHoverName().getString());
                 continue;
             }
             deck.addCard(addCard, cardItem.getCount());
         }
         return deck;
     }
-    public Card getFirstCardPlay(World world) {
+    public Card getFirstCardPlay(Level world) {
         Cards Cards = new Cards();
-        List<ItemStack> hopper = ItemManager.getDropperItems((ServerWorld) world,new BlockPos(-565, 37, 1914));
+        List<ItemStack> hopper = ItemManager.getDropperItems((ServerLevel) world,new BlockPos(-565, 37, 1914));
         for (ItemStack cardPotential : hopper) {
             if (cardPotential == null) continue;
             if (cardPotential.isEmpty()) continue;
-            String cardName = cardPotential.getName().getString().replaceAll("✧", "").replaceAll("✲", "").replaceAll("≡", "").trim().toLowerCase().replaceAll(" ","_");
+            String cardName = cardPotential.getHoverName().getString().replaceAll("✧", "").replaceAll("✲", "").replaceAll("≡", "").trim().toLowerCase().replaceAll(" ","_");
             Card card = Cards.getCardFromName(cardName);
             if (card == null) continue;
             return card;
         }
         return null;
     }
-    public int cardPlayed(ServerCommandSource source) {
+    public int cardPlayed(CommandSourceStack source) {
         if (Main.config.getProperty("simulator_enabled") == null) return -1;
         if (!Main.config.getProperty("simulator_enabled").equalsIgnoreCase("true")) return -1;
         stopCurrentSim();
         MinecraftServer server = source.getServer();
-        ServerWorld overworld = server.getOverworld();
+        ServerLevel overworld = server.overworld();
         if (simulationPlayer == null) {
-            ServerPlayerEntity newPlayer = server.getPlayerManager().getPlayer("Mat0u5");
+            ServerPlayer newPlayer = server.getPlayerList().getPlayerByName("Mat0u5");
             if (newPlayer == null) return -1;
             simulationPlayer = newPlayer;
             if (simulationPlayer == null) return -1;
@@ -110,7 +109,7 @@ public class Simulator {
         return 1;
     }
     public List<Integer> getIntInfo(MinecraftServer server) {
-        ServerWorld overworld = server.getOverworld();
+        ServerLevel overworld = server.overworld();
         int recycles = ItemManager.getHopperItemsCount(overworld, new BlockPos(-625, 34, 1920));
         int skipCardsActual = ItemManager.getDropperItemsCount(overworld, new BlockPos(-568, 36, 1921));
         int run_length = RunInfoParser.getRunLength(server)/20;
@@ -166,7 +165,7 @@ public class Simulator {
         return result;
     }
     public List<Boolean> getBoolInfo(MinecraftServer server) {
-        ServerWorld overworld = server.getOverworld();
+        ServerLevel overworld = server.overworld();
 
         boolean artiAcquired = false;
         Integer artiAcquiredScore = ScoreboardUtils.getPlayerScore(server,"- Artifact Acquired","SpectatorMapDisplay");
@@ -187,11 +186,11 @@ public class Simulator {
         return result;
     }
     public int getPlayerEmbers(MinecraftServer server) {
-        List<PlayerEntity> players = RunInfoParser.getCurrentAliveRunners(server);
+        List<Player> players = RunInfoParser.getCurrentAliveRunners(server);
         if (players == null) return 0;
         if (players.isEmpty()) return 0;
         int count = 0;
-        for (PlayerEntity player : players) {
+        for (Player player : players) {
             List<ItemStack> inv = ItemManager.getPlayerInventory(player);
             if (inv == null) continue;
             if (inv.isEmpty()) continue;
@@ -206,11 +205,11 @@ public class Simulator {
         return count;
     }
     public int getPlayerArtiEmbers(MinecraftServer server) {
-        List<PlayerEntity> players = RunInfoParser.getCurrentAliveRunners(server);
+        List<Player> players = RunInfoParser.getCurrentAliveRunners(server);
         if (players == null) return 0;
         if (players.isEmpty()) return 0;
         int count = 0;
-        for (PlayerEntity player : players) {
+        for (Player player : players) {
             List<ItemStack> inv = ItemManager.getPlayerInventory(player);
             if (inv == null) continue;
             if (inv.isEmpty()) continue;
@@ -224,7 +223,7 @@ public class Simulator {
         }
         return count;
     }
-    public int getFloorEmbers(ServerWorld world) {
+    public int getFloorEmbers(ServerLevel world) {
         List<ItemStack> lvl4Items = EntityUtils.getItemStacksInBox(world,new BlockPos(-565, -30, 1836),new BlockPos(-661, -60, 1920));
         if (lvl4Items == null) return 0;
         if (lvl4Items.isEmpty()) return 0;
@@ -238,36 +237,36 @@ public class Simulator {
         }
         return count;
     }
-    public int saveHand(ServerCommandSource source) {
+    public int saveHand(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
         simulationPlayer = self;
         startingDeck = getDeckFromHand(self);
-        self.sendMessage(Text.of("§5Simulator initialized. The permanents in the deck in your main hand hand have been saved."));
+        self.sendSystemMessage(Component.nullToEmpty("§5Simulator initialized. The permanents in the deck in your main hand hand have been saved."));
         return 1;
     }
-    public int enOrDis(ServerCommandSource source, String setTo) {
+    public int enOrDis(CommandSourceStack source, String setTo) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
         Main.config.setProperty("simulator_enabled",setTo);
         return 1;
     }
-    public int runHand(ServerCommandSource source, int simulateRuns, boolean dontSkipCards) {
+    public int runHand(CommandSourceStack source, int simulateRuns, boolean dontSkipCards) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
         finishedRun();
         simulationPlayer = self;
         startingDeck = getDeckFromHand(self);
-        self.sendMessage(Text.of("§5Simulation started. ["+simulateRuns+" runs]"));
+        self.sendSystemMessage(Component.nullToEmpty("§5Simulation started. ["+simulateRuns+" runs]"));
         currentSimulation = new Simulation(startingDeck, simulationPlayer,true,dontSkipCards, List.of("all"));
         currentSimulation.runSimulation(simulateRuns);
         return 1;
     }
-    public int stopSimCommand(ServerCommandSource source) {
+    public int stopSimCommand(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
         if (self != null) {
-            self.sendMessage(Text.of("§5The simulation has been stopped."));
+            self.sendSystemMessage(Component.nullToEmpty("§5The simulation has been stopped."));
         }
         finishedRun();
         return 1;

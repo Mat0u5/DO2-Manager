@@ -2,14 +2,13 @@ package net.mat0u5.do2manager.simulator;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.MSPTUtils;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.Text;
-
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import java.util.*;
 import java.util.stream.Collectors;
 
 public class Simulation extends MSPTUtils {
-    PlayerEntity messagePlayer;
+    Player messagePlayer;
     int skipFirstCards = 4;
     int cardsUntilArtifact = 6;
     int currentRecycles = 0;
@@ -51,11 +50,11 @@ public class Simulation extends MSPTUtils {
     Deck deck = new Deck();
     public Simulation() {
     }
-    public Simulation(Deck deck, PlayerEntity player) {
+    public Simulation(Deck deck, Player player) {
         this.deck = deck;
         this.messagePlayer = player;
     }
-    public Simulation(Deck deck, PlayerEntity player, boolean deleteAfter, boolean dontSkipCards, List<String> printOut) {
+    public Simulation(Deck deck, Player player, boolean deleteAfter, boolean dontSkipCards, List<String> printOut) {
         this.deck = deck;
         this.messagePlayer = player;
         this.printOut = printOut;
@@ -64,7 +63,7 @@ public class Simulation extends MSPTUtils {
             skipFirstCards = 0;
         }
     }
-    public Simulation(Deck deck, PlayerEntity player, boolean deleteAfter, boolean dontSkipCards, List<String> printOut, List<Integer> argsInt, List<Boolean> argsBool, Card firstCardPlay) {
+    public Simulation(Deck deck, Player player, boolean deleteAfter, boolean dontSkipCards, List<String> printOut, List<Integer> argsInt, List<Boolean> argsBool, Card firstCardPlay) {
         this.deck = deck;
         this.messagePlayer = player;
         this.printOut = printOut;
@@ -205,7 +204,7 @@ public class Simulation extends MSPTUtils {
         if (printOut.contains("runLength") || printOut.contains("all")) text += "\n  §rRunLength: "+getMean(avgLength);
         if (printOut.contains("recycle") || printOut.contains("all")) text += "\n  §rRecycles: "+getMean(avgR);
 
-        messagePlayer.sendMessage(Text.of(text));
+        messagePlayer.sendSystemMessage(Component.nullToEmpty(text));
     }
     public double getAverage(List<Integer> list) {
         int total = 0;

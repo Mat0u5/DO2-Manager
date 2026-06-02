@@ -2,17 +2,16 @@ package net.mat0u5.do2manager.queue;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.OtherUtils;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import java.util.*;
 
 public class DungeonQueue {
     private final LinkedList<String> queue = new LinkedList<>();
 
-    public void addToQueue(PlayerEntity player, boolean forced) {
-        String playerName = player.getNameForScoreboard();
+    public void addToQueue(Player player, boolean forced) {
+        String playerName = player.getScoreboardName();
         if (containsPlayer(player)) {
             return;
         }
@@ -21,11 +20,11 @@ public class DungeonQueue {
         if (forced) msg = "§b"+playerName + "§7 has been added to the queue!";
         queueUpdated(msg);
     }
-    public void putAtEnd(PlayerEntity player) {
+    public void putAtEnd(Player player) {
         putAtEnd(player,true);
     }
-    public void putAtEnd(PlayerEntity player, boolean sendFeedback) {
-        String playerName = player.getNameForScoreboard();
+    public void putAtEnd(Player player, boolean sendFeedback) {
+        String playerName = player.getScoreboardName();
         if (!containsPlayer(player)) {
             return;
         }
@@ -33,17 +32,17 @@ public class DungeonQueue {
         queue.add(playerName);
         if (sendFeedback) queueUpdated("§b"+playerName + "§7 has finished a run!");
     }
-    public void putAtEnd(Collection<? extends ServerPlayerEntity> players) {
+    public void putAtEnd(Collection<? extends ServerPlayer> players) {
         if (queue.isEmpty()) return;
         List<String> playersList = new ArrayList<>();
-        for (ServerPlayerEntity player : players) {
+        for (ServerPlayer player : players) {
             putAtEnd(player,false);
-            playersList.add(player.getNameForScoreboard());
+            playersList.add(player.getScoreboardName());
         }
         queueUpdated("§b"+ String.join(", ", playersList)+ "§7 "+(playersList.size()>1?"have":"has")+" finished a run!");
     }
-    public void skipTurns(PlayerEntity player, int turnsNum, boolean forced) {
-        String playerName = player.getNameForScoreboard();
+    public void skipTurns(Player player, int turnsNum, boolean forced) {
+        String playerName = player.getScoreboardName();
         if (!containsPlayer(player)) {
             return;
         }
@@ -56,8 +55,8 @@ public class DungeonQueue {
         queueUpdated(msg);
     }
 
-    public void removeFromQueue(PlayerEntity player) {
-        String playerName = player.getNameForScoreboard();
+    public void removeFromQueue(Player player) {
+        String playerName = player.getScoreboardName();
         if (!containsPlayer(player)) {
             return;
         }
@@ -118,8 +117,8 @@ public class DungeonQueue {
         queue.add(index,playerName);
         queueUpdated("§b"+playerName+"§7's turn has been skipped because are offline and it's their turn.");
     }
-    public boolean containsPlayer(PlayerEntity player) {
-        String playerName = player.getNameForScoreboard();
+    public boolean containsPlayer(Player player) {
+        String playerName = player.getScoreboardName();
         return queue.contains(playerName);
     }
 
@@ -142,7 +141,7 @@ public class DungeonQueue {
         return queue;
     }
     public void queueUpdated(String updateMessage) {
-        OtherUtils.broadcastMessage(Text.of(updateMessage));
+        OtherUtils.broadcastMessage(Component.nullToEmpty(updateMessage));
         if (queue.isEmpty()) return;
         String firstPlayer = queue.getFirst();
         if (!OtherUtils.isPlayerOnline(firstPlayer)) {
@@ -153,14 +152,14 @@ public class DungeonQueue {
     public void messageQueueToPlayers() {
         OtherUtils.broadcastMessage(getQueueListed());
     }
-    public void messageQueueToPlayer(PlayerEntity player) {
-        player.sendMessage(getQueueListed());
+    public void messageQueueToPlayer(Player player) {
+        player.sendSystemMessage(getQueueListed());
     }
-    public Text getQueueListed() {
+    public Component getQueueListed() {
         if (queue.isEmpty()) {
-            return Text.of("§cThe queue is currently empty.");
+            return Component.nullToEmpty("§cThe queue is currently empty.");
         }
-        Text result = Text.of("§7Current Queue Order: §b"+ String.join("§7, §b",queue)+"\n§7 -> §b"+queue.getFirst()+"§7 is the next in queue!");
+        Component result = Component.nullToEmpty("§7Current Queue Order: §b"+ String.join("§7, §b",queue)+"\n§7 -> §b"+queue.getFirst()+"§7 is the next in queue!");
         return result;
     }
     public String getQueueAsString() {

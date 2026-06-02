@@ -3,14 +3,13 @@ package net.mat0u5.do2manager.utils;
 import com.google.gson.*;
 import net.mat0u5.do2manager.world.ItemConvertor;
 import net.mat0u5.do2manager.world.ItemManager;
-import net.minecraft.component.ComponentMap;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.component.DataComponentMap;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
-import net.minecraft.nbt.NbtSizeTracker;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.ItemStack;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.*;
@@ -29,10 +28,10 @@ public class DO2_GSON {
             "v.1.0.6",
             "v.1.0.7");
 
-    public static NbtCompound deserializeNbt(String nbtString) {
+    public static CompoundTag deserializeNbt(String nbtString) {
         if (nbtString == null) return null;
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(Base64.getDecoder().decode(nbtString))) {
-            return NbtIo.readCompressed(inputStream,NbtSizeTracker.ofUnlimitedBytes());
+            return NbtIo.readCompressed(inputStream,NbtAccounter.unlimitedHeap());
         } catch (IOException e) {
             e.printStackTrace();
             return null;
@@ -42,7 +41,7 @@ public class DO2_GSON {
     private static SerializedItemStack serializeItemStackCustom(ItemStack itemStack) {
         if (itemStack == null) return null;
 
-        String nbtData = GSON.toJson(itemStack.getComponents(), ComponentMap.class);
+        String nbtData = GSON.toJson(itemStack.getComponents(), DataComponentMap.class);
 
         return new SerializedItemStack(
                 ItemManager.getItemId(itemStack),
@@ -54,13 +53,13 @@ public class DO2_GSON {
     private static ItemStack deserializeItemStack(SerializedItemStack serializedItemStack) {
         if (serializedItemStack == null) return null;
         ItemStack itemStack = new ItemStack(
-                Registries.ITEM.get(Identifier.of(serializedItemStack.getItemName())),
+                BuiltInRegistries.ITEM.get(ResourceLocation.parse(serializedItemStack.getItemName())),
                 serializedItemStack.getQuantity()
         );
         if (serializedItemStack.getNbtData() != null) {
             //Old NBT ItemStack
-            NbtCompound nbtCompound = deserializeNbt(serializedItemStack.getNbtData());
-            NbtCompound nbt = new NbtCompound();
+            CompoundTag nbtCompound = deserializeNbt(serializedItemStack.getNbtData());
+            CompoundTag nbt = new CompoundTag();
             nbt.putString("id",serializedItemStack.getItemName());
             nbt.putByte("Count", (byte) serializedItemStack.getQuantity());
             nbt.put("tag", nbtCompound);

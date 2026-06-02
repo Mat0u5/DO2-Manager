@@ -26,7 +26,7 @@ public abstract class MSPTUtils {
         while (running) {
             try {
                 // Check the server's MSPT
-                float currentMSPT = server.getAverageTickTime();
+                float currentMSPT = server.getCurrentSmoothedTickTime();
 
                 // Adjust the workload based on current MSPT
                 if (currentMSPT < DESIRED_MAX_MSPT) {

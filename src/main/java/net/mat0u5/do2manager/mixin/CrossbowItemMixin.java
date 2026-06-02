@@ -2,17 +2,14 @@ package net.mat0u5.do2manager.mixin;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.events.CrossbowEvents;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.CrossbowItem;
-import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.world.World;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.CrossbowItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -24,16 +21,16 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class CrossbowItemMixin {
 
     @Inject(method = "use", at = @At("HEAD"), cancellable = true)
-    public void onCrossbowUse(World world, PlayerEntity user, Hand hand, CallbackInfoReturnable<TypedActionResult<ItemStack>> cir) {
+    public void onCrossbowUse(Level world, Player user, InteractionHand hand, CallbackInfoReturnable<InteractionResultHolder<ItemStack>> cir) {
         CrossbowEvents.onCrossbowUse(world, user, hand, cir);
     }
-    @Inject(method = "loadProjectiles", at = @At("RETURN"))
+    @Inject(method = "tryLoadProjectiles", at = @At("RETURN"))
     private static void onLoadFinish(LivingEntity user, ItemStack projectile, CallbackInfoReturnable<Boolean> cir) {
         CrossbowEvents.onLoadFinish(user, projectile, cir);
     }
-    @Inject(method = "shoot", at = @At("HEAD"), cancellable = true)
-    private static void onShoot(LivingEntity shooter, ProjectileEntity projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target, CallbackInfo ci) {
-        CrossbowEvents.onShoot(shooter.getWorld(), shooter);
+    @Inject(method = "shootProjectile", at = @At("HEAD"), cancellable = true)
+    private static void onShoot(LivingEntity shooter, Projectile projectile, int index, float speed, float divergence, float yaw, @Nullable LivingEntity target, CallbackInfo ci) {
+        CrossbowEvents.onShoot(shooter.level(), shooter);
 
     }
 }

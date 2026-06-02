@@ -7,13 +7,12 @@ import net.mat0u5.do2manager.utils.*;
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
 import net.mat0u5.do2manager.world.ItemManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.Hand;
-
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.List;
@@ -21,11 +20,11 @@ import java.util.List;
 
 public class TestingCommand {
     private static final Gson GSON = new Gson();
-    public static int execute(ServerCommandSource source) {
+    public static int execute(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
 
-        ItemStack item = self.getStackInHand(Hand.MAIN_HAND);
+        ItemStack item = self.getItemInHand(InteractionHand.MAIN_HAND);
         ItemManager.setCustomComponentByte(item,"CustomRoleplayData",(byte) 1);
 
         return 1;
@@ -34,17 +33,17 @@ public class TestingCommand {
         OtherUtils.executeCommand(Main.server,args);
         return 1;
     }
-    public static int executeAddRun(ServerCommandSource source) {
+    public static int executeAddRun(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
 
 
-        self.sendMessage(Text.translatable("§6Command Worked.."));
+        self.sendSystemMessage(Component.translatable("§6Command Worked.."));
         return 1;
     }
-    public static int executeGetInv(ServerCommandSource source, int runNum) {
+    public static int executeGetInv(CommandSourceStack source, int runNum) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
 
 
         if (!Main.reloadedRuns) {
@@ -57,7 +56,7 @@ public class TestingCommand {
         }
 
 
-        self.sendMessage(Text.translatable("§6Command Worked.."));
+        self.sendSystemMessage(Component.translatable("§6Command Worked.."));
         return 1;
     }
     public static void testRun(int num) {
@@ -70,28 +69,28 @@ public class TestingCommand {
             }
         }
     }
-    public static int executeTest(ServerCommandSource source) {
+    public static int executeTest(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
 
         return 1;
     }
-    public static int executeCopyScoreboard(ServerCommandSource source, String newObj, String oldObj, String pathName) {
+    public static int executeCopyScoreboard(CommandSourceStack source, String newObj, String oldObj, String pathName) {
         MinecraftServer server = source.getServer();
-        final PlayerEntity self = source.getPlayer();
+        final Player self = source.getPlayer();
 
 
         ScoreboardUtils.copyObjectiveFromFile(server, newObj, oldObj, new File(pathName));
 
         return 1;
     }
-    public static int updatePlayerData(ServerCommandSource source) {
+    public static int updatePlayerData(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         PlayerDataUpdater updater = new PlayerDataUpdater(server);
         updater.updateAllPlayerData();
         return 1;
     }
-    public static int validatePlayerData(ServerCommandSource source) {
+    public static int validatePlayerData(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         PlayerDataUpdater updater = new PlayerDataUpdater(server);
         updater.validateAllPlayerData();

@@ -3,7 +3,7 @@ package net.mat0u5.do2manager.utils;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.mat0u5.do2manager.Main;
-
+import net.minecraft.server.level.ServerPlayer;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import net.minecraft.server.network.ServerPlayerEntity;
 
 public class DiscordUtils {
     public static JsonObject getDefaultJSON() {
@@ -108,10 +106,10 @@ public class DiscordUtils {
         // My attempt at adding a config check?
         boolean descriptionUpdate = Main.config.getProperty("stop_discord_channel_update").equalsIgnoreCase("true");
             if (descriptionUpdate == false) {
-        List<ServerPlayerEntity> players = Main.server.getPlayerManager().getPlayerList();
+        List<ServerPlayer> players = Main.server.getPlayerList().getPlayers();
         List<String> playerNames = new ArrayList<>();
-        for (ServerPlayerEntity player : players) {
-            playerNames.add(player.getNameForScoreboard());
+        for (ServerPlayer player : players) {
+            playerNames.add(player.getScoreboardName());
         }
         if (playerNames.contains("TangoCam")) playerNames.remove("TangoCam");
         String description = "Players online (" + playerNames.size() + "): " + String.join(", ",playerNames);

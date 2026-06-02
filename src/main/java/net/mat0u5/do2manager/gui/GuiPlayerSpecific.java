@@ -2,8 +2,7 @@ package net.mat0u5.do2manager.gui;
 
 import net.mat0u5.do2manager.world.DO2Run;
 import net.mat0u5.do2manager.world.DO2RunAbridged;
-import net.minecraft.inventory.SimpleInventory;
-
+import net.minecraft.world.SimpleContainer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +12,7 @@ public abstract class GuiPlayerSpecific {
     public int current_page_custom_list = 1;
     public List<DO2RunAbridged> runsSearchAbridged = new ArrayList<>();
     public List<DO2Run> runsSearch = new ArrayList<>();
-    public SimpleInventory inventory;
+    public SimpleContainer inventory;
     public String invId = "";
     public GuiInventory_Database guiDatabase;
     public GuiInventory_ChestFramework guiItems;

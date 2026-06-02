@@ -12,29 +12,27 @@ import net.mat0u5.do2manager.utils.PermissionManager;
 import net.mat0u5.do2manager.world.ItemConvertor;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
-import net.minecraft.block.Block;
-import net.minecraft.block.entity.LockableContainerBlockEntity;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameMode;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.ArrayList;
@@ -44,7 +42,7 @@ import static net.mat0u5.do2manager.events.Events.clickEventCooldown;
 import static net.mat0u5.do2manager.events.Events.lastPlayerLogoutTime;
 
 public class PlayerEvents {
-    static void onPlayerDisconnect(MinecraftServer server, ServerPlayerEntity player) {
+    static void onPlayerDisconnect(MinecraftServer server, ServerPlayer player) {
         try {
             QueueEvents.onPlayerLeave(player);
             if (OtherUtils.isServerEmptyOrOnlyTangoCam(server)) {//Last player disconnects
@@ -55,21 +53,21 @@ public class PlayerEvents {
             }
         }catch (Exception e) {}
     }
-    static void onPlayerJoin(MinecraftServer server, ServerPlayerEntity player) {
+    static void onPlayerJoin(MinecraftServer server, ServerPlayer player) {
         try {
             QueueEvents.onPlayerJoin(player);
-            if (player.isCreative() && !player.hasPermissionLevel(2)) {
-                player.changeGameMode(GameMode.SPECTATOR);
-                System.out.println(player.getNameForScoreboard()+"'s gamemode was automatically reset to spectator, because they were in creative.");
+            if (player.isCreative() && !player.hasPermissions(2)) {
+                player.setGameMode(GameType.SPECTATOR);
+                System.out.println(player.getScoreboardName()+"'s gamemode was automatically reset to spectator, because they were in creative.");
             }
 
             //Add the player to the database
-            DatabaseManager.addPlayer(player.getUuidAsString(),player.getNameForScoreboard(), player.getGameProfile());
+            DatabaseManager.addPlayer(player.getStringUUID(),player.getScoreboardName(), player.getGameProfile());
             if (Main.allPlayers.isEmpty()) {
                 DatabaseManager.fetchAllPlayers();
             }
             else {
-                Main.allPlayers.put(player.getUuidAsString(),player.getNameForScoreboard());
+                Main.allPlayers.put(player.getStringUUID(),player.getScoreboardName());
             }
             lastPlayerLogoutTime = -1;
 
@@ -77,43 +75,43 @@ public class PlayerEvents {
             ItemConvertor.onPlayerJoin(player);
         }catch (Exception e) {}
     }
-    static void onPlayerDeath(ServerPlayerEntity player, DamageSource source) {
+    static void onPlayerDeath(ServerPlayer player, DamageSource source) {
         MinecraftServer server = player.getServer();
-        if (player.getMainHandStack().getItem() == Items.TOTEM_OF_UNDYING || player.getOffHandStack().getItem() == Items.TOTEM_OF_UNDYING) {
+        if (player.getMainHandItem().getItem() == Items.TOTEM_OF_UNDYING || player.getOffhandItem().getItem() == Items.TOTEM_OF_UNDYING) {
             return;
         }
 
-        List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(server);
+        List<Player> runners = RunInfoParser.getCurrentRunners(server);
         if (runners.contains(player) && runners.size() == 1) {
-            boolean diedFromPathOfCoward = player.getPos().distanceTo(new Vec3d(-643, -18, 1977))<2;
+            boolean diedFromPathOfCoward = player.position().distanceTo(new Vec3(-643, -18, 1977))<2;
             if (Main.currentRun.run_number != -1 && Main.currentRun.inventory_save.isEmpty() && !diedFromPathOfCoward) {
                 Main.currentRun.inventory_save = ItemManager.getPlayerInventory(player);
             }
-            Main.currentRun.death_pos = player.getPos().toString();
-            Main.currentRun.death_message = source.getDeathMessage(player).getString();
+            Main.currentRun.death_pos = player.position().toString();
+            Main.currentRun.death_message = source.getLocalizedDeathMessage(player).getString();
             if (diedFromPathOfCoward) {
-                System.out.println(player.getNameForScoreboard() + " took the path of the coward. LLLL");
+                System.out.println(player.getScoreboardName() + " took the path of the coward. LLLL");
                 Main.currentRun.finishers = new ArrayList<>();
                 DatabaseManager.saveRun(server);
             }
         }
     }
-    public static void onPlayerDropItem(ServerPlayerEntity player, ItemStack itemStack) {
+    public static void onPlayerDropItem(ServerPlayer player, ItemStack itemStack) {
         invPickupOrDropItem(player,itemStack);
     }
-    public static void onPlayerPickupItem(PlayerEntity player, ItemEntity itemEntity) {
-        if (itemEntity.cannotPickup()) return;
-        invPickupOrDropItem(player,itemEntity.getStack());
+    public static void onPlayerPickupItem(Player player, ItemEntity itemEntity) {
+        if (itemEntity.hasPickUpDelay()) return;
+        invPickupOrDropItem(player,itemEntity.getItem());
     }
 
 
-    public static void invPickupOrDropItem(PlayerEntity player, ItemStack itemStack) {
+    public static void invPickupOrDropItem(Player player, ItemStack itemStack) {
         try {
             if (!RunInfoParser.getCurrentRunners(player.getServer()).contains(player)) return;
             if (ItemManager.isDungeonCompass(itemStack) && Main.currentRun.compass_item == null) {
                 Main.currentRun.compass_item = itemStack;
 
-                List<PlayerEntity> runners = RunInfoParser.getCurrentRunners(player.getServer());
+                List<Player> runners = RunInfoParser.getCurrentRunners(player.getServer());
                 if (!runners.isEmpty()) {
                     boolean isSpeedrun = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("true");
                     if (runners.size() == 1 && isSpeedrun) RunInfoParser.getFastestPlayerRunMatchingCurrent(RunInfoParser.getCurrentRunners(player.getServer()).get(0));
@@ -127,11 +125,11 @@ public class PlayerEvents {
             }
         }catch(Exception e) {}
     }
-    public static void onSlotClick(int slotId, int button, SlotActionType actionType, PlayerEntity player, CallbackInfo ci, ScreenHandler handler) {
+    public static void onSlotClick(int slotId, int button, ClickType actionType, Player player, CallbackInfo ci, AbstractContainerMenu handler) {
         try {
-            if (!handler.isValid(slotId)) return;
+            if (!handler.isValidSlotIndex(slotId)) return;
             if (slotId < 0 ) return;
-            ItemStack clickedItem = handler.getSlot(slotId).getStack();
+            ItemStack clickedItem = handler.getSlot(slotId).getItem();
             if (clickedItem == null) return;
             if (OtherUtils.isHoldingAdminKey(player)) return;
             if (!ItemManager.hasCustomComponentEntry(clickedItem,"GUI")) return;
@@ -145,41 +143,41 @@ public class PlayerEvents {
             e.printStackTrace();
         }
     }
-    public static ActionResult onBlockUse(PlayerEntity player, World world, Hand hand, BlockHitResult hitResult) {
+    public static InteractionResult onBlockUse(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
         CommandBlockEvents.onBlockUse(player,world,hand,hitResult);
         BlockPos pos = hitResult.getBlockPos();
         Block block = world.getBlockState(pos).getBlock();
-        if (block == null) return ActionResult.PASS;
-        if (!(world.getBlockEntity(pos) instanceof LockableContainerBlockEntity)) return ActionResult.PASS;
-        LockableContainerBlockEntity container = (LockableContainerBlockEntity) world.getBlockEntity(pos);
-        if (container == null) return ActionResult.PASS;
+        if (block == null) return InteractionResult.PASS;
+        if (!(world.getBlockEntity(pos) instanceof BaseContainerBlockEntity)) return InteractionResult.PASS;
+        BaseContainerBlockEntity container = (BaseContainerBlockEntity) world.getBlockEntity(pos);
+        if (container == null) return InteractionResult.PASS;
 
         String lock = OtherUtils.getLock(container);
-        if (lock == null || lock.isEmpty()) return ActionResult.PASS;
+        if (lock == null || lock.isEmpty()) return InteractionResult.PASS;
         if (PermissionManager.isAdmin(player)
-                || player.getUuidAsString().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d") // GGGregian special perms
+                || player.getStringUUID().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d") // GGGregian special perms
         ) {
-            OtherUtils.unlockContainerForTick((ServerWorld) world, player.getServer(), container,pos);
-            player.playSoundToPlayer(SoundEvents.BLOCK_AMETHYST_BLOCK_STEP, SoundCategory.PLAYERS, 0.7f, 1.0f);
-            return ActionResult.PASS;
+            OtherUtils.unlockContainerForTick((ServerLevel) world, player.getServer(), container,pos);
+            player.playNotifySound(SoundEvents.AMETHYST_BLOCK_STEP, SoundSource.PLAYERS, 0.7f, 1.0f);
+            return InteractionResult.PASS;
         }
 
-        ItemStack handItem = player.getStackInHand(hand);
-        if (handItem.getName().toString().isEmpty()) return ActionResult.PASS;
-        if (!lock.contains(handItem.getName().getString())) return ActionResult.PASS;
-        else if (PermissionManager.isTCGGameMaster(player)) return ActionResult.PASS;
+        ItemStack handItem = player.getItemInHand(hand);
+        if (handItem.getHoverName().toString().isEmpty()) return InteractionResult.PASS;
+        if (!lock.contains(handItem.getHoverName().getString())) return InteractionResult.PASS;
+        else if (PermissionManager.isTCGGameMaster(player)) return InteractionResult.PASS;
 
         // Player does not have permission to open the chest
 
         try {
             OtherUtils.removeItemsFromPlayerInventory(player, lock);
-            ((ServerPlayerEntity)player).closeHandledScreen();
+            ((ServerPlayer)player).closeContainer();
 
             JsonObject json = DiscordUtils.getDefaultJSON();
 
             JsonObject embed = new JsonObject();
             embed.addProperty("description", "__**[DO2-Manager]**__" +
-                    "\n\n**"+player.getNameForScoreboard()+"** opened a locked container!" +
+                    "\n\n**"+player.getScoreboardName()+"** opened a locked container!" +
                     "\n Lock: "+lock+
                     "\n Location: " + pos.toString()+
                     "\n\n All items with the given password have been removed from the players inventory."
@@ -194,6 +192,6 @@ public class PlayerEvents {
             e.printStackTrace();
         }
 
-        return ActionResult.FAIL;
+        return InteractionResult.FAIL;
     }
 }

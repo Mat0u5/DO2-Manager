@@ -4,14 +4,11 @@ import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.BlockItem;
-import net.minecraft.registry.Registries;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.hit.HitResult;
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.List;
 
 public class BlockBlocker {
@@ -22,41 +19,41 @@ public class BlockBlocker {
         config = AutoConfig.getConfigHolder(BlockBlockerConfig.class).get();
         UseBlockCallback.EVENT.register((player, world, hand, hitResult) -> {
 
-            if ((config.general.opBypass && player.hasPermissionLevel(2)) || (config.general.creativeBypass && player.getAbilities().creativeMode)) {
-                return ActionResult.PASS;
+            if ((config.general.opBypass && player.hasPermissions(2)) || (config.general.creativeBypass && player.getAbilities().instabuild)) {
+                return InteractionResult.PASS;
             }
             BlockPos target = hitResult.getBlockPos();
 
-            if (player.getBlockPos() == target || world.isClient()) {
-                return ActionResult.PASS;
+            if (player.blockPosition() == target || world.isClientSide()) {
+                return InteractionResult.PASS;
             }
 
             BlockState state = world.getBlockState(hitResult.getBlockPos());
-            String id = Registries.BLOCK.getId(state.getBlock()).toString();
+            String id = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
 
 
             if(config.general.noInteract.contains(id)) {
-                return ActionResult.FAIL;
+                return InteractionResult.FAIL;
             }
             //If the stack is a block, check if it can be placed
-            if (player.getStackInHand(hand).getItem() instanceof BlockItem blockItem) {
-                String idHand = Registries.BLOCK.getId(blockItem.getBlock()).toString();
+            if (player.getItemInHand(hand).getItem() instanceof BlockItem blockItem) {
+                String idHand = BuiltInRegistries.BLOCK.getKey(blockItem.getBlock()).toString();
                 if(config.general.noPlace.contains(idHand)) {
-                    return ActionResult.FAIL;
+                    return InteractionResult.FAIL;
                 }
             }
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         });
 
         PlayerBlockBreakEvents.BEFORE.register((world, player, pos, state, dir) -> {
-            if ((config.general.opBypass && player.hasPermissionLevel(2)) || (config.general.creativeBypass && player.getAbilities().creativeMode)) {
+            if ((config.general.opBypass && player.hasPermissions(2)) || (config.general.creativeBypass && player.getAbilities().instabuild)) {
                 return true;
             }
-            if (world.isClient()) {
+            if (world.isClientSide()) {
                 return true;
             }
 
-            String id = Registries.BLOCK.getId(state.getBlock()).toString();
+            String id = BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString();
             return !config.general.noHarvest.contains(id);
         });
     }

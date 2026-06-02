@@ -6,11 +6,8 @@ import com.google.gson.JsonObject;
 import com.mojang.authlib.GameProfile;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.*;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.ProfileComponent;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;

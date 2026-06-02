@@ -2,22 +2,21 @@ package net.mat0u5.do2manager.world;
 
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.database.DatabaseManager;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.CommandBlockBlockEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.world.ChunkTicketType;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.CommandBlockExecutor;
-import net.minecraft.server.world.ServerChunkManager;
-
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerChunkCache;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.BaseCommandBlock;
+import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.CommandBlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -32,9 +31,9 @@ public class BlockScanner {
     public static int listPos = 0;
 
     public static Integer positionsToCheckInt;
-    public static ServerWorld world = null;
-    public static PlayerEntity player = null;
-    public static ServerChunkManager chunkManager;
+    public static ServerLevel world = null;
+    public static Player player = null;
+    public static ServerChunkCache chunkManager;
     public static final Set<Block> lockableBlocks = Set.of(
             Blocks.CHEST, Blocks.HOPPER, Blocks.TRAPPED_CHEST,
             Blocks.DISPENSER, Blocks.DROPPER, Blocks.FURNACE,
@@ -53,7 +52,7 @@ public class BlockScanner {
     public static boolean running = false;
 
 
-    public static void scanArea(String scanFor, ServerWorld world, BlockPos startPos, BlockPos endPos, PlayerEntity player) {
+    public static void scanArea(String scanFor, ServerLevel world, BlockPos startPos, BlockPos endPos, Player player) {
         BlockScanner.world = world;
         BlockScanner.player = player;
         listPos = 0;
@@ -71,7 +70,7 @@ public class BlockScanner {
         maxZ = Math.max(startPos.getZ(), endPos.getZ());
 
         positionsToCheckInt = (maxX - minX + 1) * (maxY - minY + 1) * (maxZ - minZ + 1);
-        chunkManager = world.getChunkManager();
+        chunkManager = world.getChunkSource();
 
         start();
     }
@@ -84,7 +83,7 @@ public class BlockScanner {
             return;
         }
         // Check the server's MSPT
-        float currentMSPT = server.getAverageTickTime();
+        float currentMSPT = server.getCurrentSmoothedTickTime();
 
         // Adjust the workload based on current MSPT
         if (currentMSPT < 45) {
@@ -114,8 +113,8 @@ public class BlockScanner {
                 int percent = listPos / (positionsToCheckInt / 100);
                 if (!percentCompleted.contains(percent) ) {
                     percentCompleted.add(percent);
-                    player.sendMessage(Text.of("[Block Database Searcher] Processed " + percent + "% of positions."));
-                    if (scanType.contains("lock")) player.sendMessage(Text.of("-Modified " + lockOrUnlock + " blocks."));
+                    player.sendSystemMessage(Component.nullToEmpty("[Block Database Searcher] Processed " + percent + "% of positions."));
+                    if (scanType.contains("lock")) player.sendSystemMessage(Component.nullToEmpty("-Modified " + lockOrUnlock + " blocks."));
                     System.out.println("[Block Database Searcher] Processed " + percent + "% of positions.");
                 }
             }
@@ -133,9 +132,9 @@ public class BlockScanner {
         BlockPos pos = new BlockPos(x, y, z);
 
         ChunkPos chunkPos = new ChunkPos(pos);
-        if (!chunkManager.isChunkLoaded(chunkPos.x, chunkPos.z)) {
+        if (!chunkManager.hasChunk(chunkPos.x, chunkPos.z)) {
             System.out.println("Loading Chunk");
-            chunkManager.addTicket(ChunkTicketType.FORCED, chunkPos, 1, chunkPos);
+            chunkManager.addRegionTicket(TicketType.FORCED, chunkPos, 1, chunkPos);
             world.getChunk(chunkPos.x, chunkPos.z);
         }
 
@@ -151,55 +150,55 @@ public class BlockScanner {
     }
     private static void processCommandBlockPos(Block block, BlockPos pos) {
         if (!commandBlocks.contains(block)) return;
-        CommandBlockBlockEntity commandBlockEntity = (CommandBlockBlockEntity) world.getBlockEntity(pos);
+        CommandBlockEntity commandBlockEntity = (CommandBlockEntity) world.getBlockEntity(pos);
         if (commandBlockEntity == null) return;
-        CommandBlockExecutor executor = commandBlockEntity.getCommandExecutor();
+        BaseCommandBlock executor = commandBlockEntity.getCommandBlock();
         String command = executor.getCommand();
         if (command.startsWith("/")) command = command.substring(1);
         String type = block == Blocks.COMMAND_BLOCK ? "Impulse" : block == Blocks.CHAIN_COMMAND_BLOCK ? "Chain" : "Repeating";
-        boolean conditional = commandBlockEntity.isConditionalCommandBlock();
-        boolean auto = commandBlockEntity.isAuto();
+        boolean conditional = commandBlockEntity.isConditional();
+        boolean auto = commandBlockEntity.isAutomatic();
         commandBlocksList.add(new CommandBlockData(pos.getX(), pos.getY(), pos.getZ(), type, conditional, auto, command));
     }
     private static void processContainerBlockPos(Block block, BlockPos pos) {
         if (!lockableBlocks.contains(block) && !block.asItem().toString().contains("shulker_box")) return;
         BlockEntity blockEntity = world.getBlockEntity(pos);
         if (blockEntity == null) return;
-        RegistryWrapper.WrapperLookup registryLookup = world.getServer().getRegistryManager();
-        NbtCompound nbt = blockEntity.createNbt(registryLookup);
+        HolderLookup.Provider registryLookup = world.getServer().registryAccess();
+        CompoundTag nbt = blockEntity.saveWithoutMetadata(registryLookup);
         if (scanType.equalsIgnoreCase("unlock")) {
             if (nbt.contains("Lock")) {
                 nbt.remove("Lock");
-                blockEntity.read(nbt,registryLookup);
-                blockEntity.markDirty();
-                world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+                blockEntity.loadWithComponents(nbt,registryLookup);
+                blockEntity.setChanged();
+                world.sendBlockUpdated(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
                 lockOrUnlock++;
             }
         }
         else {
             if (!nbt.contains("Lock") || !nbt.getString("Lock").equalsIgnoreCase(blockPassword)) {
                 nbt.putString("Lock", blockPassword);
-                blockEntity.read(nbt,registryLookup);
-                blockEntity.markDirty();
-                world.updateListeners(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
+                blockEntity.loadWithComponents(nbt,registryLookup);
+                blockEntity.setChanged();
+                world.sendBlockUpdated(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
                 lockOrUnlock++;
             }
         }
     }
 
     protected static void stoppedFunction() {
-        player.sendMessage(Text.of("§aBlock scan complete."));
+        player.sendSystemMessage(Component.nullToEmpty("§aBlock scan complete."));
         System.out.println("Block scan complete.");
         if (scanType.equalsIgnoreCase("command_block")) {
             addCommandBlockData();
         }
         else if (scanType.contains("lock")) {
-            player.sendMessage(Text.of("-Modified " + lockOrUnlock + " blocks."));
+            player.sendSystemMessage(Component.nullToEmpty("-Modified " + lockOrUnlock + " blocks."));
         }
     }
     private static void addCommandBlockData() {
-        player.sendMessage(Text.of("§aSaving Data to database."));
+        player.sendSystemMessage(Component.nullToEmpty("§aSaving Data to database."));
         if (!commandBlocksList.isEmpty()) DatabaseManager.addCommandBlocks(commandBlocksList);
-        player.sendMessage(Text.of("§aData saved."));
+        player.sendSystemMessage(Component.nullToEmpty("§aData saved."));
     }
 }

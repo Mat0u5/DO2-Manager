@@ -1,14 +1,13 @@
 package net.mat0u5.do2manager.world;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
-import net.minecraft.item.ItemStack;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.world.Container;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 
 public class PlayerInventoryScanner {
-    public static List<ItemStack> getALLPlayerItems(PlayerEntity player) {
+    public static List<ItemStack> getALLPlayerItems(Player player) {
         List<ItemStack> result = new ArrayList<>();
         List<ItemStack> itemsInv = getALLItemsFromInv(player.getInventory(),true);
         List<ItemStack> itemsEnderChest = getALLItemsFromInv(player.getEnderChestInventory(),true);
@@ -16,10 +15,10 @@ public class PlayerInventoryScanner {
         result.addAll(itemsEnderChest);
         return result;
     }
-    public static List<ItemStack> getALLItemsFromInv(Inventory inventory, boolean includeContainersThemselves) {
+    public static List<ItemStack> getALLItemsFromInv(Container inventory, boolean includeContainersThemselves) {
         List<ItemStack> result = new ArrayList<>();
-        for (int i = 0; i < inventory.size(); i++) {
-            ItemStack itemStack = inventory.getStack(i);
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack itemStack = inventory.getItem(i);
             if (itemStack == null) continue;
             if (itemStack.isEmpty()) continue;
             result.add(itemStack);

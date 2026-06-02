@@ -5,16 +5,15 @@ import com.mojang.serialization.Dynamic;
 import net.mat0u5.do2manager.Main;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.minecraft.SharedConstants;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.datafixer.TypeReferences;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.datafix.fixes.References;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import java.util.List;
 
 public class ItemConvertor extends PlayerInventoryScanner {
@@ -32,7 +31,7 @@ public class ItemConvertor extends PlayerInventoryScanner {
         Main.config.setProperty("inv_update", String.valueOf(i));
     }
 
-    public static void onPlayerJoin(ServerPlayerEntity player) {
+    public static void onPlayerJoin(ServerPlayer player) {
         Integer invUpdate = getInvUpdate();
         if (invUpdate == null) return;
         while (getPlayerUpdateNum(player) < invUpdate) {
@@ -42,9 +41,9 @@ public class ItemConvertor extends PlayerInventoryScanner {
             if (num >= 2) convertPhaseItems(player, invUpdate);
         }
     }
-    public static void convertPhaseItems(ServerPlayerEntity player, int updateToNum) {
-        String playerUUID = player.getUuidAsString();
-        System.out.println("Converting "+player.getNameForScoreboard()+"'s Items from phase to casual");
+    public static void convertPhaseItems(ServerPlayer player, int updateToNum) {
+        String playerUUID = player.getStringUUID();
+        System.out.println("Converting "+player.getScoreboardName()+"'s Items from phase to casual");
 
         List<ItemStack> items = PlayerInventoryScanner.getALLPlayerItems(player);
         for (ItemStack item : items) {
@@ -54,9 +53,9 @@ public class ItemConvertor extends PlayerInventoryScanner {
         if (updateToNum != -1) Main.lastInvUpdate.setProperty(playerUUID, String.valueOf(updateToNum));
         System.out.println("Conversion complete.");
     }
-    public static void deleteHardcoreItems(ServerPlayerEntity player, int updateToNum) {
-        String playerUUID = player.getUuidAsString();
-        System.out.println("Deleting "+player.getNameForScoreboard()+"'s Hardcore Items");
+    public static void deleteHardcoreItems(ServerPlayer player, int updateToNum) {
+        String playerUUID = player.getStringUUID();
+        System.out.println("Deleting "+player.getScoreboardName()+"'s Hardcore Items");
 
         List<ItemStack> items = PlayerInventoryScanner.getALLPlayerItems(player);
         for (ItemStack item : items) {
@@ -65,12 +64,12 @@ public class ItemConvertor extends PlayerInventoryScanner {
 
         if (updateToNum != -1) Main.lastInvUpdate.setProperty(playerUUID, String.valueOf(updateToNum));
         System.out.println("Deletion complete.");
-        player.getInventory().markDirty();
-        player.getEnderChestInventory().markDirty();
+        player.getInventory().setChanged();
+        player.getEnderChestInventory().setChanged();
     }
-    public static void deleteCRDItems(ServerPlayerEntity player, int crd) {
-        String playerUUID = player.getUuidAsString();
-        System.out.println("Deleting "+player.getNameForScoreboard()+"'s Items with CRD:"+crd);
+    public static void deleteCRDItems(ServerPlayer player, int crd) {
+        String playerUUID = player.getStringUUID();
+        System.out.println("Deleting "+player.getScoreboardName()+"'s Items with CRD:"+crd);
 
         List<ItemStack> items = PlayerInventoryScanner.getALLPlayerItems(player);
         for (ItemStack item : items) {
@@ -78,12 +77,12 @@ public class ItemConvertor extends PlayerInventoryScanner {
         }
 
         System.out.println("Deletion complete.");
-        player.getInventory().markDirty();
-        player.getEnderChestInventory().markDirty();
+        player.getInventory().setChanged();
+        player.getEnderChestInventory().setChanged();
     }
-    public static void convertCustomItems(ServerPlayerEntity player, int updateToNum) {
-        String playerUUID = player.getUuidAsString();
-        System.out.println("Tagging "+player.getNameForScoreboard()+"'s Custom Cards");
+    public static void convertCustomItems(ServerPlayer player, int updateToNum) {
+        String playerUUID = player.getStringUUID();
+        System.out.println("Tagging "+player.getScoreboardName()+"'s Custom Cards");
 
         List<ItemStack> items = PlayerInventoryScanner.getALLPlayerItems(player);
         for (ItemStack item : items) {
@@ -93,8 +92,8 @@ public class ItemConvertor extends PlayerInventoryScanner {
         if (updateToNum != -1) Main.lastInvUpdate.setProperty(playerUUID, String.valueOf(updateToNum));
         System.out.println("Tagging complete.");
     }
-    public static int getPlayerUpdateNum(ServerPlayerEntity player) {
-        String playerUUID = player.getUuidAsString();
+    public static int getPlayerUpdateNum(ServerPlayer player) {
+        String playerUUID = player.getStringUUID();
         if (Main.lastInvUpdate.getProperty(playerUUID) == null) return 0;
         return Integer.parseInt(Main.lastInvUpdate.getProperty(playerUUID));
     }
@@ -109,7 +108,7 @@ public class ItemConvertor extends PlayerInventoryScanner {
         if (roleplayData != 2) return;
         ItemManager.setCustomComponentByte(itemStack,"CustomRoleplayData", (byte) 1);
         ItemManager.clearItemPhaseOrHardcoreLore(itemStack);
-        System.out.println("Converted Phase Item: " + itemStack.getName().getString());
+        System.out.println("Converted Phase Item: " + itemStack.getHoverName().getString());
     }
     public static void deleteHardoreItem(ItemStack itemStack) {
         if (itemStack == null) return;
@@ -120,7 +119,7 @@ public class ItemConvertor extends PlayerInventoryScanner {
         if (roleplayData != 3) return;
         ItemManager.removeAllComponents(itemStack);
         ItemManager.setModelData(itemStack, 1111);
-        itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.of("§7The remains of a Hardcore item..."));
+        itemStack.set(DataComponents.CUSTOM_NAME, Component.nullToEmpty("§7The remains of a Hardcore item..."));
     }
     public static void deleteCRDItem(ItemStack itemStack, int crd) {
         if (itemStack == null) return;
@@ -131,7 +130,7 @@ public class ItemConvertor extends PlayerInventoryScanner {
         if (roleplayData != crd) return;
         ItemManager.removeAllComponents(itemStack);
         ItemManager.setModelData(itemStack, 1111);
-        itemStack.set(DataComponentTypes.CUSTOM_NAME, Text.of("§7The remains of an item..."));
+        itemStack.set(DataComponents.CUSTOM_NAME, Component.nullToEmpty("§7The remains of an item..."));
     }
     public static void tagExtendedItems(ItemStack itemStack) {
         if (itemStack == null) return;
@@ -141,16 +140,16 @@ public class ItemConvertor extends PlayerInventoryScanner {
         if (!expandedModelDatas.contains(modelData) && !(modelData >= 142 && modelData <= 197)) return;
         if (ItemManager.hasCustomComponentEntry(itemStack,"ExpandedCard")) return;
         ItemManager.setCustomComponentByte(itemStack,"ExpandedCard", (byte) 1);
-        System.out.println("Tagged Expanded: " + itemStack.getName().getString());
+        System.out.println("Tagged Expanded: " + itemStack.getHoverName().getString());
     }
-    public static ItemStack convertOldNbtToItemStack(NbtCompound oldNbt, int oldVersion) {
-        DataFixer dataFixer = Main.server.getDataFixer();
-        RegistryWrapper.WrapperLookup registries = Main.server.getRegistryManager();
-        int currentDataVersion = SharedConstants.getGameVersion().getSaveVersion().getId();
+    public static ItemStack convertOldNbtToItemStack(CompoundTag oldNbt, int oldVersion) {
+        DataFixer dataFixer = Main.server.getFixerUpper();
+        HolderLookup.Provider registries = Main.server.registryAccess();
+        int currentDataVersion = SharedConstants.getCurrentVersion().getDataVersion().getVersion();
         Dynamic<?> dynamic = new Dynamic<>(NbtOps.INSTANCE, oldNbt);
-        Dynamic<?> updatedDynamic = dataFixer.update(TypeReferences.ITEM_STACK, dynamic, oldVersion, currentDataVersion);
-        NbtCompound updatedNbt = (NbtCompound) updatedDynamic.getValue();
-        ItemStack item = ItemStack.fromNbtOrEmpty(registries, updatedNbt);
+        Dynamic<?> updatedDynamic = dataFixer.update(References.ITEM_STACK, dynamic, oldVersion, currentDataVersion);
+        CompoundTag updatedNbt = (CompoundTag) updatedDynamic.getValue();
+        ItemStack item = ItemStack.parseOptional(registries, updatedNbt);
         return item;
     }
 }

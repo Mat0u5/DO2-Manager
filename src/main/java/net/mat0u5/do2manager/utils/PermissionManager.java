@@ -1,31 +1,31 @@
 package net.mat0u5.do2manager.utils;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 
 public class PermissionManager {
-    public static boolean isModOwner(ServerPlayerEntity player) {
+    public static boolean isModOwner(ServerPlayer player) {
         if (player == null) return false;
-        return player.getUuidAsString().equalsIgnoreCase("41682eb6-2b32-4f52-abc9-c15a9d53c83e");
+        return player.getStringUUID().equalsIgnoreCase("41682eb6-2b32-4f52-abc9-c15a9d53c83e");
     }
-    public static boolean isAdmin(ServerPlayerEntity player) {
+    public static boolean isAdmin(ServerPlayer player) {
         if (player == null) return false;
         if (isModOwner(player)) return true;
-        return player.hasPermissionLevel(2);
+        return player.hasPermissions(2);
     }
 
-    public static boolean isTCGGameMaster(ServerPlayerEntity player) {
+    public static boolean isTCGGameMaster(ServerPlayer player) {
         if (player == null) return false;
         if (isAdmin(player)) return true;
-        return player.getCommandTags().contains("TCGGameMaster");
+        return player.getTags().contains("TCGGameMaster");
     }
-    public static boolean isModOwner(PlayerEntity player) {
-        return isModOwner((ServerPlayerEntity) player);
+    public static boolean isModOwner(Player player) {
+        return isModOwner((ServerPlayer) player);
     }
-    public static boolean isAdmin(PlayerEntity player) {
-        return isAdmin((ServerPlayerEntity) player);
+    public static boolean isAdmin(Player player) {
+        return isAdmin((ServerPlayer) player);
     }
-    public static boolean isTCGGameMaster(PlayerEntity player) {
-        return isTCGGameMaster((ServerPlayerEntity) player);
+    public static boolean isTCGGameMaster(Player player) {
+        return isTCGGameMaster((ServerPlayer) player);
     }
 }

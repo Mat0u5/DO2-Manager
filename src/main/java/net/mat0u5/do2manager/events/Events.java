@@ -19,10 +19,9 @@ import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.BlockScanner;
 import net.mat0u5.do2manager.world.FakeSign;
 import net.mat0u5.do2manager.world.RunInfoParser;
-import net.minecraft.block.CommandBlock;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.CommandBlock;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -48,8 +47,8 @@ public class Events {
         ServerTickEvents.END_SERVER_TICK.register(Events::onServerTickEnd);
 
         ServerLivingEntityEvents.ALLOW_DEATH.register((entity, damageSource, amount) -> {
-            if (entity instanceof ServerPlayerEntity) {
-                PlayerEvents.onPlayerDeath((ServerPlayerEntity) entity, damageSource);
+            if (entity instanceof ServerPlayer) {
+                PlayerEvents.onPlayerDeath((ServerPlayer) entity, damageSource);
             }
             return true;
         });
@@ -57,7 +56,7 @@ public class Events {
 
 
         PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
-            if (!world.isClient) {
+            if (!world.isClientSide) {
                 if (state.getBlock() instanceof CommandBlock) {
                     CommandBlockEvents.onCommandBlockBroken(player, pos, state.getBlock());
                 }

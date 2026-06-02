@@ -5,38 +5,37 @@ import net.mat0u5.do2manager.database.DatabaseManager;
 import net.mat0u5.do2manager.utils.OtherUtils;
 import net.mat0u5.do2manager.world.ItemManager;
 import net.mat0u5.do2manager.world.RunInfoParser;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class ConsoleCommand {
-    public static boolean isRanByPlayer(ServerCommandSource source) {
+    public static boolean isRanByPlayer(CommandSourceStack source) {
         if (source.getEntity() != null) {
-            final PlayerEntity self = source.getPlayer();
-            self.sendMessage(Text.translatable("\n§c-------------------------\nAll commands under '/decked-out console-only' §4§l§ncannot be run by players. §r§c" +
+            final Player self = source.getPlayer();
+            self.sendSystemMessage(Component.translatable("\n§c-------------------------\nAll commands under '/decked-out console-only' §4§l§ncannot be run by players. §r§c" +
                     "\nThey are ONLY meant for command blocks and the console, \nas they have delicate (and messy) syntax and are used for modifying the database.\n" +
                     "§l§nDO NOT MODIFY§r§c any command blocks that use these commands, unless you know what you're doing!\n-------------------------\n"));
             return true;
         }
         return false;
     }
-    public static int execute(ServerCommandSource source) {
+    public static int execute(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
         System.out.println("TEST-COMMAND-SUCCESSFUL");
         return 1;
     }
-    public static int database_runTracking_modifyVar(ServerCommandSource source, String query) {
+    public static int database_runTracking_modifyVar(CommandSourceStack source, String query) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
@@ -50,21 +49,21 @@ public class ConsoleCommand {
         }
         return 1;
     }
-    public static int database_runTracking_SaveRun(ServerCommandSource source) {
+    public static int database_runTracking_SaveRun(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
         DatabaseManager.saveRun(server);
         return 1;
     }
-    public static int database_runTracking_RunNumber(ServerCommandSource source) {
+    public static int database_runTracking_RunNumber(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
         Main.currentRun.run_number = RunInfoParser.getRunNum(server);
         return 1;
     }
-    public static int database_runTracking_RunDiff(ServerCommandSource source) {
+    public static int database_runTracking_RunDiff(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
@@ -72,7 +71,7 @@ public class ConsoleCommand {
 
         return 1;
     }
-    public static int database_runTracking_ItemDeck(ServerCommandSource source) {
+    public static int database_runTracking_ItemDeck(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
@@ -81,37 +80,37 @@ public class ConsoleCommand {
         if (deck != null) Main.currentRun.deck_item = deck;
         return 1;
     }
-    public static int database_runTracking_Embers(ServerCommandSource source) {
+    public static int database_runTracking_Embers(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
         Main.currentRun.embers_counted = RunInfoParser.getPlayerEmbers(server);
         return 1;
     }
-    public static int database_runTracking_Crowns(ServerCommandSource source) {
+    public static int database_runTracking_Crowns(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
         Main.currentRun.crowns_counted = RunInfoParser.getPlayerCrowns(server);
         return 1;
     }
-    public static int database_runTracking_ItemInventory(ServerCommandSource source) {
+    public static int database_runTracking_ItemInventory(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
         if (!Main.currentRun.inventory_save.isEmpty()) return -1;
 
-        List<PlayerEntity> playersList = RunInfoParser.getCurrentAliveRunners(server);
+        List<Player> playersList = RunInfoParser.getCurrentAliveRunners(server);
         if (playersList.isEmpty())  return -1;
         List<ItemStack> allRunnersItems = new ArrayList<>();
-        for (PlayerEntity player : playersList) {
+        for (Player player : playersList) {
             allRunnersItems.addAll(ItemManager.getPlayerInventory(player));
         }
         Main.currentRun.inventory_save = allRunnersItems;
         return 1;
     }
     public static int lastSplit = 0;
-    public static int database_runTracking_Timestamp(ServerCommandSource source, String varName) {
+    public static int database_runTracking_Timestamp(CommandSourceStack source, String varName) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
         int run_length = RunInfoParser.getRunLength(server);
@@ -166,7 +165,7 @@ public class ConsoleCommand {
         if (!isSpeedrun) return;
         if (currentRun == -1 || bestRun == -1) return;
         int diff = currentRun - bestRun;
-        OtherUtils.broadcastMessage(server, Text.translatable(
+        OtherUtils.broadcastMessage(server, Component.translatable(
                 "§6 - "+name+": " + OtherUtils.convertTicksToClockTime(currentRun,showMilis) +
                         " [" + (diff < 0 ? "§a" : "§c")+((diff > 0)? "+":"")+OtherUtils.convertTicksToClockTime(diff,showMilis) + "§6]"
         ));
@@ -175,36 +174,36 @@ public class ConsoleCommand {
         boolean isSpeedrunAdvanced = Main.config.getProperty("current_run_is_speedrun").equalsIgnoreCase("detailed");
         if (!isSpeedrunAdvanced) return;
         if (currentRun == -1) return;
-        OtherUtils.broadcastMessage(server, Text.translatable(
+        OtherUtils.broadcastMessage(server, Component.translatable(
                 "§6 - "+name+": " + OtherUtils.convertTicksToClockTime(currentRun,true)
         ));
     }
 
-    public static int database_runTracking_Items(ServerCommandSource source, String funName, Collection<? extends Entity> items) {
+    public static int database_runTracking_Items(CommandSourceStack source, String funName, Collection<? extends Entity> items) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
         for (Entity item : items) {
             if (item instanceof ItemEntity) {
                 ItemEntity itemEntity = (ItemEntity) item;
-                ItemStack itemStack = itemEntity.getStack();
+                ItemStack itemStack = itemEntity.getItem();
                 if (funName.contains("card_plays")) {
                     Main.currentRun.card_plays.add(itemStack.copy());
                 }
                 if (funName.contains("items_bought")) {
                     Main.currentRun.items_bought.add(itemStack.copy());
                     //Add to barrel
-                    ItemManager.insertItemIntoBarrel(server.getOverworld(), new BlockPos(-549, 114, 1976), itemStack);
+                    ItemManager.insertItemIntoBarrel(server.overworld(), new BlockPos(-549, 114, 1976), itemStack);
                 }
             }
         }
         return 1;
     }
-    public static int database_runTracking_Players(ServerCommandSource source, String varName) {
+    public static int database_runTracking_Players(CommandSourceStack source, String varName) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
         if (!varName.equalsIgnoreCase("runners") && !varName.equalsIgnoreCase("finishers")) return -1;
-        List<PlayerEntity> playersList = varName.equalsIgnoreCase("runners")?RunInfoParser.getCurrentRunners(server):RunInfoParser.getCurrentAliveRunners(server);
+        List<Player> playersList = varName.equalsIgnoreCase("runners")?RunInfoParser.getCurrentRunners(server):RunInfoParser.getCurrentAliveRunners(server);
         if (playersList.isEmpty()) {
             if (varName.equalsIgnoreCase("runners")) Main.currentRun.runners = new ArrayList<>();
             if (varName.equalsIgnoreCase("finishers")) {
@@ -214,14 +213,14 @@ public class ConsoleCommand {
             }
             return -1;
         }
-        for (PlayerEntity player : playersList) {
-            if (varName.equalsIgnoreCase("runners")) Main.currentRun.runners.add(player.getUuidAsString());
-            if (varName.equalsIgnoreCase("finishers")) Main.currentRun.finishers.add(player.getUuidAsString());
+        for (Player player : playersList) {
+            if (varName.equalsIgnoreCase("runners")) Main.currentRun.runners.add(player.getStringUUID());
+            if (varName.equalsIgnoreCase("finishers")) Main.currentRun.finishers.add(player.getStringUUID());
         }
 
         return 1;
     }
-    public static int database_runTracking_PrepareForRun(ServerCommandSource source) {
+    public static int database_runTracking_PrepareForRun(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         if (isRanByPlayer(source)) return -1;
 
