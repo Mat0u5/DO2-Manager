@@ -26,7 +26,7 @@ public class LockCodeMixin {
 		LockCode lockCode = (LockCode) (Object) this;
 		if (lockCode == LockCode.NO_LOCK) return;
 		if (player instanceof ServerPlayer serverPlayer) {
-			if ((PermissionManager.isAdmin(player) && false) || player.getStringUUID().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d") // GGGregian special perms
+			if (PermissionManager.isAdmin(player) || player.getStringUUID().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d") // GGGregian special perms
 			) {
 				cir.setReturnValue(true);
 				serverPlayer.connection

@@ -172,19 +172,40 @@ public class BlockScanner {
         HolderLookup.Provider registryLookup = world.getServer().registryAccess();
         CompoundTag nbt = blockEntity.saveWithoutMetadata(registryLookup);
         if (scanType.equalsIgnoreCase("unlock")) {
-            if (nbt.contains("Lock")) {
-                nbt.remove("Lock");
-                blockEntity.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registryLookup, nbt));//TODO test
+            if (nbt.contains("lock")) {
+                nbt.remove("lock");
+                blockEntity.loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, registryLookup, nbt));
                 blockEntity.setChanged();
                 world.sendBlockUpdated(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
                 lockOrUnlock++;
             }
         }
         else {
-            Optional<String> lockString = nbt.getString("Lock");
-            if (lockString.isEmpty() || !lockString.get().equalsIgnoreCase(blockPassword)) {
-                nbt.putString("Lock", blockPassword);
-                blockEntity.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registryLookup, nbt));//TODO test
+            boolean needsLockUpdate = true;
+
+            if (nbt.contains("lock")) {
+                Optional<CompoundTag> lockTag = nbt.getCompound("lock");
+                if (lockTag.isPresent()) {
+                    Optional<CompoundTag> componentsTag = lockTag.get().getCompound("components");
+                    if (componentsTag.isPresent()) {
+                        Optional<String> currentLockName = componentsTag.get().getString("minecraft:item_name");
+                        if (currentLockName.isPresent() && currentLockName.get().equalsIgnoreCase(blockPassword)) {
+                            needsLockUpdate = false;
+                        }
+                    }
+                }
+            }
+
+            if (needsLockUpdate) {
+                CompoundTag lockComponent = new CompoundTag();
+                CompoundTag componentsSubTag = new CompoundTag();
+
+                componentsSubTag.putString("minecraft:item_name", blockPassword);
+                lockComponent.put("components", componentsSubTag);
+
+                nbt.put("lock", lockComponent);
+
+                blockEntity.loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, registryLookup, nbt));
                 blockEntity.setChanged();
                 world.sendBlockUpdated(pos, world.getBlockState(pos), world.getBlockState(pos), 3);
                 lockOrUnlock++;
