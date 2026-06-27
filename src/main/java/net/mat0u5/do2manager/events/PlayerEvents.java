@@ -148,61 +148,6 @@ public class PlayerEvents {
     }
     public static InteractionResult onBlockUse(Player player, Level world, InteractionHand hand, BlockHitResult hitResult) {
         CommandBlockEvents.onBlockUse(player,world,hand,hitResult);
-        BlockPos pos = hitResult.getBlockPos();
-        Block block = world.getBlockState(pos).getBlock();
-        if (block == null) return InteractionResult.PASS;
-        if (!(world.getBlockEntity(pos) instanceof BaseContainerBlockEntity)) return InteractionResult.PASS;
-        BaseContainerBlockEntity container = (BaseContainerBlockEntity) world.getBlockEntity(pos);
-        if (container == null) return InteractionResult.PASS;
-
-        String lock = OtherUtils.getLock(container);
-        if (lock == null || lock.isEmpty()) return InteractionResult.PASS;
-        if (PermissionManager.isAdmin(player)
-                || player.getStringUUID().equalsIgnoreCase("24268497-6a56-4132-8699-8d956dfd062d") // GGGregian special perms
-        ) {
-            if (player instanceof ServerPlayer serverPlayer) {
-                OtherUtils.unlockContainerForTick((ServerLevel) world, serverPlayer.level().getServer(), container,pos);
-
-                serverPlayer.connection
-                        .send(
-                                new ClientboundSoundPacket(
-                                        BuiltInRegistries.SOUND_EVENT.wrapAsHolder(SoundEvents.AMETHYST_BLOCK_STEP), SoundSource.PLAYERS, player.getX(), player.getY(), player.getZ(), 0.7f, 1.0f, player.getRandom().nextLong()
-                                )
-                        );
-            }
-            return InteractionResult.PASS;
-        }
-
-        ItemStack handItem = player.getItemInHand(hand);
-        if (handItem.getHoverName().toString().isEmpty()) return InteractionResult.PASS;
-        if (!lock.contains(handItem.getHoverName().getString())) return InteractionResult.PASS;
-        else if (PermissionManager.isTCGGameMaster(player)) return InteractionResult.PASS;
-
-        // Player does not have permission to open the chest
-
-        try {
-            OtherUtils.removeItemsFromPlayerInventory(player, lock);
-            ((ServerPlayer)player).closeContainer();
-
-            JsonObject json = DiscordUtils.getDefaultJSON();
-
-            JsonObject embed = new JsonObject();
-            embed.addProperty("description", "__**[DO2-Manager]**__" +
-                    "\n\n**"+player.getScoreboardName()+"** opened a locked container!" +
-                    "\n Lock: "+lock+
-                    "\n Location: " + pos.toString()+
-                    "\n\n All items with the given password have been removed from the players inventory."
-            );
-            embed.addProperty("color", 16711680);
-            JsonArray embeds = new JsonArray();
-            embeds.add(embed);
-            json.add("embeds", embeds);
-
-            DiscordUtils.sendMessageToDiscord(json, DiscordUtils.getWebhookStaffURL());
-        }catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return InteractionResult.FAIL;
+        return InteractionResult.PASS;
     }
 }

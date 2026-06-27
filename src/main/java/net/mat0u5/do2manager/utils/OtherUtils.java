@@ -16,6 +16,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.server.MinecraftServer;
@@ -25,6 +26,7 @@ import net.minecraft.server.players.PlayerList;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.LockCode;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
@@ -285,87 +287,7 @@ public class OtherUtils {
             return false;
         }
     }
-    public static void unlockContainerForTick(ServerLevel world, MinecraftServer server, BaseContainerBlockEntity container, BlockPos pos) {
-        HolderLookup.Provider registryLookup = Main.server.registryAccess();
-        CompoundTag nbt = container.saveWithoutMetadata(registryLookup);
-        Optional<String> originalLockOpt = nbt.getString("Lock");
 
-        if (originalLockOpt.isEmpty()) return;
-        String originalLock = originalLockOpt.get();
-
-        nbt.remove("Lock");
-        container.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registryLookup, nbt));
-        server.execute(() -> {
-            try {
-                // Re-lock the original container
-                CompoundTag newNbt = container.saveWithoutMetadata(registryLookup);
-                newNbt.putString("Lock", originalLock);
-                container.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registryLookup, newNbt));
-            } catch (Exception e) {
-                System.out.println("Failed to re-add lock at " + pos.toString());
-            }
-        });
-
-        // Unlock the other half if it's a double chest
-        if (container instanceof ChestBlockEntity) {
-            ChestBlockEntity chest = (ChestBlockEntity) container;
-            ChestBlockEntity otherHalf = getOtherHalf(world, chest, pos);
-
-            if (otherHalf != null) {
-                CompoundTag otherNbt = otherHalf.saveWithoutMetadata(registryLookup);
-                otherNbt.getString("Lock").ifPresent(otherOriginalLock -> {
-                    otherNbt.remove("Lock");
-                    otherHalf.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registryLookup, otherNbt));
-
-                    server.execute(() -> {
-                        try {
-                            if (otherHalf != null) {
-                                CompoundTag newOtherNbt = otherHalf.saveWithoutMetadata(registryLookup);
-                                newOtherNbt.putString("Lock", otherOriginalLock);
-                                otherHalf.loadWithComponents(TagValueInput.create(ProblemReporter.DISCARDING, registryLookup, newOtherNbt));
-                            }
-                        } catch (Exception e) {
-                            System.out.println("Failed to re-add lock at " + pos.toString());
-                        }
-                    });
-                });
-            }
-        }
-    }
-
-    private static ChestBlockEntity getOtherHalf(ServerLevel world, ChestBlockEntity chest, BlockPos pos) {
-        BlockState state = chest.getBlockState();
-        Direction facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
-        ChestType type = state.getValue(BlockStateProperties.CHEST_TYPE);
-
-        BlockPos otherHalfPos = null;
-
-        if (type == ChestType.LEFT) {
-            otherHalfPos = pos.relative(facing.getClockWise());
-        } else if (type == ChestType.RIGHT) {
-            otherHalfPos = pos.relative(facing.getCounterClockWise());
-        }
-
-        if (otherHalfPos != null) {
-            BlockEntity adjacentBlockEntity = world.getBlockEntity(otherHalfPos);
-            if (adjacentBlockEntity instanceof ChestBlockEntity) {
-                ChestBlockEntity adjacentChest = (ChestBlockEntity) adjacentBlockEntity;
-                if (adjacentChest.getBlockState().getBlock() == Blocks.CHEST) {
-                    return adjacentChest;
-                }
-            }
-        }
-        return null;
-    }
-    public static String getLock(BaseContainerBlockEntity container) {
-        HolderLookup.Provider registryLookup = server.registryAccess();
-        CompoundTag nbt = container.saveWithoutMetadata(registryLookup);
-        if (nbt == null) return null;
-        if (!nbt.contains("Lock")) return null;
-        Optional<String> lockKey = nbt.getString("Lock");
-        if (lockKey.isEmpty()) return null;
-        return lockKey.get();
-    }
     public static void removeItemsFromPlayerInventory(Player player, String match) {
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack stack = player.getInventory().getItem(i);
