@@ -4,6 +4,9 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import net.mat0u5.do2manager.Main;
 import net.minecraft.server.level.ServerPlayer;
+
+import static net.mat0u5.do2manager.utils.PermissionManager.isMapGhost;
+
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -109,9 +112,11 @@ public class DiscordUtils {
         List<ServerPlayer> players = Main.server.getPlayerList().getPlayers();
         List<String> playerNames = new ArrayList<>();
         for (ServerPlayer player : players) {
+           if (isMapGhost(player)) {
+                continue;
+        }
             playerNames.add(player.getScoreboardName());
         }
-        if (playerNames.contains("TangoCam")) playerNames.remove("TangoCam");
         String description = "Players online (" + playerNames.size() + "): " + String.join(", ",playerNames);
         DiscordBot discordBot = new DiscordBot();
         discordBot.startBot(getWebhookToken(), getChatChannelId(),true,description);}

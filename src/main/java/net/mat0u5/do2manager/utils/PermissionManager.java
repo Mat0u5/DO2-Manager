@@ -6,7 +6,7 @@ import net.minecraft.world.entity.player.Player;
 public class PermissionManager {
     public static boolean isModOwner(ServerPlayer player) {
         if (player == null) return false;
-        return player.getStringUUID().equalsIgnoreCase("41682eb6-2b32-4f52-abc9-c15a9d53c83e");
+        return player.getTags().contains("Admins");
     }
     public static boolean isAdmin(ServerPlayer player) {
         if (player == null) return false;
@@ -27,5 +27,9 @@ public class PermissionManager {
     }
     public static boolean isTCGGameMaster(Player player) {
         return isTCGGameMaster((ServerPlayer) player);
+    }
+    public static boolean isMapGhost(ServerPlayer player) {
+        if (player == null) return false;
+        return player.getTags().contains("MapGhost");
     }
 }

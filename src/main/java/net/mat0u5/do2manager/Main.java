@@ -53,7 +53,6 @@ public class Main implements ModInitializer {
 		LOGGER.info("Initializing DO2-Manager");
 		simulator = new Simulator();
 		dungeonQueue.loadQueueFromConfig();
-		TCG_Items.reload();
 		CustomGiveCommand.loadItemStacks();
 		BlockBlocker.onInitialize();
 	}
