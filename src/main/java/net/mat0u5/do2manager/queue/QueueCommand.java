@@ -2,6 +2,8 @@ package net.mat0u5.do2manager.queue;
 
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
+
+import net.mat0u5.do2manager.utils.OtherUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,40 +17,44 @@ public class QueueCommand {
     public static int joinQueue(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
+        String command = "execute as "+self.getStringUUID()+" run trigger do2queue set 2";
 
-        dungeonQueue.addToQueue(self,false);
+        OtherUtils.executeCommand(server,command);
         return 1;
     }
 
     public static int leaveQueue(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
+        String command = "execute as "+self.getStringUUID()+" run trigger do2queue set 3";
 
-        dungeonQueue.removeFromQueue(self);
+        OtherUtils.executeCommand(server,command);
         return 1;
     }
 
     public static int skipTurn(CommandSourceStack source,int skipTurns) {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
+        String command = "execute as "+self.getStringUUID()+" run trigger do2queue set 4";
 
-        dungeonQueue.skipTurns(self, skipTurns,false);
+        OtherUtils.executeCommand(server,command);
         return 1;
     }
     public static int skipTurnOther(CommandSourceStack source, ServerPlayer target,int skipTurns) {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
 
-        dungeonQueue.skipTurns(target, skipTurns,true);
+        String command = "execute as "+self.getStringUUID()+" run trigger do2queue set 4";
+            OtherUtils.executeCommand(server,command);
+
         return 1;
     }
     public static int runFinish(CommandSourceStack source, Collection<? extends ServerPlayer> targets) {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
+        String command = "execute as "+self.getStringUUID()+" run trigger do2queue set 5";
 
-        if (targets.isEmpty()) return -1;
-
-        dungeonQueue.putAtEnd(targets);
+        OtherUtils.executeCommand(server,command);
         return 1;
     }
 
@@ -56,7 +62,9 @@ public class QueueCommand {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
 
-        dungeonQueue.addToQueue(target,true);
+        String command = "execute as "+self.getStringUUID()+" run trigger do2queue set 2";
+            OtherUtils.executeCommand(server,command);
+
         return 1;
     }
 
@@ -64,22 +72,26 @@ public class QueueCommand {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
 
-        dungeonQueue.removeFromQueueStr(target);
+        String command = "execute as "+self.getStringUUID()+" run trigger do2queue set 3";
+            OtherUtils.executeCommand(server,command);
+
         return 1;
     }
 
-    public static int moveQueue(CommandContext<CommandSourceStack> context) {
-        CommandSourceStack source = context.getSource();
-        MinecraftServer server = source.getServer();
-        final Player self = source.getPlayer();
+    //public static int moveQueue(CommandContext<CommandSourceStack> context) {
+        //CommandSourceStack source = context.getSource();
+        //MinecraftServer server = source.getServer();
+        //final Player self = source.getPlayer();
 
-        dungeonQueue.moveQueue();
-        return 1;
-    }
+        //dungeonQueue.moveQueue();
+        //return 1;
+    //}
     public static int listQueue(CommandSourceStack source) {
         MinecraftServer server = source.getServer();
         final Player self = source.getPlayer();
-        dungeonQueue.messageQueueToPlayer(self);
+        String command = "execute as "+self.getStringUUID()+" run trigger do2queue set 6";
+                OtherUtils.executeCommand(server,command);
+
         return 1;
     }
     public static SuggestionProvider<CommandSourceStack> getQueuePlayersSuggestionProvider() {
